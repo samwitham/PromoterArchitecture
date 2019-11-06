@@ -1,0 +1,6 @@
+software/
+to_sort/
+software_old/
+data
+data/genomes/.ipynb_checkpoint
+*.ipynb_checkpoints
