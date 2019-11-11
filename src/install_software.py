@@ -4,71 +4,30 @@
 # In[ ]:
 
 
-pip install pybiomart
+#pip install pybiomart
 
 
 # In[1]:
 
 
-conda install -y -c future requests requests-cache
+#conda install -y -c future requests requests-cache
 
+conda create --name PromoterArchitecturePipeline python=3
+conda activate PromoterArchitecturePipeline
+conda install -c anaconda mysql git biopython pymysql configargparse 
 
-# In[1]:
+conda install --channel bioconda bedtools htslib bedops pybedtools bcbiogff pyfaidx
 
+conda install -c conda-forge git-lfs
+#in project_PromoterArchitecturePipeline folder:
 
-conda install -y -c bioconda pybedtools 
-
-
-# In[1]:
-
-
-conda install -c bioconda pybedtools 
-
-
-# In[ ]:
-
-
-conda install -c anaconda biopython 
-
-
-# In[ ]:
-
-
-conda install -c bioconda bcbiogff 
-
-
-# In[1]:
-
-
-conda install -y -c anaconda pymysql
-
-
-# In[2]:
-
-
-conda install -y -c bioconda pyfaidx 
-
-
-# In[1]:
-
-
-conda install -y -c anaconda mysql 
-
-
-# In[2]:
-
-
-conda install -y --channel conda-forge --channel bioconda bedtools htslib
-
-
-# In[1]:
-
-
-conda install -y -c conda-forge plumbum 
-
-
-# In[ ]:
-
+git lfs install
+git lfs track "data/genomes"
+git pull
+git status
+git config --global credential.helper 'cache --timeout=3600'
+git pull -u origin master
+git add .gitattributes
 
 
 
