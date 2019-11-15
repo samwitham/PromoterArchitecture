@@ -5,3 +5,4 @@ data
 data/genomes/.ipynb_checkpoint
 *.ipynb_checkpoints
 log
+data/FIMO/promoters_renamedChr_motifs_mapped.bed
