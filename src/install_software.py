@@ -15,6 +15,7 @@
 conda create --name PromoterArchitecturePipeline python=3
 conda activate PromoterArchitecturePipeline
 conda install -c anaconda mysql git biopython pymysql configargparse 
+conda install -c bioconda gffutils 
 
 conda install --channel bioconda bedtools htslib bedops pybedtools bcbiogff pyfaidx
 

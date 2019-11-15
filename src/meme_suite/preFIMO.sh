@@ -1,6 +1,7 @@
 #!/bin/sh
 #requires activating "conda activate PromoterArchitecturePipeline"
 #$1 is promoter gff3 location. $2 is the genome.fasta file location.
+
 #identify input file name without path or extension
 xbase=${1##*/}
 xpref=${xbase%.*}

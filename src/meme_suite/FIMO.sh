@@ -5,7 +5,7 @@
 #$3 is max stored sequences.
 #$4 is meme motif file 
 
-
+#retrieve file name from file path
 xbase=${1##*/}
 
 xpref=${xbase%.*}

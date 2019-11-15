@@ -1,8 +1,8 @@
 #!/bin/sh
 source /ei/workarea/group-eg/project_PromoterArchitecturePipeline/software/miniconda3/bin/activate
 conda activate PromoterArchitecturePipeline
-##extract promoters from a genome file
-python ../data_sorting/extract_promoter.py
+##extract promoters from a genome file. Deactivated for now until argparse implemented
+#python ../data_sorting/extract_promoter.py
 
 ##extract promoters
 
@@ -13,17 +13,26 @@ python ../data_sorting/extract_promoter.py
 
 
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
-promoter_gff_file=../../data/genomes/promoters_renamedChr.gff3
+promoter_bed_file=../../data/FIMO/responsivepromoters.bed
 genome_fasta=../../data/genomes/TAIR10_chr_all.fas
 
-../meme_suite/./preFIMO.sh $promoter_gff_file $genome_fasta
+#retrieve file name from file path
+promoterbase=${promoter_bed_file##*/}
+promoterpref=${promoterbase%.*}
+
+
+#deactivated preFIMO.sh as don't need bedtool creation part
+#../meme_suite/./preFIMO.sh $promoter_gff_file $genome_fasta
+
+#create fasta file of promoters from genome fasta file and from the responsivepromoters.bed file
+bedtools getfasta -fi $genome_fasta -bed $promoter_bed_file -fo ../../data/FIMO/${promoterpref}.fasta -name
+
 
 ## create FIMO background file:
 #activate correct conda env
 conda activate MemeSuite2
 #identify the output filename created by preFIMO.sh
-promoterbase=${promoter_gff_file##*/}
-promoterpref=${promoterbase%.*}
+
 #run FIMO.sh
 #$1 is promoter fasta file. 
 #$2 is pvalue threshold. 
@@ -41,9 +50,15 @@ conda activate PromoterArchitecturePipeline
 #arg3 is Output location of motifs bed file
 #arg4 is q_value threshold for filtering
 python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/FIMO/${promoterpref}.bed ../../data/FIMO/${promoterpref}_motifs.bed 0.05
+#python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/responsivepromoters_FIMO/fimo.tsv ../../data/FIMO/responsivepromoters.bed ../../data/FIMO/responsivepromoters_motifs.bed 0.05
 
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
 ../data_sorting/./TFBS_coverage.sh ../../data/FIMO/${promoterpref}.bed
+#../data_sorting/./TFBS_coverage.sh ../../data/FIMO/responsivepromoters.bed
 
+
+
+##map gene IDs - need to use generic names before activating this section, have to edit map_motif_ids.py for this
+#python ../meme_suite/map_motif_ids.py ../../data/FIMO/responsivepromoters_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/FIMO/responsivepromoters_motifs_mapped.bed
 

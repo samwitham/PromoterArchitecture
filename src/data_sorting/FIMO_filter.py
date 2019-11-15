@@ -12,7 +12,9 @@ args = parser.parse_args()
 #functions
 def fimo_qfilter(fimo_file, q_value):
     """this uses a meme-suite version 5 fimo.tsv file, filters by a q-value, and returns a pandas df"""
+    #read in fimo.tsv file
     fimo = pd.read_table(fimo_file, sep='\t')
+    #filter q_values to specified threshold
     fimo_qfilter = fimo[fimo['q-value'] <= q_value]    
     return fimo_qfilter
     
@@ -28,7 +30,7 @@ def fimo2bed(filtered_fimo_df, promoters_bed, output_bed):
     merged['correct_start'] = (merged['start_x'] + merged['start_y'] -1).astype(np.int64)
     merged['correct_stop'] = (merged['stop_x'] + merged['start_y'] -1).astype(np.int64)
     #create motifs df in bed file column order
-    motifs_df = merged.loc[:, ['chr','correct_start','correct_stop', 'motif_id', 'score', 'strand_x',]]
+    motifs_df = merged.loc[:, ['chr','correct_start','correct_stop', 'motif_id', 'score', 'strand_x', 'sequence_name', 'p-value', 'q-value', 'matched_sequence']]
     #sort the df by chromosome then by motif start position
     motifs_df_sorted = motifs_df.sort_values(['chr','correct_start'])
     #create motifs bed file

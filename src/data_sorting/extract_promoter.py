@@ -6,41 +6,36 @@ from pyfaidx import Fasta
 import pandas as pd
 import os
 from pprint import pprint, pformat
-import argparse
 
-#create argparse variables
-parser = argparse.ArgumentParser(description='extract promoters from genome')
 
-args = parser.parse_args()
 
 def fasta_chromsizes(genome, output_file):
-    """extracts chromosome sizes in a form compatible with BedTools.flank (as a dictionary)"""
-    #output = open(output_file, 'w')
+    """extracts chromosome sizes in a form compatible with BedTools.flank"""
+    
     the_genome = Fasta(genome) #using pyfaidx Fasta, parse the genome file as a fasta
      
     chromsizes = {} #make dictionary called chromsizes
-    for key in the_genome.keys():
-       
-        #chromsizes[key] = f'({0}, {len(the_genome[key])})' #add the chromosome name and length to dictionary
-        chromsizes[f'Chr{key}'] = f'({len(the_genome[key])})' #add the chromosome name and length to dictionary
-        #chromsizes[key] = f'({len(the_genome[key])})' #add the chromosome name and length to dictionary
-    #output_file.write(chrom)
-    chromsizes_string = ''
+    for key in the_genome.keys():       
     
+        chromsizes[f'Chr{key}'] = f'({len(the_genome[key])})' #add the chromosome name and length to dictionary        
+    #create empty string
+    chromsizes_string = ''
+    #iterate over chromsizes dictionary key/values. Add key, tab, value, newline to the string iteratively
     for k,v in chromsizes.items():
         chromsizes_string = chromsizes_string + f'{k}\t{v}\n'
     
-    
+    #write output file, deleting the parentheses created from the dictionary. This file is suitable for use in BedTools.flank
     with open(output_file, 'w') as output:            
         output.write(chromsizes_string.replace('(','').replace(')',''))
 
 
 def extract_genes(gene_gff,output_file):
     """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file"""
+    #limit dictionary to genes
     limit_info = dict(gff_type = ['gene'])
-    #matchedLine = ''
+    #open output file
     output = open(output_file, 'w')
-    
+    #open gff file, parse it, limiting to genes only. Save the file.
     with open(gene_gff, 'r') as in_handle:                    
             GFF.write(GFF.parse(in_handle, limit_info=limit_info),output)
     output.close()
@@ -50,12 +45,11 @@ def extract_genes(gene_gff,output_file):
 def add_promoter(genes_gff,chromsize,promoter_length,output_file):
     """This function adds a promoter of a certain length to each gene in the input file and exports to an output file"""
     #output = open(output_location, 'w') #make output file with write capability
+    #parse gff file containing only genes.
     genes = BedTool(genes_gff)
+    #extract promoters upsteam using chromsize file and specified promoter length. r, no. of bp to add to end coordinate. s, based on strand.
     promoters = genes.flank(g=chromsize, l=promoter_length, r=0, s=True)
-      
-
-   
-         
+    #write to file         
     with open(output_file,'w') as f:
         f.write(str(promoters))
 
@@ -63,27 +57,24 @@ def add_promoter(genes_gff,chromsize,promoter_length,output_file):
 
 def promoter_overlap(promoter_gff,allfeatures_gff,output_file):
     """function to create file containing promoters which overlap other genome features"""
-    promoters = BedTool(promoter_gff) #read in files using BedTools
+    #read in files using BedTools
+    promoters = BedTool(promoter_gff) 
     features = BedTool(allfeatures_gff)
     #report chromosome position of overlapping feature, along with the promoter which overlaps it (only reports the overlapping nucleotides, not the whole promoter length. Can use u=True to get whole promoter length)
-    intersect = promoters.intersect(features, u=True) #could add u=True which indicates we want to see the promoters that overlap features in the genome
+    #f, the minimum overlap as fraction of A. F, nucleotide fraction of B (genes) that need to be overlapping with A (promoters)
+    #wa, Write the original entry in A for each overlap.
+    #u, write original A entry only once even if more than one overlap
+    intersect = promoters.intersect(features,f=0.001, F=0.001, u=True, wa=True) #could add u=True which indicates we want to see the promoters that overlap features in the genome
+    #write to file
     with open(output_file, 'w') as output:
         output.write(str(intersect))
-
-
-
-
-def find_closest_TSS(gene_gff,TSS_gff,output_location):
-    """this reads in the genes gff file and TSS gff file, finds the closest gene each TSS belongs to"""
-
-
-
 
 def remove_characters_linestart(input_location,output_location,oldcharacters,newcharacters,linestart):
     """this function removes characters from the start of each line in the input file and sends modified lines to output"""
     output = open(output_location, 'w') #make output file with write capability
+    #open input file
     with open(input_location, 'r') as infile:  
-        
+        #iterate over lines in fuile
         for line in infile:
             line = line.strip() # removes hidden characters/spaces
             if line[0] == linestart:
@@ -95,20 +86,12 @@ def remove_characters_linestart(input_location,output_location,oldcharacters,new
 def count_promoters(in_file, out_file):
     """this function creates a text file detailing the number of promoters in an input GFF file """
     examiner = GFFExaminer()
+    #open input GFF file
     in_handle = open(in_file,'r')
+    #output a text file, giving information such as no. of promoters in the file
     with open(out_file, 'w') as fout:
         fout.write(pformat(examiner.available_limits(in_handle)))
     in_handle.close()
-
-# def gff2bed(gff_file,bed_file):
-#     """This function renames the third column of a gff3 file with the ID=ATetc., and adds them to an output file"""
-    
-    
-#     output = open(output_file, 'w')
-    
-#     with open(gene_gff, 'r') as in_handle:                    
-#             GFF.write(GFF.parse(in_handle, limit_info=limit_info),output)
-#     output.close()
 
 
 directory_path = '/ei/workarea/group-eg/project_PromoterArchitecturePipeline'
@@ -156,26 +139,16 @@ os.remove(chromsizes_file_renamedChr_temp)
 
 
 #extract_genes(genes,genesonly_gff)
+#note - this changes chromosome no. to 1 rather than Chr1
 extract_genes(genes,genesonly_gff)
-#this changes chromosome no. to 1 rather than Chr1
 
-
-
+#add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff file
 add_promoter(genesonly_gff,chromsizes_file_renamedChr,1000,promoters)
-
-
 
 #create file containing only promoters which overlap other genome features
 promoter_overlap(promoters,genes,overlapping_promoters)
 
-
-#examine this gff3 promoter file and compare to all promoters
-#in_file = overlapping_promoters
-#examiner = GFFExaminer()
-#in_handle = open(in_file)
-#pprint(examiner.available_limits(in_handle))
-#in_handle.close()
-
+#count no. of promoters in overlapping promoters file
 count_promoters(overlapping_promoters, f'{directory_path}/data/genomes/overlapping_promoters.txt')
 
 # all promoters
@@ -189,6 +162,8 @@ count_promoters(overlapping_promoters, f'{directory_path}/data/genomes/overlappi
 #promoters overlapping only genes
 promoter_overlap(promoters,genesonly_gff,promoterandgenes_only_overlap)
 
+#count no. of promoters in overlapping promoters file
+count_promoters(promoterandgenes_only_overlap, f'{directory_path}/data/genomes/promoterandgenes_only_overlap.txt')
 
 #examiner = GFFExaminer()
 #in_handle = open(in_file)
