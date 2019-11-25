@@ -28,6 +28,15 @@ def rename_motif(motifs_bed):
     #replace characters after the '_'
     motifs.TF = motifs.TF.replace('_.*$', '', regex=True)
     return motifs
+def TF_family(motifs_df):
+    """function to add a TF family column in the motifs.bed file (for DAP-seq cistrome motifs only)"""
+    motifs_df['TF_family'] = motifs_df.name_rep
+    print(motifs_df)
+    capitalise = lambda x: x.upper()
+    motifs_df.TF_family = motifs_df.TF_family.apply(capitalise)
+    ##replace characters inluding and after the '_' in the TF_family column
+    motifs_df.TF_family = motifs_df.TF_family.replace('_.*$', '', regex=True)
+    return motifs_df
 
 def map_ID2(motifs, geneIDtable, output_bed):   
     """function to rename the TF column values in a motifs.bed file to the Arabidopsis gene ID nomenclature using geneIDtable. (for DAP-seq cistrome motifs only). Outputs a bed file."""
@@ -45,7 +54,8 @@ cols = ['name_rep', 'at_id']
 geneIDtable.columns = cols
     
 motifs_renamed = rename_motif(args.motifs_bed)
-map_ID2(motifs_renamed, geneIDtable, args.motifs_bed_mapped)
+motifs_renamed_family = TF_family(motifs_renamed)
+map_ID2(motifs_renamed_family, geneIDtable, args.motifs_bed_mapped)
     
     
     #Created by Sam Witham 12/11/19
