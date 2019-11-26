@@ -15,7 +15,7 @@ conda activate PromoterArchitecturePipeline
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
 #promoter_bed_file=../../data/FIMO/responsivepromoters.bed
 #genome_fasta=../../data/genomes/TAIR10_chr_all.fas
-promoter_fasta=../../data/FIMO/NRP_no_q_value.fasta
+promoter_fasta=../../data/FIMO/NRP_plantpan.fasta
 #retrieve file name from file path
 promoterbase=${promoter_fasta##*/}
 promoterpref=${promoterbase%.*}
@@ -37,7 +37,9 @@ conda activate MemeSuite2
 #$3 is max stored sequences.
 #$4 is meme motif file 
 #pvalue 1
-../meme_suite/./FIMO.sh ../../data/FIMO/${promoterpref}.fasta 1 5000000 ../../data/FIMO/motif_data/dap_combined.meme
+#../meme_suite/./FIMO.sh ../../data/FIMO/${promoterpref}.fasta 1 5000000 ../../data/FIMO/motif_data/dap_combined.meme
+#plantpan scan
+../meme_suite/./FIMO.sh ../../data/FIMO/${promoterpref}.fasta 0.0001 5000000 ../../data/FIMO/motif_data/plant_pan/conversion2.meme
 
 ## filter the FIMO output
 conda activate PromoterArchitecturePipeline
@@ -48,7 +50,7 @@ conda activate PromoterArchitecturePipeline
 #arg3 is Output location of motifs bed file
 #arg4 is q_value threshold for filtering
 #qvalue 1
-python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/FIMO/${promoterpref}.bed ../../data/FIMO/${promoterpref}_motifs.bed 1
+python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/FIMO/${promoterpref}.bed ../../data/FIMO/${promoterpref}_motifs.bed 0.05
 #python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/responsivepromoters_FIMO/fimo.tsv ../../data/FIMO/responsivepromoters.bed ../../data/FIMO/responsivepromoters_motifs.bed 0.05
 
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter

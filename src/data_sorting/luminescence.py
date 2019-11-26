@@ -67,19 +67,26 @@ xlsx_filenames = glob.glob('../../data/luminescence/to_be_sorted/**/*.xlsx', rec
 list(map(xlsx_2_csv,xlsx_filenames))               
                  
 # #variables - change path/name of these to files you're interested in. Also change the date
-input_fluc = '../../data/luminescence/to_be_sorted/30.8.19/fluc.csv'
-input_nluc = '../../data/luminescence/to_be_sorted/30.8.19/nluc1.csv'
-layout = '../../data/luminescence/to_be_sorted/30.8.19/layout.csv'
-output = '../../data/luminescence/to_be_sorted/30.8.19/output.csv'
-date = '30.8.19'
-# input_fluc = '../../data/luminescence/to_be_sorted/24.11.19/fluc.csv'
-# input_nluc = '../../data/luminescence/to_be_sorted/24.11.19/nluc1.csv'
-# layout = '../../data/luminescence/to_be_sorted/24.11.19/layout.csv'
-# output = '../../data/luminescence/to_be_sorted/24.11.19/output.csv'
-# date = '24.11.19'
+# input_fluc = '../../data/luminescence/to_be_sorted/30.8.19/fluc.csv'
+# input_nluc = '../../data/luminescence/to_be_sorted/30.8.19/nluc1.csv'
+# layout = '../../data/luminescence/to_be_sorted/30.8.19/layout.csv'
+# output = '../../data/luminescence/to_be_sorted/30.8.19/output.csv'
+# date = '30.8.19'
+input_fluc = '../../data/luminescence/to_be_sorted/24.11.19/nitrate_free_phytogel_fluc.csv'
+input_nluc = '../../data/luminescence/to_be_sorted/24.11.19/nitrate_free_phytogel_nluc.csv'
+layout = '../../data/luminescence/to_be_sorted/24.11.19/layout.csv'
+output = '../../data/luminescence/to_be_sorted/24.11.19/output_means.csv'
+output_raw = '../../data/luminescence/to_be_sorted/24.11.19/output_raw.csv'
+date = '24.11.19'
+# input_fluc = '../../data/luminescence/to_be_sorted/26.11.19/nitrate_leaf_fluc.csv'
+# input_nluc = '../../data/luminescence/to_be_sorted/26.11.19/nitrate_leaf_nluc.csv'
+# layout = '../../data/luminescence/to_be_sorted/26.11.19/layout.csv'
+# output = '../../data/luminescence/to_be_sorted/26.11.19/output_means.csv'
+# output_raw = '../../data/luminescence/to_be_sorted/26.11.19/output_raw.csv'
+# date = '26.11.19'
 
 
 
 
 #run combine_csvs function
-combine_csvs(input_fluc,input_nluc,layout,date,output)
+combine_csvs(input_fluc,input_nluc,layout,date,output, output_raw)
