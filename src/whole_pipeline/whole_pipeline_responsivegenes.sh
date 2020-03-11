@@ -51,7 +51,7 @@ conda activate PromoterArchitecturePipeline
 #arg4 is q_value threshold for filtering
 python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/FIMO/${promoterpref}.bed ../../data/FIMO/${promoterpref}_motifs.bed 0.05
 #python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/responsivepromoters_FIMO/fimo.tsv ../../data/FIMO/responsivepromoters.bed ../../data/FIMO/responsivepromoters_motifs.bed 0.05
-
+### need to add the map_motif_ids.py option to this for if using DAP-seq cistrome motifs. Alternatively can use motif file containing gene IDs already.
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
 ../data_sorting/./TFBS_coverage.sh ../../data/FIMO/${promoterpref}.bed

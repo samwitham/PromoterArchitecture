@@ -10,6 +10,6 @@ xbase=${1##*/}
 
 xpref=${xbase%.*}
 #create background file for FIMO
-fasta-get-markov -m 3 -dna $1 ../../data/FIMO/${xpref}.bfile
+fasta-get-markov -dna $1 ../../data/FIMO/${xpref}.bfile
 #run FIMO
 fimo --bfile ../../data/FIMO/${xpref}.bfile --o ../../data/FIMO/output/${xpref}_FIMO --thresh $2 --max-stored-scores $3 $4 $1
