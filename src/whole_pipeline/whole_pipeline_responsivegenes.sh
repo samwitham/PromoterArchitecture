@@ -1,5 +1,5 @@
 #!/bin/sh
-source /ei/workarea/group-eg/project_PromoterArchitecturePipeline/software/miniconda3/bin/activate
+source /ei/projects/fa26d297-7b5b-4a43-be1f-bd87b73ae0d2/data/witham/PromoterArchitecture/software/miniconda3/bin/activate
 conda activate PromoterArchitecturePipeline
 ##extract promoters from a genome file. Deactivated for now until argparse implemented
 #python ../data_sorting/extract_promoter.py

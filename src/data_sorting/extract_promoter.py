@@ -39,6 +39,7 @@ def extract_genes(gene_gff,output_file):
     with open(gene_gff, 'r') as in_handle:                    
             GFF.write(GFF.parse(in_handle, limit_info=limit_info),output)
     output.close()
+    pass
    
 
 
@@ -92,7 +93,34 @@ def count_promoters(in_file, out_file):
     with open(out_file, 'w') as fout:
         fout.write(pformat(examiner.available_limits(in_handle)))
     in_handle.close()
+    
+def bidirectional_proms(in_file, out_file):
+    """this function create a file containing all promoters with an upstream gene going in the other direction ie. potential bidirectional promoters"""
+    promoters = pd.read_table(in_file, sep='\t', header=4)
+    cols2 = ['promoter_AGI', 'gene_type']
+    promoters.columns = cols2
+    
+def bidirectional_proms(in_file, out_file):
+    """this function create a file containing all promoters with an upstream gene going in the other direction ie. potential bidirectional promoters"""
+    #read in gff file
+    promoters = pd.read_table(in_file, sep='\t', header=2)
+    cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
+    promoters.columns = cols2
+    #make sure lines are sorted
+  
+    promoters = promoters.sort_values(['chr','start']).reset_index(drop=True)
+    #if bidirectional
+    promoters['bidirectional'] = 'no'
+    
+    for i,data in promoters.iterrows():
+        if i-1 >= 0:
+            #print(i,data)
+            if promoters.loc[i, 'strand'] == '+' and promoters.loc[i-1, 'strand'] == '-' and promoters.loc[i, 'start'] - promoters.loc[i-1, 'stop'] < 2000:
+                promoters.loc[i, 'bidirectional'] = 'yes'
+                promoters.loc[i-1, 'bidirectional'] = 'yes'
 
+    with open(out_file, 'w') as output:  
+        promoters[promoters.bidirectional == 'no'][['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']].to_csv(out_file,index=False,sep='\t',header=0)
 
 directory_path = '/ei/workarea/group-eg/project_PromoterArchitecturePipeline'
 
@@ -125,6 +153,7 @@ chromsizes_file_renamedChr = f'{directory_path}/data/genomes/chromsizes_renamedC
 promoters_renamedChr_temp = f'{directory_path}/data/genomes/promoters_renamedChr_temp.gff3'
 promoters_renamedChr_temp2 = f'{directory_path}/data/genomes/promoters_renamedChr_temp2.gff3'
 promoters_renamedChr = f'{directory_path}/data/genomes/promoters_renamedChr.gff3'
+nonbidirectional_promoters = '../../data/genomes/nonbidirectional_proms.gff3'
 
 fasta_chromsizes(genome, chromsizes_file)
 
@@ -142,8 +171,11 @@ os.remove(chromsizes_file_renamedChr_temp)
 #note - this changes chromosome no. to 1 rather than Chr1
 extract_genes(genes,genesonly_gff)
 
+#createfile containing all nonbidirectional genes (bidirectional = genes with an upstream gene in the other direction ie. potential overlapping promoters)
+bidirectional_proms(genesonly_gff, nonbidirectional_promoters)
+
 #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff file
-add_promoter(genesonly_gff,chromsizes_file_renamedChr,1000,promoters)
+add_promoter(nonbidirectional_promoters,chromsizes_file_renamedChr,1000,promoters)
 
 #create file containing only promoters which overlap other genome features
 promoter_overlap(promoters,genes,overlapping_promoters)

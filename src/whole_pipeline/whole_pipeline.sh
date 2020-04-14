@@ -1,5 +1,5 @@
 #!/bin/sh
-source /ei/workarea/group-eg/project_PromoterArchitecturePipeline/software/miniconda3/bin/activate
+source /ei/workarea/group-eg/project_PromoterArchitecturePipeline/software/miniconda3/bin/activate # need to change this to hardlink
 conda activate PromoterArchitecturePipeline
 ##extract promoters from a genome file
 python ../data_sorting/extract_promoter.py
