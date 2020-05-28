@@ -93,15 +93,10 @@ def count_promoters(in_file, out_file):
     with open(out_file, 'w') as fout:
         fout.write(pformat(examiner.available_limits(in_handle)))
     in_handle.close()
+
     
 def bidirectional_proms(in_file, out_file):
-    """this function create a file containing all promoters with an upstream gene going in the other direction ie. potential bidirectional promoters"""
-    promoters = pd.read_table(in_file, sep='\t', header=4)
-    cols2 = ['promoter_AGI', 'gene_type']
-    promoters.columns = cols2
-    
-def bidirectional_proms(in_file, out_file):
-    """this function create a file containing all promoters with an upstream gene going in the other direction ie. potential bidirectional promoters"""
+    """this function creates a file containing all promoters with an upstream gene going in the other direction ie. potential bidirectional promoters"""
     #read in gff file
     promoters = pd.read_table(in_file, sep='\t', header=2)
     cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
