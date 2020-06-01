@@ -15,13 +15,13 @@ conda activate PromoterArchitecturePipeline
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
 #promoter_bed_file=../../data/FIMO/responsivepromoters.bed
 #genome_fasta=../../data/genomes/TAIR10_chr_all.fas
-promoter_fasta=../../../../meme_analysis/NLP7/promoters/NLP7promoters.fasta
+promoter_fasta=../../../../meme_analysis/NRE/NRE_sites_q0-05.fasta
 #retrieve file name from file path
 promoterbase=${promoter_fasta##*/}
 promoterpref=${promoterbase%.*}
 
 #create bed file from fasta
-python ../meme_suite/fasta2bed.py ../../../../meme_analysis/NLP7/promoters/${promoterpref}.fasta ../../../../meme_analysis/NLP7/promoters/${promoterpref}.bed
+python ../meme_suite/fasta2bed.py ../../../../meme_analysis/NRE/${promoterpref}.fasta ../../../../meme_analysis/NRE/${promoterpref}.bed
 
 
 
@@ -39,7 +39,7 @@ conda activate MemeSuite2
 #pvalue 1
 #../meme_suite/./FIMO.sh ../../data/FIMO/${promoterpref}.fasta 1 5000000 ../../data/FIMO/motif_data/dap_combined.meme
 #plantpan scan
-../meme_suite/./FIMO.sh ../../../../meme_analysis/NLP7/promoters/${promoterpref}.fasta 0.3 5000000 ../../../../meme_analysis/NLP7/meme_m1.txt
+../meme_suite/./FIMO.sh ../../../../meme_analysis/NRE/${promoterpref}.fasta 0.0001 5000000 ../../data/FIMO/motif_data/dap_combined.meme
 
 ## filter the FIMO output
 conda activate PromoterArchitecturePipeline
@@ -51,7 +51,7 @@ conda activate PromoterArchitecturePipeline
 #arg4 is q_value threshold for filtering
 #qvalue 1
 #python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/FIMO/${promoterpref}.bed ../../data/FIMO/${promoterpref}_motifs.bed 0.05
-python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../../../meme_analysis/NLP7/promoters/${promoterpref}.bed ../../../../meme_analysis/NLP7/promoters/${promoterpref}_motifs.bed 0.3
+python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../../../meme_analysis/NRE/${promoterpref}.bed ../../../../meme_analysis/NRE/${promoterpref}_motifs.bed 0.05
 
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
@@ -61,5 +61,5 @@ python ../data_sorting/./FIMO_filter.py ../../data/FIMO/output/${promoterpref}_F
 
 
 ##map gene IDs - need to use generic names before activating this section, have to edit map_motif_ids.py for this
-python ../meme_suite/map_motif_ids.py ../../../../meme_analysis/NLP7/promoters/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../../../meme_analysis/NLP7/promoters/${promoterpref}_motifs_mapped.bed
+python ../meme_suite/map_motif_ids.py ../../../../meme_analysis/NRE/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../../../meme_analysis/NRE/${promoterpref}_motifs_mapped.bed
 

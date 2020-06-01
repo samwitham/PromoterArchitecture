@@ -1,8 +1,10 @@
 #!/bin/sh
 source /ei/workarea/group-eg/project_PromoterArchitecturePipeline/software/miniconda3/bin/activate # need to change this to hardlink
 conda activate PromoterArchitecturePipeline
+directory_path=ei/workarea/group-eg/project_PromoterArchitecturePipeline
+file_names=all_genes
 ##extract promoters from a genome file
-python ../data_sorting/extract_promoter.py
+python ../data_sorting/extract_promoter.py $directory_path $file_names --remove_bidirectional
 
 ##extract promoters
 
