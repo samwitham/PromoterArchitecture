@@ -1,6 +1,8 @@
 #!/bin/sh
 #source /ei/projects/fa26d297-7b5b-4a43-be1f-bd87b73ae0d2/data/witham/PromoterArchitecture/software/miniconda3/bin/activate
-conda activate PromoterArchitecturePipeline
+#source /home/witham/opt/anaconda3/bin/activate
+#eval "$(conda shell.bash hook)"
+#conda activate PromoterArchitecturePipeline
 ##extract promoters from a genome file. Deactivated for now until argparse implemented
 #python ../data_sorting/extract_promoter.py
 
@@ -13,7 +15,9 @@ conda activate PromoterArchitecturePipeline
 
 
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
-promoter_bed_file=../../data/FIMO/responsivepromoters.bed
+#promoter_bed_file=../../data/FIMO/responsivepromoters.bed
+#promoter_bed_file=../../data/FIMO/promoters_5UTR.bed
+promoter_bed_file=../../data/promoter_analysis/non-overlapping_includingbidirectional_variable_constitutive.bed
 genome_fasta=../../data/genomes/TAIR10_chr_all.fas
 
 #retrieve file name from file path
@@ -56,8 +60,9 @@ promoterpref=${promoterbase%.*}
 #$1 is promoter bed file
 #../data_sorting/./TFBS_coverage.sh ../../data/FIMO/${promoterpref}.bed
 #../data_sorting/./TFBS_coverage.sh ../../data/FIMO/responsivepromoters.bed
+
 #%coverage of open chromatin
-../data_sorting/./OpenChromatin_coverage.sh ../../data/FIMO/${promoterpref}.bed
+../data_sorting/./OpenChromatin_coverage.sh ../../data/promoter_analysis/${promoterpref}.bed
 
 
 ##map gene IDs - need to use generic names before activating this section, have to edit map_motif_ids.py for this
