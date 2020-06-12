@@ -11,8 +11,10 @@ xbase=${1##*/}
 
 xpref=${xbase%.*}
 #make directory if doesn't already exist
-mkdir -p ../../data/FIMO/$5
+mkdir -p ../../data/output/$5
+mkdir -p ../../data/output/$5/FIMO
+mkdir -p ../../data/output/$5/FIMO/output
 #create background file for FIMO
-fasta-get-markov -dna $1 ../../data/FIMO/$5/${xpref}.bfile
+fasta-get-markov -dna $1 ../../data/output/$5/FIMO/${xpref}.bfile
 #run FIMO
-fimo --bfile ../../data/FIMO/$5/${xpref}.bfile --o ../../data/FIMO/$5/output/${xpref}_FIMO --thresh $2 --max-stored-scores $3 $4 $1
+fimo --bfile ../../data/output/$5/FIMO/${xpref}.bfile --o ../../data/output/$5/FIMO/output/${xpref}_FIMO --thresh $2 --max-stored-scores $3 $4 $1

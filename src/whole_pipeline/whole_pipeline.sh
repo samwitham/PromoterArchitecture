@@ -4,7 +4,7 @@ eval "$(conda shell.bash hook)"
 conda activate PromoterArchitecturePipeline
 #directory_path=ei/workarea/group-eg/project_PromoterArchitecturePipeline
 directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture
-file_names=non-overlapping_includingbidirectional_all_genes
+file_names=non-overlapping_includingbidirectional_all_genes_newannotation
 
 ##extract promoters from a genome file
 #python ../data_sorting/extract_promoter.py $directory_path $file_names --remove_bidirectional --prevent_overlapping_genes --fiveUTR
@@ -20,7 +20,7 @@ python ../data_sorting/extract_promoter.py $directory_path $file_names --prevent
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
 #remember to change location depending on if promoter file used or UTR file
 #promoter_gff_file=../../data/genomes/$file_names/promoters_renamedChr.gff3
-promoter_gff_file=../../data/genomes/$file_names/promoters_5UTR_renamedChr.gff3
+promoter_gff_file=../../data/output/$file_names/promoters_5UTR.gff3
 genome_fasta=../../data/genomes/TAIR10_chr_all.fas
 
 ../meme_suite/./preFIMO.sh $promoter_gff_file $genome_fasta $file_names
@@ -38,7 +38,7 @@ promoterpref=${promoterbase%.*}
 #$4 is meme motif file
 #$5 is the folder name
 
-../meme_suite/./FIMO.sh ../../data/FIMO/$file_names/${promoterpref}.fasta 0.0001 5000000 ../../data/FIMO/motif_data/dap_combined.meme $file_names
+../meme_suite/./FIMO.sh ../../data/output/$file_names/FIMO/${promoterpref}.fasta 0.0001 5000000 ../../data/FIMO/motif_data/dap_combined.meme $file_names
 
 ## filter the FIMO output
 conda activate PromoterArchitecturePipeline
@@ -48,11 +48,12 @@ conda activate PromoterArchitecturePipeline
 #arg2 is Input location of promoter bed file
 #arg3 is Output location of motifs bed file
 #arg4 is q_value threshold for filtering
-python ../data_sorting/./FIMO_filter.py ../../data/FIMO/$file_names/output/${promoterpref}_FIMO/fimo.tsv ../../data/FIMO/$file_names/${promoterpref}.bed ../../data/FIMO/$file_names/${promoterpref}_motifs.bed 0.05
+python ../data_sorting/./FIMO_filter.py ../../data/output/$file_names/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed 0.05
 
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
-../data_sorting/./TFBS_coverage.sh ../../data/FIMO/$file_names/${promoterpref}.bed
+#$2 is the folder name
+../data_sorting/./TFBS_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names
 
 #%coverage of open chromatin
-../data_sorting/./OpenChromatin_coverage.sh ../../data/FIMO/$3/$file_names.bed $file_names
+../data_sorting/./OpenChromatin_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names

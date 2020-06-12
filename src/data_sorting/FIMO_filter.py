@@ -14,6 +14,8 @@ def fimo_qfilter(fimo_file, q_value):
     """this uses a meme-suite version 5 fimo.tsv file, filters by a q-value, and returns a pandas df"""
     #read in fimo.tsv file
     fimo = pd.read_table(fimo_file, sep='\t')
+    #rename sequence column to just the AGI code
+    fimo.sequence_name = fimo.sequence_name.str.extract(r'(.*?)\:')
     #filter q_values to specified threshold
     fimo_qfilter = fimo[fimo['q-value'] <= q_value]    
     return fimo_qfilter

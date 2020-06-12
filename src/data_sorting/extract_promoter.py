@@ -17,6 +17,7 @@ parser.add_argument('--fiveUTR', help='Extend promoters to the first start codon
 parser.add_argument('--only_open_chromatin', help='Reduce size of promoters if needed so that they only fall within open chromatin.', action="store_true")
 args = parser.parse_args()
 
+
 def fasta_chromsizes(genome, output_file):
     """extracts chromosome sizes in a form compatible with BedTools.flank"""
     
@@ -25,7 +26,7 @@ def fasta_chromsizes(genome, output_file):
     chromsizes = {} #make dictionary called chromsizes
     for key in the_genome.keys():       
     
-        chromsizes[f'Chr{key}'] = f'({len(the_genome[key])})' #add the chromosome name and length to dictionary        
+        chromsizes[f'{key}'] = f'({len(the_genome[key])})' #add the chromosome name and length to dictionary        
     #create empty string
     chromsizes_string = ''
     #iterate over chromsizes dictionary key/values. Add key, tab, value, newline to the string iteratively
@@ -36,30 +37,31 @@ def fasta_chromsizes(genome, output_file):
     with open(output_file, 'w') as output:            
         output.write(chromsizes_string.replace('(','').replace(')',''))
 
-
-def extract_genes(gene_gff,temp,output_file):
-    """This function extracts all whole protein coding genes from a gff3 file, ignoring gene features, and adds them to an output file"""
+def extract_genes(gene_gff,output_file):
+    """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file"""
     #limit dictionary to genes
     limit_info = dict(gff_type = ['gene'])
-    #open temporary file
-    output = open(temp, 'w')
+    #open temporary buffer
+    tempbuffer = io.StringIO()
     #open gff file, parse it, limiting to genes only. Save the file.
     with open(gene_gff, 'r') as in_handle:                    
-            GFF.write(GFF.parse(in_handle, limit_info=limit_info),output)
-    output.close()
+            GFF.write(GFF.parse(in_handle, limit_info=limit_info),tempbuffer)
+    
+    #go back to beginning of the buffer
+    tempbuffer.seek(0)
     
     #now remove the unwanted annotations that were added by GFF.write eg. Chr1	annotation	remark	1	30425192	.	.	.	gff-version=3
     #remove lines beginning with ##
-    with open(temp, 'r') as tempfile, open(output_file, 'w') as newfile:        
-        for line in tempfile:
+    with open(output_file, 'w') as newfile:        
+        for line in tempbuffer:
             line = line.strip() # removes hidden characters/spaces
             if line[0] == "#":
                 pass
             else:                
                 #don't include lines beginning with ##
                 newfile.write(line + '\n') #output to new file
-    #remove temporary file
-    os.remove(temp)       
+    #remove temporary buffer
+    tempbuffer.close()       
     #read in gff file
     genes = pd.read_table(output_file, sep='\t', header=0)
     cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
@@ -67,7 +69,7 @@ def extract_genes(gene_gff,temp,output_file):
     #remove all lines where source is annotation
     no_annotation = genes[~genes.source.str.contains("annotation")]
     #remove all lines that are not protein coding
-    protein_coding = no_annotation[no_annotation.attributes.str.contains('locus_type=protein_coding')]
+    protein_coding = no_annotation[no_annotation.attributes.str.contains('biotype=protein_coding')]
     #create gff file containing no lines with annotation and no lines starting with ##
     protein_coding.to_csv(output_file,index=False,sep='\t',header=0)
 
@@ -81,7 +83,6 @@ def add_promoter(genes_gff,chromsize,promoter_length):
     promoters = genes.flank(g=chromsize, l=promoter_length, r=0, s=True)
     
     return promoters
-
 
 def remove_promoter_overlap(promoter_gff, all_genes_gff, output_file):
     """function to create file containing promoters which overlap other genome features. 
@@ -152,30 +153,31 @@ def remove_promoter_overlap(promoter_gff, all_genes_gff, output_file):
     #remove overlapping promoters from all_proms_df
     #first add AGI columns
     #add AGI column to promoters
-    all_proms_df_agi = all_proms_df.assign(AGI=all_proms_df.attributes.str.extract(r'ID=(.*?)\;'))
-    new_feature_A_agi = new_feature_A.assign(AGI=new_feature_A.attributes.str.extract(r'ID=(.*?)\;'))
-    overlapping_proms_agi = overlapping_proms.assign(AGI=overlapping_proms.attributesA.str.extract(r'ID=(.*?)\;'))
+    all_proms_df_agi = all_proms_df.assign(AGI=all_proms_df.attributes.str.extract(r'ID=gene:(.*?)\;'))
+    new_feature_A_agi = new_feature_A.assign(AGI=new_feature_A.attributes.str.extract(r'ID=gene:(.*?)\;'))
+    overlapping_proms_agi = overlapping_proms.assign(AGI=overlapping_proms.attributesA.str.extract(r'ID=gene:(.*?)\;'))
     #remove any promoters in all_prom_df that overlap other genes
     all_prom_removed_overlaps = all_proms_df_agi[~all_proms_df_agi.AGI.isin(overlapping_proms_agi.AGI)]
        
     #merge all_prom_removed_overlaps with new_feature_A_agi
     #outer merge adding suffix to new_feature_A
     merged = pd.merge(all_prom_removed_overlaps, new_feature_A_agi, how='outer')
+    #remove unwanted columns
     merged = merged[cols2]
 
-
     return merged
-
 
 def add_5UTR(promoter_gff, all_features_gff):
     """Function to extend the promoters to include the 5'UTR region until the start codon of the first CDS feature of the same gene.
     Also remove mitochondira and chloroplast features."""
-    promoters = pd.read_table(promoter_gff, sep='\t', header=0)
+    promoters = pd.read_table(promoter_gff, sep='\t', header=0, low_memory=False)
     
     cols = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
     promoters.columns = cols
+    #make chr dtype string
+    
     #add AGI column to promoters
-    promoters = promoters.assign(AGI=promoters.attributes.str.extract(r'ID=(.*?)\;'))
+    promoters = promoters.assign(AGI=promoters.attributes.str.extract(r'ID=gene:(.*?)\;'))
     
     #remove lines beginning with ##
     #create a buffer for feature output
@@ -192,27 +194,45 @@ def add_5UTR(promoter_gff, all_features_gff):
     feature_buffer.seek(0)
 
     #read in feature buffer to df
-    features = pd.read_table(feature_buffer, sep='\t', header=0)
+    features = pd.read_table(feature_buffer, sep='\t', header=0, low_memory=False)
     
     features.columns = cols
     #filter features to contain only cds
     cds = features[features.type == 'CDS']
     #filter to only contain cds 1 in parent .1
-    #remove mitochondria and chloroplast features
-    cds_1 = cds[cds['chr'].isin(['Chr1', 'Chr2', 'Chr3', 'Chr4', 'Chr5'])]
-    #remove all features whose parent isnt Parent=AGI.1
-    #cds_1 = cds_1[cds_1.attributes.str.contains('Parent=[A-Z]{2}\d{1}[A-Z]{1}\d{5}.1')]
-    # keep only CDS:1;
-    cds_1 = cds_1[cds_1.attributes.str.contains(':CDS:1;')]
 
+    #remove all features whose parent isnt Parent=AGI.1
+   # cds_1 = cds_1[cds_1.attributes.str.contains('Parent=transcript[A-Z]{2}\d{1}[A-Z]{1}\d{5}.1')]
+    
+    # keep only CDS:1;
+    #cds_1 = cds_1[cds_1.attributes.str.contains(':CDS:1;')]
+    #make chromosome column string
+    cds = cds.astype({'chr': 'str'})
+    cds_1 = cds.copy()
+    #remove mitochondria and chloroplast features
+    cds_1 = cds[cds['chr'].isin(['1', '2', '3', '4', '5'])]
+   
     #add AGI column to CDSs
-    cds2 = cds_1.assign(AGI=cds_1.attributes.str.extract(r'ID=(.*?)\:'))
-    #remove mitochondria and chloroplast features from promoters
-    promoters = promoters[promoters['chr'].isin(['Chr1', 'Chr2', 'Chr3', 'Chr4', 'Chr5'])]
+    cds2 = cds_1.assign(AGI=cds_1.attributes.str.extract(r'ID=CDS:(.*?)\.'))    
+    
+    #Sort based on chromosome then start
+    cds2 = cds2.sort_values(['chr','start']).reset_index(drop=True)
+    #remove duplicates keeping the CDS closest to the promoter
+    #if positive strand, remove the first AGI duplicate
+    no_dups_pos = cds2[cds2.strand == '+'].drop_duplicates('AGI',keep='first')
+    #if negative strand, remove the last AGI duplicate
+    no_dups_neg = cds2[cds2.strand == '-'].drop_duplicates('AGI',keep='last')
+    no_dups = pd.merge(no_dups_pos, no_dups_neg, how='outer')
+    #sort by chr and start again
+    no_dups = no_dups.sort_values(['chr','start']).reset_index(drop=True)
+
+   #remove mitochondria and chloroplast features from promoters
+    promoters = promoters[promoters['chr'].isin(['1', '2', '3', '4', '5'])]   
+
 
     #merge on AGI
-    merged = pd.merge(promoters, cds2, on='AGI', how='left',suffixes=('','_cds'))
-
+    merged = pd.merge(promoters, no_dups, on='AGI', how='left',suffixes=('','_cds'))
+    
     for i, v in merged.iterrows():
         #if positive strand feature A, reduce length to the stop position of feature B + 1
         if merged.loc[i,'strand'] == '+':
@@ -312,7 +332,7 @@ def bidirectional_proms(in_file, out_file):
     with open(out_file, 'w') as output:  
         promoters[promoters.bidirectional == 'no'][['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']].to_csv(out_file,index=False,sep='\t',header=0)
 #make directory for the output files to be exported to
-dirName = f'{args.directory_path}/data/genomes/{args.file_names}'
+dirName = f'{args.directory_path}/data/output/{args.file_names}'
 try:
     # Create target Directory
     os.mkdir(dirName)
@@ -328,7 +348,8 @@ genome = f'{args.directory_path}/data/genomes/TAIR10_chr_all.fas'
 
 
 
-genes = f"{args.directory_path}/data/genomes/Araport11_GFF3_genes_transposons.201606.gff"
+#genes = f"{args.directory_path}/data/genomes/Araport11_GFF3_genes_transposons.201606.gff"
+genes = f"{args.directory_path}/data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3"
 #genes_renamedChr = "{args.directory_path}//data/genomes/Araport11_GFF3_genes_transposons.201606_renamedChr.gff"
 #test_genes = f"{args.directory_path}/data/genomes/test_genes.gff3"
 #testgenesonly_gff = f"{args.directory_path}/data/genomes/testgenes_only.gff3"
@@ -336,44 +357,35 @@ genes = f"{args.directory_path}/data/genomes/Araport11_GFF3_genes_transposons.20
 #TSS = "{args.directory_path}//data/TSS_data/AnnotatedPEATPeaks_renamedcol.gff"
 #TSS = "{args.directory_path}//data/TSS_data/TSStest.txt"
 #find_closest_TSS(genes,output,temp)
-genesonly_gff = f"{args.directory_path}/data/genomes/{args.file_names}/genesonly.gff3"
-promoters = f"{args.directory_path}/data/genomes/{args.file_names}/promoters.gff3"
-promoters_5UTR = f"{args.directory_path}/data/genomes/{args.file_names}/promoters_5UTR.gff3"
+genesonly_gff = f"{args.directory_path}/data/output/{args.file_names}/genesonly.gff3"
+promoters = f"{args.directory_path}/data/output/{args.file_names}/promoters.gff3"
+promoters_5UTR = f"{args.directory_path}/data/output/{args.file_names}/promoters_5UTR.gff3"
 #genes_bed = "{args.directory_path}//data/genomes/genes.bed"
-overlapping_promoters = f'{args.directory_path}/data/genomes/{args.file_names}/promoters_overlapping.gff3'
-promoterandgenes_only_overlap = f'{args.directory_path}/data/genomes/{args.file_names}/promoterandgenes_only_overlap.gff3'
+overlapping_promoters = f'{args.directory_path}/data/output/{args.file_names}/promoters_overlapping.gff3'
+promoterandgenes_only_overlap = f'{args.directory_path}/data/output/{args.file_names}/promoterandgenes_only_overlap.gff3'
 
 
-chromsizes_file = f'{args.directory_path}/data/genomes/{args.file_names}/chromsizes.chr'
+chromsizes_file = f'{args.directory_path}/data/output/{args.file_names}/chromsizes.chr'
 #need to change temporary files to scratch directory
-chromsizes_file_renamedChr_temp = f'{args.directory_path}/data/genomes/{args.file_names}/chromsizes_renamedChr_temp.chr'
-chromsizes_file_renamedChr = f'{args.directory_path}/data/genomes/{args.file_names}/chromsizes_renamedChr.chr'
+chromsizes_file_renamedChr_temp = f'{args.directory_path}/data/output/{args.file_names}/chromsizes_renamedChr_temp.chr'
+chromsizes_file_renamedChr = f'{args.directory_path}/data/output/{args.file_names}/chromsizes_renamedChr.chr'
 #chromsizes_file2 = '{args.directory_path}//data/genomes/chromsizes2.chr'
-promoters_renamedChr_temp = f'{args.directory_path}/data/genomes/{args.file_names}/promoters_renamedChr_temp.gff3'
-promoters_renamedChr_temp2 = f'{args.directory_path}/data/genomes/{args.file_names}/promoters_renamedChr_temp2.gff3'
-promoters_renamedChr = f'{args.directory_path}/data/genomes/{args.file_names}/promoters_renamedChr.gff3'
-promoters_5UTR_renamedChr = f'{args.directory_path}/data/genomes/{args.file_names}/promoters_5UTR_renamedChr.gff3'
-nonbidirectional_promoters = f'{args.directory_path}/data/genomes/{args.file_names}/nonbidirectional_proms.gff3'
-temp_gff = f"{args.directory_path}/data/genomes/{args.file_names}/genesonly_no_annotation_temp.gff3"
-
-
-
+promoters_renamedChr_temp = f'{args.directory_path}/data/output/{args.file_names}/promoters_renamedChr_temp.gff3'
+#promoters_renamedChr_temp2 = f'{args.directory_path}/data/genomes/{args.file_names}/promoters_renamedChr_temp2.gff3'
+promoters_renamedChr = f'{args.directory_path}/data/output/{args.file_names}/promoters_renamedChr.gff3'
+promoters_5UTR_renamedChr = f'{args.directory_path}/data/output/{args.file_names}/promoters_5UTR_renamedChr.gff3'
+nonbidirectional_promoters = f'{args.directory_path}/data/output/{args.file_names}/nonbidirectional_proms.gff3'
 
 fasta_chromsizes(genome, chromsizes_file)
 
-
-
-
 #rename mitochondria and chloroplast to M and C
-remove_characters_linestart(chromsizes_file, chromsizes_file_renamedChr_temp, 'mitochondria','M', 'C')
-remove_characters_linestart(chromsizes_file_renamedChr_temp, chromsizes_file_renamedChr, 'chloroplast','C','C')
+remove_characters_linestart(chromsizes_file, chromsizes_file_renamedChr_temp, 'mitochondria','Mt', 'm')
+remove_characters_linestart(chromsizes_file_renamedChr_temp, chromsizes_file_renamedChr, 'chloroplast','Pt','c')
 os.remove(chromsizes_file_renamedChr_temp)
-
-
 
 #extract_genes(genes,genesonly_gff)
 #note - this changes chromosome no. to 1 rather than Chr1?? NOT SURE IT STILL DOES
-extract_genes(genes,temp_gff,genesonly_gff)
+extract_genes(genes,genesonly_gff)
 
 #createfile containing all nonbidirectional genes (bidirectional = genes with an upstream gene in the other direction ie. potential overlapping promoters)
 if args.remove_bidirectional:
@@ -381,8 +393,6 @@ if args.remove_bidirectional:
     selected_genes = nonbidirectional_promoters
 else:
     selected_genes = genesonly_gff
-
-
 
 #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff
 # add_promoter(selected_genes,chromsizes_file_renamedChr,1000)
@@ -403,6 +413,7 @@ else:
 #promoters overlapping only genes
 if args.prevent_overlapping_genes:
     #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff
+    #note, this only removes overlap for protein coding genes
     promoters_incl_overlap = add_promoter(selected_genes,chromsizes_file_renamedChr,1000)
     subtracted = remove_promoter_overlap(promoters_incl_overlap,selected_genes,promoterandgenes_only_overlap)
     with open(promoters,'w') as f:
@@ -452,13 +463,15 @@ remove_empty_lines(promoters_5UTR)
 #in_handle.close()
 
 #remove the Chr from the chromosome names in promoters.gff3. #Replace M with mitochondria and C with chloroplast
-remove_characters_linestart(promoters, promoters_renamedChr, 'Chr', '','C')
-remove_characters_linestart(promoters_5UTR, promoters_5UTR_renamedChr, 'Chr', '','C')
+
+#remove_characters_linestart(promoters, promoters_renamedChr, 'Chr', '','C')
+#remove_characters_linestart(promoters_5UTR, promoters_5UTR_renamedChr, 'Chr', '','C')
+
 # remove_characters_linestart(promoters_renamedChr_temp, promoters_renamedChr_temp2, 'M', 'mitochondria','M')
 # remove_characters_linestart(promoters_renamedChr_temp2, promoters_renamedChr, 'C', 'chloroplast','C')
 #remove empty lines from end of the files
-remove_empty_lines(promoters_renamedChr)
-remove_empty_lines(promoters_5UTR_renamedChr)   
+#remove_empty_lines(promoters_renamedChr)
+#remove_empty_lines(promoters_5UTR_renamedChr)   
 
 # os.remove(promoters_renamedChr_temp)
 # os.remove(promoters_renamedChr_temp2)
