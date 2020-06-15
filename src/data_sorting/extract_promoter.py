@@ -255,17 +255,17 @@ def add_5UTR(promoter_gff, all_features_gff):
     return merged_new
 
 def filter_bad_proms(proms):
-    """function to remove promoters whose stop is higher or equal to the start. 
+    """function to remove promoters whose start is higher or equal to the stop. 
     Then calculate lengths and sort by length. Drop duplicates keeping the shortest promoter."""
-    #Remove promoters with stop higher than start
-    for i, v in proms.iterrows():
-        if proms.loc[i,'start'] >=  proms.loc[i, 'stop']:
-                proms.drop(i, inplace=True)          
+#     #Remove promoters with start higher than stop
+#     for i, v in proms.iterrows():
+#         if proms.loc[i,'start'] >=  proms.loc[i, 'stop']:
+#                 proms.drop(i, inplace=True)          
     #sort based on length then keep the shortest, and remove lengths that are 0
     #Make promoter length column
-    proms_length =  proms.assign(length=(proms.start - proms.stop).abs())
-    #remove promoters with length 0
-    removed= proms_length.loc[proms_length.length != 0]
+    proms_length =  proms.assign(length=(proms.stop - proms.start))
+    #remove promoters with length <100
+    removed= proms_length.loc[proms_length.length >= 100]
     #remove duplicates keeping the shortest promoter
     no_dups = removed.sort_values('length',ascending=True).drop_duplicates('attributes',keep='first')
     proms_dropped = no_dups[['chr', 'source', 'type', 'start', 'stop', 'dot1', 'strand', 'dot2', 'attributes']]
@@ -278,7 +278,7 @@ def remove_characters_linestart(input_location,output_location,oldcharacters,new
     output = open(output_location, 'w') #make output file with write capability
     #open input file
     with open(input_location, 'r') as infile:  
-        #iterate over lines in fuile
+        #iterate over lines in file
         for line in infile:
             line = line.strip() # removes hidden characters/spaces
             if line[0] == linestart:
@@ -445,6 +445,10 @@ proms = proms[['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','a
 proms_UTR = proms_UTR.sort_values(['chr','start']).reset_index(drop=True)
 cleaned_proms = filter_bad_proms(proms)
 cleaned_proms_UTR = filter_bad_proms(proms_UTR)
+#rename gene to promoter
+cleaned_proms.type = 'promoter'
+cleaned_proms_UTR.type = 'promoter'
+
 with open(promoters,'w') as f:
     cleaned_proms.to_csv(f,index=False,sep='\t',header=0)
 with open(promoters_5UTR,'w') as f:

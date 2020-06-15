@@ -5,7 +5,7 @@ import argparse
 #create argparse variables
 parser = argparse.ArgumentParser(description='FIMO_filter')
 parser.add_argument('fimo_file', type=str, help='Input location of FIMO.tsv file')
-parser.add_argument('promoter_bedfile', type=str, help='Input location of promoter bedfile file')
+parser.add_argument('promoter_bedfile', type=str, help='Input location of promoter bedfile')
 parser.add_argument('motifs_bed', type=str, help='Output location of motifs bed file')
 parser.add_argument('q_value', type=float, help='q_value threshold for filtering')
 args = parser.parse_args()
