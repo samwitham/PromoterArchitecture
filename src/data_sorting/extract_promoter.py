@@ -37,11 +37,49 @@ def fasta_chromsizes(genome, output_file):
     with open(output_file, 'w') as output:            
         output.write(chromsizes_string.replace('(','').replace(')',''))
 
-def extract_genes(gene_gff,output_file):
-    """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file"""
+# def extract_genes(gene_gff,output_file):
+#     """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file"""
+#     #limit dictionary to genes
+#     limit_info = dict(gff_type = ['gene'])
+#     #open temporary buffer
+#     tempbuffer = io.StringIO()
+#     #open gff file, parse it, limiting to genes only. Save the file.
+#     with open(gene_gff, 'r') as in_handle:                    
+#             GFF.write(GFF.parse(in_handle, limit_info=limit_info),tempbuffer)
+    
+#     #go back to beginning of the buffer
+#     tempbuffer.seek(0)
+    
+#     #now remove the unwanted annotations that were added by GFF.write eg. Chr1	annotation	remark	1	30425192	.	.	.	gff-version=3
+#     #remove lines beginning with ##
+#     with open(output_file, 'w') as newfile:        
+#         for line in tempbuffer:
+#             line = line.strip() # removes hidden characters/spaces
+#             if line[0] == "#":
+#                 pass
+#             else:                
+#                 #don't include lines beginning with ##
+#                 newfile.write(line + '\n') #output to new file
+#     #remove temporary buffer
+#     tempbuffer.close()       
+#     #read in gff file
+#     genes = pd.read_table(output_file, sep='\t', header=None)
+#     cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
+#     genes.columns = cols2
+#     #remove all lines where source is annotation
+#     no_annotation = genes[~genes.source.str.contains("annotation")]
+#     #remove all lines that are not protein coding
+#     protein_coding = no_annotation[no_annotation.attributes.str.contains('biotype=protein_coding')]
+#     #create gff file containing no lines with annotation and no lines starting with ##
+#     protein_coding.to_csv(output_file,index=False,sep='\t',header=None)
+
+def extract_genes(gene_gff,output_overlapping,output_file):
+    """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file. It also exports a file containing overlapping genes, and removes any overlapping genes from the final output
+    also return all genes that are protein coding regardless of overlap"""
     #limit dictionary to genes
     limit_info = dict(gff_type = ['gene'])
     #open temporary buffer
+    #output = open(temp, 'w')
     tempbuffer = io.StringIO()
     #open gff file, parse it, limiting to genes only. Save the file.
     with open(gene_gff, 'r') as in_handle:                    
@@ -63,17 +101,46 @@ def extract_genes(gene_gff,output_file):
     #remove temporary buffer
     tempbuffer.close()       
     #read in gff file
-    genes = pd.read_table(output_file, sep='\t', header=0)
+    genes = pd.read_table(output_file, sep='\t', header=None)
     cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
     genes.columns = cols2
     #remove all lines where source is annotation
     no_annotation = genes[~genes.source.str.contains("annotation")]
     #remove all lines that are not protein coding
     protein_coding = no_annotation[no_annotation.attributes.str.contains('biotype=protein_coding')]
+    #add AGI column
+    gene_agi = protein_coding.assign(AGI=protein_coding.attributes.str.extract(r'ID=gene:(.*?)\;'))
+    #remove all features which overlap:
+    #make buffer of genes
+    genes_buffer = io.StringIO()
+    gene_agi.to_csv(genes_buffer,index=False,sep='\t',header=None)
+    genes_buffer.seek(0)
+    #create bedtools object of genes
+    genes_bed = BedTool(genes_buffer)
+    #c = columns to apply function to
+    #o = count number of merged promoters, name the first and last promoter that were merged
+    merged = genes_bed.merge(c=10, o=['count_distinct','first', 'last'])
+    #write to bufer
+    merged_buffer = io.StringIO()
+    merged_buffer.write(str(merged))
+    merged_buffer.seek(0)
+    #read as dataframe
+    overlapping = pd.read_table(merged_buffer, sep='\t', header=None)
+    
+    cols3 = ['chr','start','stop', 'number_of_overlaps', 'first_overlap','second_overlap']
+    overlapping.columns = cols3
+    #select only features made of more than one promoter that were merged as overlapping
+    overlapping_only = overlapping[overlapping.number_of_overlaps >= 2]
+    #save these overlapping genes to file
+    overlapping_only.to_csv(output_overlapping,index=False,sep='\t',header=None)
+    #keep only non-overlapping genes
+    final_genes_list = overlapping[overlapping.number_of_overlaps == 1]
+    final_genes = gene_agi[gene_agi.AGI.isin(final_genes_list.first_overlap)]
+    final_genes_noAGI = final_genes[cols2]
     #create gff file containing no lines with annotation and no lines starting with ##
-    protein_coding.to_csv(output_file,index=False,sep='\t',header=0)
-
-
+    final_genes_noAGI.to_csv(output_file,index=False,sep='\t',header=None)
+    return protein_coding
+    
 def add_promoter(genes_gff,chromsize,promoter_length):
     """This function adds a promoter of a certain length to each gene in the input file and exports an output pyBedTools object"""
     #output = open(output_location, 'w') #make output file with write capability
@@ -84,10 +151,15 @@ def add_promoter(genes_gff,chromsize,promoter_length):
     
     return promoters
 
-def remove_promoter_overlap(promoter_gff, all_genes_gff, output_file):
+def remove_promoter_overlap(promoter_gff, all_genes_df, output_file):
     """function to create file containing promoters which overlap other genome features. 
     Then create a df with only promoters which overlap other genes. Then shorten them so they are no longer overlapping. 
     Then merge back with all the extracted promoters, keeping only the shortened ones"""
+    #create buffer to save the protein_coding genes
+    all_genes_gff = io.StringIO()
+    all_genes_df.to_csv(all_genes_gff,sep='\t', header=None, index = False)
+    all_genes_gff.seek(0)
+    
     all_proms = BedTool(promoter_gff) #read in files using BedTools
     features = BedTool(all_genes_gff)
     #report chromosome position of overlapping feature, along with the promoter which overlaps it (only reports the overlapping nucleotides, not the whole promoter length. Can use u=True to get whole promoter length)
@@ -101,60 +173,116 @@ def remove_promoter_overlap(promoter_gff, all_genes_gff, output_file):
         #Each line in the file contains gff entry a and gff entry b that it overlaps plus the number of bp in the overlap so 19 columns
         output.write(str(intersect))    
     #read in gff file
-    overlapping_proms = pd.read_table(output_file, sep='\t', header=0)
+    overlapping_proms = pd.read_table(output_file, sep='\t', header=None)
     cols = ['chrA', 'sourceA', 'typeA', 'startA','stopA','dot1A','strandA','dot2A','attributesA','chrB', 'sourceB', 'typeB', 'startB','stopB','dot1B','strandB','dot2B','attributesB','bp_overlap']
     overlapping_proms.columns = cols
     #make new columns for the new start and stop for feature A
-    overlapping_proms['new_startA'] = overlapping_proms.startA
-    overlapping_proms['new_stopA'] = overlapping_proms.stopA
+    #overlapping_proms['new_startA'] = overlapping_proms.startA
+    #overlapping_proms['new_stopA'] = overlapping_proms.stopA
+    #create dictionaary for AGI as key and starts and stops as values
+    temp_dict = {}
 
     #iterate over rows
     for i,data in overlapping_proms.iterrows():
+        #create AGI key
+        key = overlapping_proms.loc[i,'attributesA'].split('ID=gene:')[1].split(';')[0]
         #if positive strand feature A, reduce length to the stop position of feature B + 1
         if overlapping_proms.loc[i,'strandA'] == '+':
             
-            #if overlapping feature is downstream of the promoter or equal to promoter end, reduce both start and stop to the stop of the feature + 1
-            if overlapping_proms.loc[i,'stopA'] <=  overlapping_proms.loc[i, 'stopB']:
-                overlapping_proms.loc[i, 'new_startA'] = overlapping_proms.loc[i, 'stopB'] + 1
-                overlapping_proms.loc[i, 'new_stopA'] = overlapping_proms.loc[i, 'stopB'] + 1
-                #overlapping_proms.drop(i, inplace=True)
+            if key not in temp_dict:
                 
-            #else  reduce length of promoter to stop position of feature +1
+                if overlapping_proms.loc[i,'stopA'] <=  overlapping_proms.loc[i, 'stopB']:                
+                    start = overlapping_proms.loc[i, 'stopB'] + 1
+                    stop = overlapping_proms.loc[i, 'stopB'] + 1
+                    temp_dict[key] = [start,stop]
+                else:
+                    start = overlapping_proms.loc[i, 'stopB'] + 1
+                    #update dictionary
+                    temp_dict[key] = [start,overlapping_proms.loc[i,'stopA']]
+                                   
+                    
+            #if key is in the dictionary        
             else:
-                
-                overlapping_proms.loc[i, 'new_startA'] = overlapping_proms.loc[i, 'stopB'] + 1
+            #if overlapping feature is downstream of the promoter or equal to promoter end, reduce both start and stop to the stop of the feature + 1
+                if temp_dict[key][1] <=  overlapping_proms.loc[i, 'stopB']:                
+                    start = overlapping_proms.loc[i, 'stopB'] + 1
+                    stop = overlapping_proms.loc[i, 'stopB'] + 1
+                    #overlapping_proms.drop(i, inplace=True)
+                    temp_dict[key] = [start,stop]
+
+                #else  reduce length of promoter to stop position of feature +1
+                else:
+                    #if promoter has already been shortened by another overlapping feature, pass
+                    if temp_dict[key][0] > overlapping_proms.loc[i, 'stopB']:
+                        pass
+                    #else shorten the promoter
+                    else:
+                        start = overlapping_proms.loc[i, 'stopB'] + 1
+                        #update dictionary
+                        temp_dict[key][0] = start
           
                 
         #if negative strand feature A, reduce length of promoter to start position of feature -1
         elif overlapping_proms.loc[i,'strandA'] == '-':
-            #if overlapping feature is downstream of the promoter, change promtoer start and stop to the start position of the feature -1
-            if overlapping_proms.loc[i,'startA'] >=  overlapping_proms.loc[i, 'startB']:
-                overlapping_proms.loc[i, 'new_stopA'] = overlapping_proms.loc[i, 'startB'] - 1
-                overlapping_proms.loc[i, 'new_startA'] = overlapping_proms.loc[i, 'startB'] - 1
+            if key not in temp_dict:
+                #if overlapping feature is downstream of the promoter, change promoter start and stop to the start position of the feature -1
+                if overlapping_proms.loc[i,'startA'] >=  overlapping_proms.loc[i, 'startB']:
+                    stop = overlapping_proms.loc[i, 'startB'] - 1
+                    start = overlapping_proms.loc[i, 'startB'] - 1
+                    temp_dict[key] = [start,stop]
+                else:
+                    #if overlapping feature is downstream of the promoter, change promtoer start and stop to the start position of the feature -1
+                    stop = overlapping_proms.loc[i, 'startB'] - 1
+                    temp_dict[key] = [overlapping_proms.loc[i,'startA'],stop]          
                 
-                #overlapping_proms.drop(i, inplace=True)
-            else:           
-                overlapping_proms.loc[i, 'new_stopA'] = overlapping_proms.loc[i, 'startB'] - 1
+            #if key is in dictionary already    
+            else:    
+                #if overlapping feature is downstream of the promoter, change promoter start and stop to the start position of the feature -1
+                if temp_dict[key][0] >=  overlapping_proms.loc[i, 'startB']:
+                    stop = overlapping_proms.loc[i, 'startB'] - 1
+                    start = overlapping_proms.loc[i, 'startB'] - 1
+                    temp_dict[key] = [start,stop]
 
+                    #overlapping_proms.drop(i, inplace=True)
+                else:
+                     #if promoter has already been shortened by another overlapping feature, pass
+                    if temp_dict[key][1] < overlapping_proms.loc[i, 'startB']:
+                        pass
+                    else:
+                        stop = overlapping_proms.loc[i, 'startB'] - 1
+                        temp_dict[key][1] = stop
+    
+
+    
     #create df with just feature A containing new start and stop locations
-    new_feature_A = overlapping_proms[['chrA', 'sourceA', 'typeA', 'new_startA', 'new_stopA', 'dot1A', 'strandA', 'dot2A', 'attributesA']]
+    new_feature_A = overlapping_proms[['chrA', 'sourceA', 'typeA', 'startA', 'stopA', 'dot1A', 'strandA', 'dot2A', 'attributesA']]
    
     #rename columns
     cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
     new_feature_A.columns = cols2
+    #remove duplicates based on attributes
+    no_dups = new_feature_A.drop_duplicates('attributes')
+    #replace start and stop with those from dictionary
+    no_dups_replaced = no_dups.copy()
+    
+    for i,data in no_dups.iterrows():
+        key = no_dups_replaced.loc[i,'attributes'].split('ID=gene:')[1].split(';')[0]
+        no_dups_replaced.loc[i,'start'] = temp_dict[key][0]
+        no_dups_replaced.loc[i,'stop'] = temp_dict[key][1]    
+    
     #create a buffer of promoter_gff
     promoter_gff_buffer = io.StringIO()
     promoter_gff_buffer.write(str(promoter_gff))
     #go back to beginning of the buffer
     promoter_gff_buffer.seek(0)
     #read in all_proms as df
-    all_proms_df = pd.read_table(promoter_gff_buffer, sep='\t', header=0)
+    all_proms_df = pd.read_table(promoter_gff_buffer, sep='\t', header=None)
     all_proms_df.columns = cols2
     #remove overlapping promoters from all_proms_df
     #first add AGI columns
     #add AGI column to promoters
     all_proms_df_agi = all_proms_df.assign(AGI=all_proms_df.attributes.str.extract(r'ID=gene:(.*?)\;'))
-    new_feature_A_agi = new_feature_A.assign(AGI=new_feature_A.attributes.str.extract(r'ID=gene:(.*?)\;'))
+    new_feature_A_agi = no_dups_replaced.assign(AGI=no_dups_replaced.attributes.str.extract(r'ID=gene:(.*?)\;'))
     overlapping_proms_agi = overlapping_proms.assign(AGI=overlapping_proms.attributesA.str.extract(r'ID=gene:(.*?)\;'))
     #remove any promoters in all_prom_df that overlap other genes
     all_prom_removed_overlaps = all_proms_df_agi[~all_proms_df_agi.AGI.isin(overlapping_proms_agi.AGI)]
@@ -164,13 +292,17 @@ def remove_promoter_overlap(promoter_gff, all_genes_gff, output_file):
     merged = pd.merge(all_prom_removed_overlaps, new_feature_A_agi, how='outer')
     #remove unwanted columns
     merged = merged[cols2]
+    all_genes_gff.close()
+    promoter_gff_buffer.close()
+    #sort on chr and start
+    merged.sort_values(['chr','start'], inplace=True, ignore_index=True)
 
     return merged
 
 def add_5UTR(promoter_gff, all_features_gff):
     """Function to extend the promoters to include the 5'UTR region until the start codon of the first CDS feature of the same gene.
     Also remove mitochondira and chloroplast features."""
-    promoters = pd.read_table(promoter_gff, sep='\t', header=0, low_memory=False)
+    promoters = pd.read_table(promoter_gff, sep='\t', header=None, low_memory=False)
     
     cols = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
     promoters.columns = cols
@@ -194,7 +326,7 @@ def add_5UTR(promoter_gff, all_features_gff):
     feature_buffer.seek(0)
 
     #read in feature buffer to df
-    features = pd.read_table(feature_buffer, sep='\t', header=0, low_memory=False)
+    features = pd.read_table(feature_buffer, sep='\t', header=None, low_memory=False)
     
     features.columns = cols
     #filter features to contain only cds
@@ -330,7 +462,7 @@ def bidirectional_proms(in_file, out_file):
                 promoters.loc[i-1, 'bidirectional'] = 'yes'
 
     with open(out_file, 'w') as output:  
-        promoters[promoters.bidirectional == 'no'][['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']].to_csv(out_file,index=False,sep='\t',header=0)
+        promoters[promoters.bidirectional == 'no'][['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']].to_csv(out_file,index=False,sep='\t',header=None)
 #make directory for the output files to be exported to
 dirName = f'{args.directory_path}/data/output/{args.file_names}'
 try:
@@ -357,6 +489,7 @@ genes = f"{args.directory_path}/data/genomes/Arabidopsis_thaliana/annotation/Ara
 #TSS = "{args.directory_path}//data/TSS_data/AnnotatedPEATPeaks_renamedcol.gff"
 #TSS = "{args.directory_path}//data/TSS_data/TSStest.txt"
 #find_closest_TSS(genes,output,temp)
+genesoverlapping_gff = f"{args.directory_path}/data/output/{args.file_names}/genesoverlapping.gff3"
 genesonly_gff = f"{args.directory_path}/data/output/{args.file_names}/genesonly.gff3"
 promoters = f"{args.directory_path}/data/output/{args.file_names}/promoters.gff3"
 promoters_5UTR = f"{args.directory_path}/data/output/{args.file_names}/promoters_5UTR.gff3"
@@ -385,7 +518,7 @@ os.remove(chromsizes_file_renamedChr_temp)
 
 #extract_genes(genes,genesonly_gff)
 #note - this changes chromosome no. to 1 rather than Chr1?? NOT SURE IT STILL DOES
-extract_genes(genes,genesonly_gff)
+protein_coding = extract_genes(genes,genesoverlapping_gff,genesonly_gff)
 
 #createfile containing all nonbidirectional genes (bidirectional = genes with an upstream gene in the other direction ie. potential overlapping promoters)
 if args.remove_bidirectional:
@@ -415,9 +548,9 @@ if args.prevent_overlapping_genes:
     #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff
     #note, this only removes overlap for protein coding genes
     promoters_incl_overlap = add_promoter(selected_genes,chromsizes_file_renamedChr,1000)
-    subtracted = remove_promoter_overlap(promoters_incl_overlap,selected_genes,promoterandgenes_only_overlap)
+    subtracted = remove_promoter_overlap(promoters_incl_overlap,protein_coding,promoterandgenes_only_overlap)
     with open(promoters,'w') as f:
-        subtracted.to_csv(f,index=False,sep='\t',header=0)
+        subtracted.to_csv(f,index=False,sep='\t',header=None)
     
 else:
     #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff
@@ -430,12 +563,12 @@ if args.fiveUTR:
     #extend promoter up until first CDS
     prom_UTR = add_5UTR(promoters, genes)
     with open(promoters_5UTR,'w') as f:
-        prom_UTR.to_csv(f,index=False,sep='\t',header=0)
+        prom_UTR.to_csv(f,index=False,sep='\t',header=None)
 else:
     pass
 #sort proms and proms+5'UTR, and remove AGI column
-proms = pd.read_table(promoters, sep='\t', header=0)
-proms_UTR = pd.read_table(promoters_5UTR, sep='\t', header=0)
+proms = pd.read_table(promoters, sep='\t', header=None)
+proms_UTR = pd.read_table(promoters_5UTR, sep='\t', header=None)
 cols = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
 #cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
 proms.columns = cols
@@ -449,13 +582,11 @@ cleaned_proms_UTR = filter_bad_proms(proms_UTR)
 cleaned_proms.type = 'promoter'
 cleaned_proms_UTR.type = 'promoter'
 
-with open(promoters,'w') as f:
-    cleaned_proms.to_csv(f,index=False,sep='\t',header=0)
-with open(promoters_5UTR,'w') as f:
-    cleaned_proms_UTR.to_csv(f,index=False,sep='\t',header=0)
-#remove empty lines from end of the files
-remove_empty_lines(promoters)
-remove_empty_lines(promoters_5UTR)   
+cleaned_proms.to_csv(promoters,index=False,sep='\t',header=None)
+cleaned_proms_UTR.to_csv(promoters_5UTR,index=False,sep='\t',header=None)
+# #remove empty lines from end of the files. DO NOT DO THIS AS GFF2BED REMOVES THE LAST LINE - BED FILES SEEM TO NEED AN EMPTY LINE
+# remove_empty_lines(promoters)
+# remove_empty_lines(promoters_5UTR)   
     
     
 #count no. of promoters in overlapping promoters file

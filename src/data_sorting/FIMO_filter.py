@@ -28,9 +28,9 @@ def fimo2bed(filtered_fimo_df, promoters_bed, output_bed):
     promoters.columns = cols
     #merge promoters.bed with the fimo motif file
     merged = pd.merge(filtered_fimo_df, promoters, left_on='sequence_name', right_on='gene')
-    #add motif start position to the promoter start position, and minus 1, and motif end to promoter start pos-1. Then format with no decimal place
+    #add motif start position to the promoter start position, and minus 1 (bed file is 0-based), and motif end to promoter start pos (bed file end coord is non-inclusive). Then format with no decimal place
     merged['correct_start'] = (merged['start_x'] + merged['start_y'] -1).astype(np.int64)
-    merged['correct_stop'] = (merged['stop_x'] + merged['start_y'] -1).astype(np.int64)
+    merged['correct_stop'] = (merged['stop_x'] + merged['start_y']).astype(np.int64)
     #create motifs df in bed file column order
     motifs_df = merged.loc[:, ['chr','correct_start','correct_stop', 'motif_id', 'score', 'strand_x', 'sequence_name', 'p-value', 'q-value', 'matched_sequence']]
     #sort the df by chromosome then by motif start position
