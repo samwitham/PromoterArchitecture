@@ -3,7 +3,7 @@
 eval "$(conda shell.bash hook)"
 conda activate PromoterArchitecturePipeline
 #directory_path=ei/workarea/group-eg/project_PromoterArchitecturePipeline
-directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture
+directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture #remove this, better to use relative path
 file_names=non-overlapping_includingbidirectional_all_genes_newannotation
 
 ##extract promoters from a genome file
@@ -50,10 +50,65 @@ conda activate PromoterArchitecturePipeline
 #arg4 is q_value threshold for filtering
 python ../data_sorting/./FIMO_filter.py ../../data/output/$file_names/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed 0.05
 
+#If using DAP seq cistrome motifs without AGI names, map motifs
+#arg1 is the input location of the motif bed file
+#arg2 is the input location of the geneIDtable file derived from the .json (see .ipynb notebook)
+#arg3 is the output location of the motif bed file
+python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed
+
+
+
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
 #$2 is the folder name
 ../data_sorting/./TFBS_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names
 
+
+
+##calculate promoter GC content
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of the promoter fasta
+#arg3 is the output location of the promoters GC_content tsv file
+python ../data_sorting/./promoter_GC_content.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.fasta ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv
+
 #%coverage of open chromatin
+#$1 is promoter bed file
+#$2 is the folder name
 ../data_sorting/./OpenChromatin_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names
+
+
+#create sliding windows
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the output location of rolling window bed file
+#arg4 is the size of the rolling window in bp
+#arg5 is the size of the window offset in bp
+python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed 100 50
+
+
+
+#Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the location of Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
+#arg4 is the size, N, of the gene subsets
+#arg5 is the gene category output file containing the selected gene subsets of size N
+python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt
+
+
+#TFBS coverage sliding window
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of motifs bed file
+#arg3 is the output location of rolling window % coverage bed file
+#arg4 is the input location of rolling window bed file
+python ../rolling_window/./TFBScoverage_rw.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed
+
+
+#GC content sliding window
+#arg1 is the promoter extraction output folder name
+#arg2 is the output location of the rolling window GC content tsv
+#arg3 is the input location of the rolling window bed file
+#arg4 is the input location of the genome fasta file
+#arg5 is the output location of the rolling window fasta file
+python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/${promoterpref}_windows.fasta 
+

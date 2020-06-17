@@ -8,7 +8,7 @@ import numpy as np
 parser = argparse.ArgumentParser(description='map_motif_ids')
 parser.add_argument('motifs_bed', type=str, help='Input location of motif bed file')
 parser.add_argument('geneIDtable', type=str, help='Input location of geneIDtable file derived from the .json (see .ipynb notebook)')
-parser.add_argument('motifs_bed_mapped', type=str, help='Output location of motif bed file')
+parser.add_argument('motifs_bed_mapped', type=str, help='Output location of motif mapped bed file')
 args = parser.parse_args()
 #motif_mapping_table = '../../data/FIMO/motif_data/motif_map_IDs.txt'
 #motifs_bed = '../../data/FIMO/promoters_renamedChr_motifs.bed'
