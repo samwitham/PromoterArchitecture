@@ -8,8 +8,30 @@ parser.add_argument('promoter_bedfile', type=str, help='Input location of promot
 parser.add_argument('Czechowski_rankedcv', type=str, help='Input location of Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash')
 parser.add_argument('no_of_genes', type=int, help='Number of genes in each category to subset')
 parser.add_argument('Czechowski_gene_categories', type=str, help='Output location of gene category subsets')
+parser.add_argument('promoter_mapped_motifs', type=str, help='Input location of promoter mapped motifs bed file')
+parser.add_argument('promoters_filtered_contain_motifs', type=str, help='output location of the promoter bed file filtered so that each promoter contains at least one TFBS')
 
 args = parser.parse_args()
+
+def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filtered_contain_motifs):
+    """remove promoters which had no TFBSs found within them after filtering the FIMO output. Create output file of these"""
+    promoters = pd.read_table(promoter_bedfile, sep='\t', header=None)
+    col = ['chr','start','stop','promoter_AGI','dot1', 'strand','source','type','dot2','attributes']
+    promoters.columns = col
+    mapped_motifs = pd.read_table(promoter_mapped_motifs, sep='\t', header=None)
+    col2 = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
+    mapped_motifs.columns = col2
+
+    merged = pd.merge(promoters,mapped_motifs, on='promoter_AGI', how='left',  suffixes=['', '_y'])
+    #remove NaNs in TF_AGI column
+    filtered_df = merged[merged.TF_AGI.notnull()]
+    #reduce columns
+    filtered_df = filtered_df[col]
+    #filter duplicates
+    idx = filtered_df.promoter_AGI.drop_duplicates().index
+    #this will return filtered df
+    no_dups = filtered_df.loc[idx,:]
+    no_dups.to_csv(promoters_filtered_contain_motifs, sep='\t', header=None, index=False)    
 
 def filter_genes(promoter_bed, select_genes_file):
     """filter out genes from the microarray data which aren't in the promoter_bed"""
@@ -77,6 +99,6 @@ except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
     
-    
-filtered = filter_genes(args.promoter_bedfile,args.Czechowski_rankedcv)
+remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)    
+filtered = filter_genes(args.promoters_filtered_contain_motifs,args.Czechowski_rankedcv)
 subSet_onCV(filtered,args.Czechowski_gene_categories,args.no_of_genes)

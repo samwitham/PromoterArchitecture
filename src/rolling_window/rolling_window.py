@@ -45,18 +45,18 @@ def window_split(promoter_bed, output_bed, window_size, step_size):
     proms_df.columns = cols1
     proms_pos = proms_df[proms_df.strand == '+']
     proms_neg = proms_df[proms_df.strand == '-']
-    #fool bedtools makewindow so that the first window is actually made from the ATG for the negative strand
-    proms_neg_copy = proms_neg.copy()
-    proms_neg_copy['length'] = proms_neg.stop-proms_neg.start
-    proms_neg_copy['altered_start'] = proms_neg.stop
-    proms_neg_copy['altered_stop'] = proms_neg.start + 2*proms_neg_copy.length
-    proms_changed = proms_neg_copy[['chr','altered_start','altered_stop','AGI','dot1','strand','source','type','dot2','attributes']]
+    #fool bedtools makewindow so that the first window is actually made from the ATG for the positive strand
+    proms_pos_copy = proms_pos.copy()
+    proms_pos_copy['length'] = proms_pos.stop-proms_pos.start
+    proms_pos_copy['altered_start'] = proms_pos.stop
+    proms_pos_copy['altered_stop'] = proms_pos.start + 2*proms_pos_copy.length
+    proms_changed = proms_pos_copy[['chr','altered_start','altered_stop','AGI','dot1','strand','source','type','dot2','attributes']]
    
     #write to temporary bed buffers
     pos_buffer = io.StringIO()
     neg_buffer = io.StringIO()
-    proms_pos.to_csv(pos_buffer,index=False,sep='\t',header=None)
-    proms_changed.to_csv(neg_buffer,index=False,sep='\t',header=None)
+    proms_changed.to_csv(pos_buffer,index=False,sep='\t',header=None)
+    proms_neg.to_csv(neg_buffer,index=False,sep='\t',header=None)
     pos_buffer.seek(0)
     neg_buffer.seek(0)
     
@@ -86,15 +86,17 @@ def window_split(promoter_bed, output_bed, window_size, step_size):
     window_pos_df.columns = cols
     window_neg_df.columns = cols
     window_neg_df = window_neg_df.astype({'chr':'int','start': 'int', 'stop':'int', 'window':'str'})
+    window_pos_df = window_pos_df.astype({'chr':'int','start': 'int', 'stop':'int', 'window':'str'})
+    
     
     #reverse the start/stop changes that fooled bedtools makewindow
-    neg_df_corrected = window_neg_df.copy()
-    ### need to merge this df with proms_neg using AGI code. then make distance the original stop - 1 to the chunk stop
+    pos_df_corrected = window_pos_df.copy()
+    ### need to merge this df with proms_pos using AGI code. then make distance the original stop - 1 to the chunk stop
     #Make AGI column
-    neg_df_corrected = neg_df_corrected.assign(AGI=neg_df_corrected.window.str.extract(r'(.*?)\_'))
+    pos_df_corrected = pos_df_corrected.assign(AGI=pos_df_corrected.window.str.extract(r'(.*?)\_'))
 
-    #Merge with proms_neg using AGI code
-    merged = pd.merge(neg_df_corrected, proms_neg, on='AGI', how='left',suffixes=('','_wholeprom'))    
+    #Merge with proms_pos using AGI code
+    merged = pd.merge(pos_df_corrected, proms_pos, on='AGI', how='left',suffixes=('','_wholeprom'))    
     
     merged['distance'] = merged.stop-merged.stop_wholeprom
     #create window length column
@@ -107,14 +109,11 @@ def window_split(promoter_bed, output_bed, window_size, step_size):
     merged = merged[['chr','correct_start','correct_stop','window']]
     #rename columns
     merged.rename(columns={'correct_start':'start', 'correct_stop':'stop'}, inplace=True)
-    
-    
-        
+          
     
     #Merge positive and negative strand windows
-    merged_all = pd.merge(window_pos_df,merged, how='outer')
+    merged_all = pd.merge(window_neg_df,merged, how='outer')
     #merged_all.to_csv(output_bed,index=False,sep='\t',header=None)
-    
     
     #filter lengths so they are only = 100bp
     window_lengths = merged_all.copy()

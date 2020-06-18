@@ -93,7 +93,9 @@ python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file
 #arg3 is the location of Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
 #arg4 is the size, N, of the gene subsets
 #arg5 is the gene category output file containing the selected gene subsets of size N
-python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt
+#arg6 is the input location of the promoter mapped motifs bed file
+#arg7 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
+python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed
 
 
 #TFBS coverage sliding window
@@ -112,3 +114,24 @@ python ../rolling_window/./TFBScoverage_rw.py $file_names ../../data/output/$fil
 #arg5 is the output location of the rolling window fasta file
 python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/${promoterpref}_windows.fasta 
 
+##PLOTS
+#Whole promoter plots:
+
+#Plot GC content
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters GC_content tsv file
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv
+
+
+#Plot TFBS coverage
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters bp_covered txt file
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt
+
+#Plot TF and TF family diversit, and do PCA and Kmeans clustering
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters mapped motif bed
+python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed

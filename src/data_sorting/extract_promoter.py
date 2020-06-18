@@ -301,7 +301,7 @@ def remove_promoter_overlap(promoter_gff, all_genes_df, output_file):
 
 def add_5UTR(promoter_gff, all_features_gff):
     """Function to extend the promoters to include the 5'UTR region until the start codon of the first CDS feature of the same gene.
-    Also remove mitochondira and chloroplast features."""
+    Also remove mitochondria and chloroplast features."""
     promoters = pd.read_table(promoter_gff, sep='\t', header=None, low_memory=False)
     
     cols = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
