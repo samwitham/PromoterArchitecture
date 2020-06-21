@@ -37,8 +37,10 @@ promoterpref=${promoterbase%.*}
 #$3 is max stored sequences.
 #$4 is meme motif file
 #$5 is the folder name
-
+#scan for motifs using DAP-seq dataset
 ../meme_suite/./FIMO.sh ../../data/output/$file_names/FIMO/${promoterpref}.fasta 0.0001 5000000 ../../data/FIMO/motif_data/dap_combined.meme $file_names
+#scan for motifs using plantpan dataset
+../meme_suite/./FIMO_plantpan.sh ../../data/output/$file_names/FIMO/${promoterpref}.fasta 0.0001 5000000 ../../data/FIMO/motif_data/At_plantpan_BEEML.meme $file_names
 
 ## filter the FIMO output
 conda activate PromoterArchitecturePipeline
@@ -48,13 +50,19 @@ conda activate PromoterArchitecturePipeline
 #arg2 is Input location of promoter bed file
 #arg3 is Output location of motifs bed file
 #arg4 is q_value threshold for filtering
-python ../data_sorting/./FIMO_filter.py ../../data/output/$file_names/FIMO/output/${promoterpref}_FIMO/fimo.tsv ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed 0.05
+python ../data_sorting/./FIMO_filter.py ../../data/output/$file_names/FIMO/output/${promoterpref}_DAPseq/fimo.tsv ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed 0.05
+
+#filter plantpan motifs
+python ../data_sorting/./FIMO_filter.py ../../data/output/$file_names/FIMO/output/${promoterpref}_plantpan/fimo.tsv ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_plantpan.bed 0.05
 
 #If using DAP seq cistrome motifs without AGI names, map motifs
 #arg1 is the input location of the motif bed file
 #arg2 is the input location of the geneIDtable file derived from the .json (see .ipynb notebook)
 #arg3 is the output location of the motif bed file
-python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed
+python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs_plantpan.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed
+
+#map plantpan motifs
+#python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs__plantpan_mapped.bed
 
 
 
@@ -90,13 +98,16 @@ python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file
 #Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter bed file
-#arg3 is the location of Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
-#arg4 is the size, N, of the gene subsets
-#arg5 is the gene category output file containing the selected gene subsets of size N
-#arg6 is the input location of the promoter mapped motifs bed file
-#arg7 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
-python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed
-
+#arg3 is the location of the Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
+#arg4 is the input location of the Mergner et al 2020 ranked cv dataset
+#arg5 is the size, N, of the gene subsets
+#arg6 is the czechowski gene category output file containing the selected gene subsets of size N
+#arg7 is the mergner gene category output file containing the selected gene subsets of size N
+#arg8 is the input location of the promoter mapped motifs bed file
+#arg9 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
+#arg10 is the output location of all filtered microarray genes
+#arg11 is the output location of all filtered RNAseq genes
+python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt
 
 #TFBS coverage sliding window
 #arg1 is the promoter extraction output folder name

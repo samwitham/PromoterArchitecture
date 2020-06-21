@@ -17,4 +17,4 @@ mkdir -p ../../data/output/$5/FIMO/output
 #create background file for FIMO
 fasta-get-markov -dna $1 ../../data/output/$5/FIMO/${xpref}.bfile
 #run FIMO
-fimo --bfile ../../data/output/$5/FIMO/${xpref}.bfile --o ../../data/output/$5/FIMO/output/${xpref}_DAPseq --thresh $2 --max-stored-scores $3 $4 $1
+fimo --bfile ../../data/output/$5/FIMO/${xpref}.bfile --o ../../data/output/$5/FIMO/output/${xpref}_plantpan --thresh $2 --max-stored-scores $3 $4 $1

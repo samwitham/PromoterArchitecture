@@ -6,11 +6,14 @@ parser = argparse.ArgumentParser(description='choose_genes_cv')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('promoter_bedfile', type=str, help='Input location of promoter bedfile')
 parser.add_argument('Czechowski_rankedcv', type=str, help='Input location of Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash')
+parser.add_argument('Mergner_rankedcv', type=str, help='Input location of Mergner et al 2020 ranked cv dataset')
 parser.add_argument('no_of_genes', type=int, help='Number of genes in each category to subset')
-parser.add_argument('Czechowski_gene_categories', type=str, help='Output location of gene category subsets')
+parser.add_argument('Czechowski_gene_categories', type=str, help='Output location of microarray gene category subsets')
+parser.add_argument('Mergner_gene_categories', type=str, help='Output location of RNAseq gene category subsets')
 parser.add_argument('promoter_mapped_motifs', type=str, help='Input location of promoter mapped motifs bed file')
 parser.add_argument('promoters_filtered_contain_motifs', type=str, help='output location of the promoter bed file filtered so that each promoter contains at least one TFBS')
-
+parser.add_argument('Czechowski_allgenes', type=str, help='Output location of all filtered microarray genes')
+parser.add_argument('Mergner_allgenes', type=str, help='Output location of all filtered RNAseq genes')
 args = parser.parse_args()
 
 def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filtered_contain_motifs):
@@ -33,7 +36,7 @@ def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filt
     no_dups = filtered_df.loc[idx,:]
     no_dups.to_csv(promoters_filtered_contain_motifs, sep='\t', header=None, index=False)    
 
-def filter_genes(promoter_bed, select_genes_file):
+def filter_genes_czechowski(promoter_bed, select_genes_file):
     """filter out genes from the microarray data which aren't in the promoter_bed"""
     select_genes = pd.read_table(select_genes_file, sep='\t', header=None)
     cols = ['rank','probe_id','AGI','expression_mean','expression_SD','expression_CV','proportion_of_values_present_in_mas5','presence_in_araport11','constitutive_in_araport11']
@@ -46,6 +49,29 @@ def filter_genes(promoter_bed, select_genes_file):
     merged = pd.merge(promoters, select_genes, on='AGI', how='left')
     #remove NaNs in expression_CV column
     filtered_df = merged[merged.expression_CV.notnull()]
+    #save df
+    filtered_df.to_csv(args.Czechowski_allgenes,sep='\t',columns=filtered_df.columns, index=False)
+    
+    return filtered_df
+
+
+def filter_genes_mergner(promoter_bed, select_genes_file):
+    """filter out genes from the RNA-seq data which aren't in the promoter_bed"""
+    select_genes = pd.read_csv(select_genes_file, header=0)
+    cols = ['AGI','transcription_class','transcription_family','expression_CV']
+    select_genes.columns = cols
+    #all present in Araport 11 column
+    select_genes['presence_in_araport11'] = 1
+    
+    promoters = pd.read_table(promoter_bed, sep='\t', header=None)
+    col = ['chr','start','stop','AGI','dot1', 'strand','source','type','dot2','attributes']
+    promoters.columns = col
+
+    merged = pd.merge(promoters, select_genes, on='AGI', how='left')
+    #remove NaNs in expression_CV column
+    filtered_df = merged[merged.expression_CV.notnull()]
+    #save df
+    filtered_df.to_csv(args.Mergner_allgenes,sep='\t',columns=filtered_df.columns,index=False)
     
     return filtered_df   
 
@@ -99,6 +125,10 @@ except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
     
-remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)    
-filtered = filter_genes(args.promoters_filtered_contain_motifs,args.Czechowski_rankedcv)
-subSet_onCV(filtered,args.Czechowski_gene_categories,args.no_of_genes)
+remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)  
+filtered_czechowski = filter_genes_czechowski(args.promoters_filtered_contain_motifs,args.Czechowski_rankedcv)
+filtered_mergner = filter_genes_mergner(args.promoters_filtered_contain_motifs,args.Mergner_rankedcv)
+#czechowksi subset
+subSet_onCV(filtered_czechowski,args.Czechowski_gene_categories,args.no_of_genes)
+#mergner subset
+subSet_onCV(filtered_mergner,args.Mergner_gene_categories,args.no_of_genes)
