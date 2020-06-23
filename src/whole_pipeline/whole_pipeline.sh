@@ -66,6 +66,7 @@ python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${pro
 
 
 
+
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
 #$2 is the folder name
@@ -111,11 +112,18 @@ python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_
 
 #TFBS coverage sliding window
 #arg1 is the promoter extraction output folder name
-#arg2 is the input location of motifs bed file
-#arg3 is the output location of rolling window % coverage bed file
-#arg4 is the input location of rolling window bed file
-python ../rolling_window/./TFBScoverage_rw.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed
+#arg2 is the name of the output directory
+#arg3 is the input location of rolling window bed file
+#arg4 is the input location of bed file for which % coverage is being calculated for
+#arg4 is the output location of the rolling window % coverage bed file
+python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage_rw ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed
 
+#Root open chromatin coverage sliding window
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/ATAC-seq/potter2018/Roots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed
+#Shoot open chromatin coverage sliding window
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/ATAC-seq/potter2018/Shoots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed
+#Root/Shoot intersect coverage sliding window
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/ATAC-seq/potter2018/intersectRootsShoots_PeaksInBoth.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed
 
 #GC content sliding window
 #arg1 is the promoter extraction output folder name
@@ -123,7 +131,15 @@ python ../rolling_window/./TFBScoverage_rw.py $file_names ../../data/output/$fil
 #arg3 is the input location of the rolling window bed file
 #arg4 is the input location of the genome fasta file
 #arg5 is the output location of the rolling window fasta file
-python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/${promoterpref}_windows.fasta 
+python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/${promoterpref}_windows.fasta
+
+#TF_diversity sliding window
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of the rolling window bed file
+#arg3 is the input location of the promoters mapped motif bed
+#arg4 is the output location of windows_motifs intersect bed
+#arg5 is the output location of the window TF_diversity_bed
+python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows_motifs.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed
 
 ##PLOTS
 #Whole promoter plots:
@@ -141,8 +157,77 @@ python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_nam
 #arg3 is the input location of promoters bp_covered txt file
 python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt
 
-#Plot TF and TF family diversit, and do PCA and Kmeans clustering
+#Plot TF and TF family diversity, and do PCA and Kmeans clustering
 #arg1 is the promoter extraction output folder name
 #arg2 is the input location of Czechowski gene categories text file
 #arg3 is the input location of promoters mapped motif bed
 python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed
+
+
+#rerun analyses at shorter promoter length
+
+#optionally run post-FIMO analysis at specific promoter length
+
+#This shortens to promoter to 400bp upstream of the ATG
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is promoterpref - prefix name for the promoter files
+#arg3 is the location of the extracted promoters/5UTRs
+#arg4 is the length to shorten promoters to
+promoter_length=400
+python ../data_sorting/./shorten_promoters.py $file_names ${promoterpref} ../../data/output/$file_names/FIMO/${promoterpref}.bed $promoter_length
+
+
+#TFBS coverage of shortened promoters
+#arg1 is the promoter extraction output folder name
+#arg2 is the name of the output directory
+#arg3 is the input location of shortened promoter bed
+#arg4 is the input location of bed file for which % coverage is being calculated for
+#arg4 is the output location of the % coverage bed file
+python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bp.bp_covered.txt
+
+
+#GC content of shortened promoters
+#arg1 is the promoter extraction output folder name
+#arg2 is the output location of the GC content tsv
+#arg3 is the input location of the shortened promoter bed file
+#arg4 is the input location of the genome fasta file
+#arg5 is the output location of the shortened promoter fasta file
+python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed $genome_fasta ../../data/output/$file_names/${promoterpref}_${promoter_length}bp.fasta
+
+#%coverage of open chromatin
+#$1 is promoter bed file
+#$2 is the folder name
+../data_sorting/./OpenChromatin_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed $file_names
+
+#PLOTTING
+
+#Shortened promoter plots:
+
+#Plot GC content
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters GC_content tsv file
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ${promoterpref}_${promoter_length}bp/
+
+
+#Plot TFBS coverage
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bp.bp_covered.txt ${promoterpref}_${promoter_length}bp/
+
+
+#Create shortened promoter motifs_mapped file in correct format for the TF_diversity_plots.py script
+#arg1 is the input location of the shortened promoter file
+#arg2 is the input location of the promoters mapped motif bed
+#arg3 is the output location of the shortened mapped_motifs bed
+python ../data_sorting/create_motif_mapped_from_intersect.py ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed
+
+#Plot TF and TF family diversity, and do PCA and Kmeans clustering
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters mapped motif bed
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp/

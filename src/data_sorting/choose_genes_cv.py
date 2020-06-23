@@ -48,7 +48,11 @@ def filter_genes_czechowski(promoter_bed, select_genes_file):
 
     merged = pd.merge(promoters, select_genes, on='AGI', how='left')
     #remove NaNs in expression_CV column
-    filtered_df = merged[merged.expression_CV.notnull()]
+    filtered_df = merged[merged.expression_CV.notnull()].copy()
+    
+    #sort by CV value
+    filtered_df.sort_values('expression_CV', inplace=True, ignore_index=True)  
+    
     #save df
     filtered_df.to_csv(args.Czechowski_allgenes,sep='\t',columns=filtered_df.columns, index=False)
     
@@ -69,7 +73,10 @@ def filter_genes_mergner(promoter_bed, select_genes_file):
 
     merged = pd.merge(promoters, select_genes, on='AGI', how='left')
     #remove NaNs in expression_CV column
-    filtered_df = merged[merged.expression_CV.notnull()]
+    filtered_df = merged[merged.expression_CV.notnull()].copy()
+    #sort by CV value
+    filtered_df.sort_values('expression_CV', inplace=True, ignore_index=True)
+    
     #save df
     filtered_df.to_csv(args.Mergner_allgenes,sep='\t',columns=filtered_df.columns,index=False)
     

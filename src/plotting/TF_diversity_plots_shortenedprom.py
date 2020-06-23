@@ -52,13 +52,36 @@ except FileExistsError:
 def calculate_shannon_diversity(mapped_motif_bed):
     """read in mapped motifs_bed, calculate Shannon diversity"""
     df = pd.read_table(mapped_motif_bed, sep='\t', header=None)
-    cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
+    cols = ['chr', 'start', 'stop', 'promoter_AGI','dot1','strand','source','type','dot2','attributes',
+            'motif_chr','motif_start','motif_stop','name_rep', 'score', 'motif_strand',
+            'promoter_AGI2', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI','bp_overlap']
     df.columns = cols
-       
+    #filter columns
+    df = df[['chr', 'start', 'stop', 'promoter_AGI','strand','motif_chr','motif_start','motif_stop',
+                                         'TF_name', 'TF_family', 'TF_AGI','bp_overlap']]
+    #add motif length column
+    df['motif_length'] = 0
+    df.motif_length = df.motif_stop - df.motif_start
+    #replace columns with only dots in them with NaN    
+    no_motifs = df[df.bp_overlap == 0].copy()
+    no_motifs['motif_chr'] = np.NaN
+    no_motifs['motif_start'] = np.NaN
+    no_motifs['motif_stop'] = np.NaN
+    no_motifs['TF_name'] = np.NaN
+    no_motifs['TF_family'] = np.NaN
+    no_motifs['TF_AGI'] = np.NaN
+    #make df without the lines with no motifs
+    df_reduced = df[~(df.bp_overlap == 0)].copy()
+    #merge the two dfs
+    df = pd.concat([df_reduced,no_motifs])
+    #sort on promoter_AGI
+    df.sort_values('promoter_AGI', inplace=True, ignore_index=True) 
+
+ 
     #count no. of each TF binding in each promoter
-    groupby_promoter_counts = df.groupby('promoter_AGI')['TF_AGI'].value_counts().unstack(fill_value=0)    
+    groupby_promoter_counts = df.groupby('promoter_AGI')['TF_AGI'].value_counts(dropna=True).unstack(fill_value=0)    
     #count no. of TF families binding in each promoter
-    groupby_promoter_counts_family = df.groupby('promoter_AGI')['TF_family'].value_counts().unstack(fill_value=0)
+    groupby_promoter_counts_family = df.groupby('promoter_AGI')['TF_family'].value_counts(dropna=True).unstack(fill_value=0)
     #Individual TF shannon diversity using arbitrary log2 base
     shannon_div_df = groupby_promoter_counts.apply(pd.Series(lambda x: skbio.diversity.alpha.shannon(x, base=2)),axis=1)
     #shannon diversity for TF family
@@ -96,9 +119,24 @@ def calculate_shannon_diversity(mapped_motif_bed):
     #then merge with total_TF_count
     diversity_df = pd.merge(diversity_df,total_TF_count, on='promoter_AGI' )
     #then merge with TF_family_count
-    diversity_df = pd.merge(diversity_df,total_TF_family_count, on='promoter_AGI' ) 
+    diversity_df = pd.merge(diversity_df,total_TF_family_count, on='promoter_AGI' )
+    
+    #if name isn't in diversity_df, add it and change all other columns to 0
+    #select all unique names that aren't in diversity_df (will select all values but good to be sure)
+    missing_names = no_motifs[~no_motifs.promoter_AGI.isin(diversity_df.promoter_AGI)].promoter_AGI.unique()
+    #turn into df
+    missing_names_diversity = pd.DataFrame(missing_names)
+    #make columns
+    missing_names_diversity.columns = ['promoter_AGI']
+    missing_names_diversity['Shannon_diversity_TF'] = -0
+    missing_names_diversity['Shannon_diversity_TF_family'] = -0
+    missing_names_diversity['unique_TF_count'] = 0
+    missing_names_diversity['total_TF_count'] = 0
+    missing_names_diversity['TF_family_count'] = 0
+    #concatenate missing_names_diversity with missing_names_diversity
+    diversity_df = pd.concat([diversity_df,missing_names_diversity])      
         
-    return diversity_df
+    return diversity_df  
 
 def merge_shannon_genetype(shannon_df, gene_categories):
     """merge shannon diversity df with gene_categories file"""
@@ -138,7 +176,10 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
 def run_PCA(mapped_motif_bed):
     """perform a PCA"""
     df = pd.read_table(mapped_motif_bed, sep='\t', header=None)
-    cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
+    #cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
+    cols = ['chr', 'start', 'stop', 'promoter_AGI','dot1','strand','source','type','dot2','attributes',
+            'motif_chr','motif_start','motif_stop','name_rep', 'score', 'motif_strand',
+            'promoter_AGI2', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI','bp_overlap']
     df.columns = cols
     #count no. of TF families binding in each promoter
     groupby_promoter_counts_family = df.groupby('promoter_AGI')['TF_family'].value_counts().unstack(fill_value=0)

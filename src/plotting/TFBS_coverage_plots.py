@@ -2,17 +2,28 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+import argparse
 
 parser = argparse.ArgumentParser(description='TFBS_coverage_plots')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('Czechowski_gene_categories', type=str, help='Input location of Czechowski gene categories text file')
 parser.add_argument('bp_covered_file', type=str, help='Input location of promoters bp_covered txt file')
+parser.add_argument('output_folder_name', type=str, help='Optional output folder name ending in a forward slash',default = '')
 args = parser.parse_args()
 
 dependent_variable = 'TFBS_coverage'
 
 #make directory for the plots to be exported to
-dirName = f'../../data/output/{file_names}/{dependent_variable}/plots'
+dirName = f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}'
+try:
+    # Create target Directory
+    os.mkdir(dirName)
+    print("Directory " , dirName ,  " created") 
+except FileExistsError:
+    print("Directory " , dirName ,  " already exists")
+    
+#make directory for the plots to be exported to
+dirName = f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots'
 try:
     # Create target Directory
     os.mkdir(dirName)
@@ -50,7 +61,7 @@ def all_prom_distribution(GC_content_df, x_variable, x_label, output_prefix):
     plt.xlabel(x_label)
 
     #save to file
-    dist_plot_fig.savefig(f'../../data/output/{args.file_names}/{dependent_variable}/plots/{output_prefix}_distribution.pdf', format='pdf')
+    dist_plot_fig.savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_distribution.pdf', format='pdf')
 
 def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind):
     """function to make and save plot"""
@@ -65,7 +76,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     plt.ylabel(y_label)
     plt.xlabel(x_label)
     #save figure
-    ax.get_figure().savefig(f'../../data/output/{args.file_names}/{dependent_variable}/plots/{output_prefix}_{plot_kind}.pdf', format='pdf')   
+    ax.get_figure().savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_{plot_kind}.pdf', format='pdf')   
     
 
 #Read in bp_covered file
