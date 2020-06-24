@@ -141,6 +141,32 @@ python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_
 #arg5 is the output location of the window TF_diversity_bed
 python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows_motifs.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed
 
+#prepare files for gat analysis TATA enrichment
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter prefix name
+#arg3 is the Input location of the Czechowski gene categories text file
+#arg4 is the Input location of promoters bed file
+#arg5 is the Gene category prefix (eg. Czechowski)
+#arg6 is the Input location of TATAbox_location bed file (from Eukaryotic promoter database)
+python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed
+
+#run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories
+#$1 is the workspace file containing all promoters of interest
+#$2 is the constitutive promoters file for annotations
+#$3 is the variable promoters file for annotations
+#$4 is the segments bed file
+#$5 is the output folder location
+#$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
+../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_variable.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Czechowski_TATA
+
+
+
+
+
+
+
+
+
 ##PLOTS
 #Whole promoter plots:
 
@@ -162,6 +188,15 @@ python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_
 #arg2 is the input location of Czechowski gene categories text file
 #arg3 is the input location of promoters mapped motif bed
 python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed
+
+#TATA enrichment plot Czechowski gene categories
+#arg1 is the promoter extraction output folder name
+#arg2 is the Location of constitutive promoter gat analysis output
+#arg3 is the Location of variable promoter gat analysis output
+#arg4 is the Output prefix to add to plot file name
+python ../plotting/./TATA_enrichment_plots.py $file_names ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Czechowski_TATA_constitutive.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Czechowski_TATA_variable.out Czechowski_${promoterpref}
+
+
 
 
 #rerun analyses at shorter promoter length
