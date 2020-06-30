@@ -21,7 +21,7 @@ def create_plot(gat_TATA_constitutive_output,gat_TATA_variable_output):
     #set style to ticks
     sns.set(style="ticks", color_codes=True)
     #bar chart, 95% confidence intervals
-    plot = sns.barplot(x="annotation", y="l2fold", data=merged)
+    plot = sns.barplot(x="annotation", y="l2fold", data=merged,order=["constitutive", "variable"])
     plot.axhline(0, color='black')
     plt.xlabel("Gene type")
     plt.ylabel("Log2-fold enrichment over background").get_figure().savefig(f'../../data/output/{args.file_names}/TATA/plots/{args.output_prefix}_log2fold.pdf', format='pdf')

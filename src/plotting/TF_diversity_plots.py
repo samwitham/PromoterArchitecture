@@ -126,9 +126,9 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     sns.set(color_codes=True)
     sns.set_style("whitegrid")
     #plot
-    plot = sns.catplot(x=x_variable, y=y_variable, data=df, kind=plot_kind)
+    plot = sns.catplot(x=x_variable, y=y_variable, data=df, kind=plot_kind,order=["constitutive", "variable", "control"])
     #plot points
-    ax = sns.swarmplot(x=x_variable, y=y_variable, data=df, color=".25")
+    ax = sns.swarmplot(x=x_variable, y=y_variable, data=df, color=".25",order=["constitutive", "variable", "control"])
     #change axes labels
     plt.ylabel(y_label)
     plt.xlabel(x_label)
@@ -228,7 +228,7 @@ def plot_kmeans_clusters(k,PCA_df, pca_variance):
     #add custom palette size as sns doesnt like having numeric values for hue palette=sns.color_palette("Set1", 6)
 
     plot = sns.scatterplot(x=0, y=1, hue='Kmeans_PCA_cluster', data=PCA_df,s=100, palette=sns.color_palette("Set1", k), ax=ax1)
-    plot2 = sns.scatterplot(x=0, y=1, hue='gene_type', data=PCA_df, s=100, ax=ax2);
+    plot2 = sns.scatterplot(x=0, y=1, hue='gene_type', data=PCA_df, s=100, ax=ax2,hue_order=["constitutive", "variable", "control"]);
     #add graph titles
     ax1.set(ylabel='', title='A')
     ax2.set(xlabel='', ylabel='', title='B')

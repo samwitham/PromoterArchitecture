@@ -65,9 +65,9 @@ def make_plot(GC_content_categories,x_variable, y_variable,x_label, y_label, out
     sns.set(color_codes=True)
     sns.set_style("whitegrid")
     #plot
-    plot = sns.catplot(x=x_variable, y=y_variable, data=GC_content_categories, kind=plot_kind)
+    plot = sns.catplot(x=x_variable, y=y_variable, data=GC_content_categories, kind=plot_kind,order=["constitutive", "variable", "control"])
     #plot points
-    ax = sns.swarmplot(x=x_variable, y=y_variable, data=GC_content_categories, color=".25")
+    ax = sns.swarmplot(x=x_variable, y=y_variable, data=GC_content_categories, color=".25",order=["constitutive", "variable", "control"])
     #change axes labels
     plt.ylabel(y_label)
     plt.xlabel(x_label)

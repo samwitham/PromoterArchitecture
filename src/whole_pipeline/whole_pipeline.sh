@@ -161,12 +161,6 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 
 
 
-
-
-
-
-
-
 ##PLOTS
 #Whole promoter plots:
 
@@ -196,6 +190,17 @@ python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_n
 #arg4 is the Output prefix to add to plot file name
 python ../plotting/./TATA_enrichment_plots.py $file_names ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Czechowski_TATA_constitutive.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Czechowski_TATA_variable.out Czechowski_${promoterpref}
 
+#Open chromatin coverage shoot-root intersect using Potter et al 2018 ATAC-seq negative controls for root/shoot open chromatin
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of open chromatin bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash - open chromatin tissue
+#arg5 is the optional output folder name ending in a forward slash - promoter set name 
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}/
+#Open chromatin coverage root
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}RootOpenChrom.bp_covered.txt Root/ ${promoterpref}/
+#Open chromatin coverage shoot
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}/
 
 
 
@@ -266,3 +271,15 @@ python ../data_sorting/create_motif_mapped_from_intersect.py ../../data/output/$
 #arg3 is the input location of promoters mapped motif bed
 #arg4 is the optional output folder name ending in a forward slash
 python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp/
+
+#Open chromatin coverage shoot-root intersect using Potter et al 2018 ATAC-seq negative controls for root/shoot open chromatin
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of open chromatin bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash - open chromatin tissue
+#arg5 is the optional output folder name ending in a forward slash - promoter set name 
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_${promoter_length}bp/
+#Open chromatin coverage root
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpRootOpenChrom.bp_covered.txt Root/ ${promoterpref}_${promoter_length}bp/
+#Open chromatin coverage shoot
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_${promoter_length}bp/

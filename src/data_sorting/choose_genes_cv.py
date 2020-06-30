@@ -86,7 +86,7 @@ def subSet_onCV(in_df, out_dir, no_of_genes):
     '''
     Extract the constitutive, variable, and control subsets based on CV values
     '''
-    #fliltering based on presence in the Araport11 annotation, define the first
+    #filtering based on presence in the Araport11 annotation, define the first
     #n rows as the constitutive set and add label
     constitutive          = in_df[in_df.presence_in_araport11 == 1][0:no_of_genes]
     constitutive['state'] = 'constitutive'
