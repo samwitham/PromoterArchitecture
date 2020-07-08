@@ -7,14 +7,16 @@ import os
 from pprint import pprint, pformat
 import argparse
 import io
-
+#action="store_true" automatically creates a default value of False
 parser = argparse.ArgumentParser(description='extract_promoter')
 parser.add_argument('directory_path', type=str, help='Location of base directory')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
+parser.add_argument('promoter_length', help='Max length of promoters to be extracted upstream of the Araport 11 TSS')
 parser.add_argument('--remove_bidirectional', help='Exclude potentially bidirectional promoters with upstream TSS >2000bp from TSS in opposite direction.', action="store_true")
 parser.add_argument('--prevent_overlapping_genes', help='Reduce size of promoters if needed until they are not overlapping other genes.', action="store_true")
 parser.add_argument('--fiveUTR', help='Extend promoters to the first start codon.', action="store_true")
-parser.add_argument('--only_open_chromatin', help='Reduce size of promoters if needed so that they only fall within open chromatin.', action="store_true")
+
+#parser.add_argument('--only_open_chromatin', help='Reduce size of promoters if needed so that they only fall within open chromatin.', action="store_true")
 args = parser.parse_args()
 
 
@@ -74,8 +76,7 @@ def fasta_chromsizes(genome, output_file):
 #     protein_coding.to_csv(output_file,index=False,sep='\t',header=None)
 
 def extract_genes(gene_gff,output_overlapping,output_file):
-    """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file. It also exports a file containing overlapping genes, and removes any overlapping genes from the final output
-    also return all genes that are protein coding regardless of overlap"""
+    """This function extracts all whole genes from a gff3 file, ignoring gene features, and adds them to an output file. It also exports a file containing overlapping genes, and removes any overlapping genes from the final output (final output is protalso returns all genes that are protein coding regardless of overlap"""
     #limit dictionary to genes
     limit_info = dict(gff_type = ['gene'])
     #open temporary buffer
@@ -117,23 +118,24 @@ def extract_genes(gene_gff,output_overlapping,output_file):
     genes_buffer.seek(0)
     #create bedtools object of genes
     genes_bed = BedTool(genes_buffer)
+    #merge protein coding genes with protein coding genes that they overlap
     #c = columns to apply function to
     #o = count number of merged promoters, name the first and last promoter that were merged
     merged = genes_bed.merge(c=10, o=['count_distinct','first', 'last'])
-    #write to bufer
+    #write to buffer
     merged_buffer = io.StringIO()
     merged_buffer.write(str(merged))
     merged_buffer.seek(0)
-    #read as dataframe
+    #read in again as a dataframe
     overlapping = pd.read_table(merged_buffer, sep='\t', header=None)
-    
+    #name the columns    
     cols3 = ['chr','start','stop', 'number_of_overlaps', 'first_overlap','second_overlap']
     overlapping.columns = cols3
     #select only features made of more than one promoter that were merged as overlapping
     overlapping_only = overlapping[overlapping.number_of_overlaps >= 2]
     #save these overlapping genes to file
     overlapping_only.to_csv(output_overlapping,index=False,sep='\t',header=None)
-    #keep only non-overlapping genes
+    #keep only non-overlapping genes (they are labelled as having 1 overlap as they overlap themselves)
     final_genes_list = overlapping[overlapping.number_of_overlaps == 1]
     final_genes = gene_agi[gene_agi.AGI.isin(final_genes_list.first_overlap)]
     final_genes_noAGI = final_genes[cols2]
@@ -547,14 +549,14 @@ else:
 if args.prevent_overlapping_genes:
     #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff
     #note, this only removes overlap for protein coding genes
-    promoters_incl_overlap = add_promoter(selected_genes,chromsizes_file_renamedChr,1000)
+    promoters_incl_overlap = add_promoter(selected_genes,chromsizes_file_renamedChr,args.promoter_length)
     subtracted = remove_promoter_overlap(promoters_incl_overlap,protein_coding,promoterandgenes_only_overlap)
     with open(promoters,'w') as f:
         subtracted.to_csv(f,index=False,sep='\t',header=None)
     
 else:
     #add 1000 bp promoters upstream of genes, using chromsizes file, input gene annotation file (gff) and output promoters gff
-    promoters_gff = add_promoter(selected_genes,chromsizes_file_renamedChr,1000)
+    promoters_gff = add_promoter(selected_genes,chromsizes_file_renamedChr,args.promoter_length)
     with open(promoters,'w') as f:
         f.write(str(promoters_gff))
         

@@ -10,6 +10,7 @@ parser.add_argument('GC_content_tsv', type=str, help='Output location of rolling
 parser.add_argument('window_bed', type=str, help='Input location of rolling window bed file')
 parser.add_argument('genome_fasta', type=str, help='Input location of genome fasta file')
 parser.add_argument('window_fasta', type=str, help='Output location of rolling window fasta file')
+parser.add_argument('outputfolder', type=str, help='Output folder name')
 args = parser.parse_args()
 
 def make_window_fasta(window_bed,genome_fasta,window_fasta):
@@ -32,7 +33,7 @@ def GC_content(window_fasta, output_file):
                 fout.write(f'{name}\t{GC(sequence)}\n')
                 
 #make directory for the output files to be exported to
-dirName = f'../../data/output/{args.file_names}/rolling_window/GC_content_rw'
+dirName = f'../../data/output/{args.file_names}/rolling_window/{args.outputfolder}'
 try:
     # Create target Directory
     os.mkdir(dirName)

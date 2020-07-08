@@ -12,6 +12,7 @@ parser.add_argument('window_bed', type=str, help='Input location of rolling wind
 parser.add_argument('mapped_motif_bed', type=str, help='Input location of promoters mapped motif bed')
 parser.add_argument('window_motifs_bed', type=str, help='Output location of windows_motifs intersect bed')
 parser.add_argument('TF_diversity_bed', type=str, help='Output location of the window TF_diversity_bed')
+parser.add_argument('outputfolder', type=str, help='Output folder name')
 args = parser.parse_args()
 
 
@@ -25,7 +26,7 @@ try:
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
 
-dirName = f'../../data/output/{args.file_names}/rolling_window/TF_diversity_rw'
+dirName = f'../../data/output/{args.file_names}/rolling_window/{args.outputfolder}'
 try:
     # Create target Directory
     os.mkdir(dirName)

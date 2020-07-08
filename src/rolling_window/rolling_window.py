@@ -11,6 +11,7 @@ parser.add_argument('promoter_bedfile', type=str, help='Input location of promot
 parser.add_argument('window_bed', type=str, help='Output location of rolling window bed file')
 parser.add_argument('window_size', type=int, help='Size of the rolling window in bp')
 parser.add_argument('step_size', type=int, help='Size of the window offset in bp')
+parser.add_argument('overlapping_proms', type=str, help='Output location of the overlapping promoter bed file')
 args = parser.parse_args()
 
 
@@ -132,7 +133,7 @@ def window_split(promoter_bed, output_bed, window_size, step_size):
     window_neg_buffer.close()
     
 directory_path = '../..'
-overlapping_proms = f'{directory_path}/data/output/{args.file_names}/overlapping_promoters.bed'
+
 
 
 #make directory for the output files to be exported to
@@ -165,5 +166,5 @@ try:
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
-flag_overlapping_proms(args.promoter_bedfile,overlapping_proms)
+flag_overlapping_proms(args.promoter_bedfile,args.overlapping_proms)
 proms = window_split(args.promoter_bedfile, args.window_bed, args.window_size, args.step_size)

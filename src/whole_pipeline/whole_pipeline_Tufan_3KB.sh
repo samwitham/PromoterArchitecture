@@ -4,7 +4,7 @@ eval "$(conda shell.bash hook)"
 conda activate PromoterArchitecturePipeline
 #directory_path=ei/workarea/group-eg/project_PromoterArchitecturePipeline
 directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture #remove this, better to use relative path
-file_names=non-overlapping_includingbidirectional_all_genes_newannotation
+file_names=non-overlapping_includingbidirectional_all_genes_newannotation_3KB
 
 ##extract promoters from a genome file
 #arg1 is the location of the base directory
@@ -15,7 +15,7 @@ file_names=non-overlapping_includingbidirectional_all_genes_newannotation
 #arg6 is an option to extend promoters to the first start codon.
 
 #python ../data_sorting/extract_promoter.py $directory_path $file_names --remove_bidirectional --prevent_overlapping_genes --fiveUTR
-python ../data_sorting/extract_promoter.py $directory_path $file_names 1000 --prevent_overlapping_genes --fiveUTR
+python ../data_sorting/extract_promoter.py $directory_path $file_names 3000 --prevent_overlapping_genes --fiveUTR
 ##extract promoters
 
 ## optional - merge meme files together into one file ready for FIMO
