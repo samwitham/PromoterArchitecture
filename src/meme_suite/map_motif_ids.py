@@ -31,7 +31,6 @@ def rename_motif(motifs_bed):
 def TF_family(motifs_df):
     """function to add a TF family column in the motifs.bed file (for DAP-seq cistrome motifs only)"""
     motifs_df['TF_family'] = motifs_df.name_rep
-    print(motifs_df)
     capitalise = lambda x: x.upper()
     motifs_df.TF_family = motifs_df.TF_family.apply(capitalise)
     ##replace characters inluding and after the '_' in the TF_family column

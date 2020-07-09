@@ -66,10 +66,10 @@ python ../data_sorting/./FIMO_filter.py ../../data/output/$file_names/FIMO/outpu
 #arg1 is the input location of the motif bed file
 #arg2 is the input location of the geneIDtable file derived from the .json (see .ipynb notebook)
 #arg3 is the output location of the motif bed file
-python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs_plantpan.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed
+python ../meme_suite/./map_motif_ids.py  ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed 
 
 #map plantpan motifs
-#python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs__plantpan_mapped.bed
+#python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs_plantpan.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs__plantpan_mapped.bed
 
 
 
@@ -92,7 +92,8 @@ python ../data_sorting/./promoter_GC_content.py $file_names ../../data/output/$f
 #$2 is the folder name
 ../data_sorting/./OpenChromatin_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names
 
-
+window_size=100
+window_offset=50
 #create sliding windows
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter bed file
@@ -100,7 +101,7 @@ python ../data_sorting/./promoter_GC_content.py $file_names ../../data/output/$f
 #arg4 is the size of the rolling window in bp
 #arg5 is the size of the window offset in bp
 #arg6 is the output location of the overlapping promoters bed file
-python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed 100 50 ../../data/output/$file_names/overlapping_promoters_5UTR.bed
+python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ${window_size} ${window_offset} ../../data/output/$file_names/overlapping_promoters_5UTR.bed
 #convert promoters.gff3 into bed file
 #convert gff file to bed file
 gff2bed < ../../data/output/$file_names/promoters.gff3 > ../../data/output/$file_names/FIMO/promoters.bed
@@ -116,7 +117,37 @@ grep '^[0-9]' ../../data/output/$file_names/FIMO/promoters.bed > ../../data/outp
 #arg4 is the size of the rolling window in bp
 #arg5 is the size of the window offset in bp
 #arg6 is the output location of the overlapping promoters bed file
-python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/promoters.bed ../../data/output/$file_names/rolling_window/promoters_windows.bed 100 50 ../../data/output/$file_names/overlapping_promoters.bed
+python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/promoters.bed ../../data/output/$file_names/rolling_window/promoters_windows.bed ${window_size} ${window_offset} ../../data/output/$file_names/overlapping_promoters.bed
+
+#create 5'UTR bed file and artificially swap the strand from + to - and vice versa. 
+#This is so the window number correctly starts from the TSS and goes downstream towards the ATG)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of promoter bedfile
+#arg3 is the input location of promoter-5UTR bedfile
+#arg4 is the output location of the 5UTR bedfile
+#arg5 is the output location of the 5UTR bedfile with artificially switched strands for sliding window analysis
+#arg6 is the output location of genes which have no 5UTR
+
+python ../data_sorting/./create_5UTRs.py $file_names ../../data/output/$file_names/FIMO/promoters.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/Araport11_5UTR.bed ../../data/output/$file_names/FIMO/Araport11_5UTR_swapped_strands.bed ../../data/output/$file_names/FIMO/genes_no_5UTR.bed
+
+#create sliding windows starting from the Araport TSS for the 5'UTRs with numbering going downstream towards the ATG start codon
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the output location of rolling window bed file
+#arg4 is the size of the rolling window in bp
+#arg5 is the size of the window offset in bp
+#arg6 is the output location of the overlapping promoters bed file
+python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/Araport11_5UTR_swapped_strands.bed ../../data/output/$file_names/rolling_window/5UTR_windows_swapped_strands.bed ${window_size} ${window_offset} ../../data/output/$file_names/overlapping_5UTRs.bed
+
+#merge the promoters and 5UTR rolling windows, with window numbers going head to head around the Araport TSS (so window 1 of promoters becomes -1, while 5UTR window numbers stay the same)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of 5UTR sliding windows
+#arg3 is the input location of the promoter 5UTR bed file to get strand information
+#arg4 is the input location of the promoter sliding windows file
+#arg5 is the output location of the promoter + 5UTR sliding window numbers going outwards from the TSS
+#arg6 is the size of the rolling window in bp
+#arg7 is the size of the window offset in bp
+python ../rolling_window/./TSS_outward_rw.py $file_names ../../data/output/$file_names/rolling_window/5UTR_windows_swapped_strands.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_windows.bed ${window_size} ${window_offset}
 
 #Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
 #arg1 is the promoter extraction output folder name

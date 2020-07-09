@@ -276,8 +276,8 @@ def plot_kmeans_clusters(k,PCA_df, pca_variance):
     fig.tight_layout()
 
     #Add axes labels
-    fig.text(0.5, 0.01, f'Component 1 {(pca_variance[1]*100).round(1)}% of variance', ha='center', va='center')
-    fig.text(0.0, 0.5, f'Component 0 {(pca_variance[0]*100).round(1)}% of variance', ha='center', va='center', rotation='vertical')
+    fig.text(0.5, 0.01, f'PC2 {(pca_variance[1]*100).round(1)}% of variance', ha='center', va='center')
+    fig.text(0.0, 0.5, f'PC1 {(pca_variance[0]*100).round(1)}% of variance', ha='center', va='center', rotation='vertical')
    
     fig.savefig(f"../../data/output/{args.file_names}/TF_diversity/{args.output_folder_name}plots/PCA_Kmeans_TF_family_counts.pdf")
     

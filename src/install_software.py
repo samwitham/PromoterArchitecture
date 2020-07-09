@@ -20,15 +20,17 @@ conda install -c bioconda gffutils
 conda install --channel bioconda bedtools htslib bedops pybedtools bcbiogff pyfaidx
 
 conda install -c conda-forge git-lfs
+#install statannot
+pip install statannot
 #in project_PromoterArchitecturePipeline folder:
 
-git lfs install
-git lfs track "data/genomes"
-git pull
-git status
-git config --global credential.helper 'cache --timeout=3600'
-git pull -u origin master
-git add .gitattributes
+# git lfs install
+# git lfs track "data/genomes"
+# git pull
+# git status
+# git config --global credential.helper 'cache --timeout=3600'
+# git pull -u origin master
+# git add .gitattributes
 
 
 

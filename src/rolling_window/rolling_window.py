@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import io
 from pybedtools import BedTool
-
+#define arguments
 parser = argparse.ArgumentParser(description='rolling_window')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('promoter_bedfile', type=str, help='Input location of promoter bedfile')
