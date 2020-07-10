@@ -110,6 +110,17 @@ awk 'BEGIN {FS = OFS = "\t"} { gsub(/gene:/,"", $4); print}' ../../data/output/$
 #remove lines not beginning with numbers (ie. remove mt and pt chromosomes)
 grep '^[0-9]' ../../data/output/$file_names/FIMO/promoters.bed > ../../data/output/$file_names/FIMO/promoters.bed.tmp && mv ../../data/output/$file_names/FIMO/promoters.bed.tmp ../../data/output/$file_names/FIMO/promoters.bed
 
+
+#create eukaryotic promoter database promoter (promoters going up until EPD annotated TSS)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of promoter-5UTR bedfile
+#arg3 is the input location of Eukaryotic Promoter Database TSS bed file
+#arg4 is the output location of the EPD_promoters bedfile
+#arg5 is the output location of flagged promoters which are not in the Eukaryotic promoter database
+#arg6 is the output location of flagged EPD_promoters which have TSSs in coding regions
+#arg7 is the output location of flagged EPD_promoters which are overlapping other genes so they are only a shortened 5\'UTR
+python ../data_sorting/./create_EPD_promoters.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/EPD_promoters.bed ../../data/output/$file_names/FIMO/flagged_proms_not_in_EPD.bed ../../data/output/$file_names/FIMO/flagged_EPD_TSS_in_CDS.bed ../../data/output/$file_names/FIMO/flagged_EPD_overlappingprom_so_only5UTRs.bed 
+
 #create sliding windows starting from Araport TSS instead (use only promoters not 5'UTR)
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter bed file
@@ -119,7 +130,19 @@ grep '^[0-9]' ../../data/output/$file_names/FIMO/promoters.bed > ../../data/outp
 #arg6 is the output location of the overlapping promoters bed file
 python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/promoters.bed ../../data/output/$file_names/rolling_window/promoters_windows.bed ${window_size} ${window_offset} ../../data/output/$file_names/overlapping_promoters.bed
 
-#create 5'UTR bed file and artificially swap the strand from + to - and vice versa. 
+#create sliding windows starting from EPD TSS instead (use only promoters not 5'UTR)
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the output location of rolling window bed file
+#arg4 is the size of the rolling window in bp
+#arg5 is the size of the window offset in bp
+#arg6 is the output location of the overlapping promoters bed file
+python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/EPD_promoters.bed ../../data/output/$file_names/rolling_window/EPD_promoters_windows.bed ${window_size} ${window_offset} ../../data/output/$file_names/EPD_overlapping_promoters.bed
+
+
+
+
+#create Araport11 5'UTR bed file and artificially swap the strand from + to - and vice versa. 
 #This is so the window number correctly starts from the TSS and goes downstream towards the ATG)
 #arg1 is the promoter extraction output folder name
 #arg2 is the input location of promoter bedfile
@@ -130,6 +153,17 @@ python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file
 
 python ../data_sorting/./create_5UTRs.py $file_names ../../data/output/$file_names/FIMO/promoters.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/Araport11_5UTR.bed ../../data/output/$file_names/FIMO/Araport11_5UTR_swapped_strands.bed ../../data/output/$file_names/FIMO/genes_no_5UTR.bed
 
+#create Eukaryotic promoter database (EPD) 5'UTR bed file and artificially swap the strand from + to - and vice versa. 
+#This is so the window number correctly starts from the TSS and goes downstream towards the ATG)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of promoter bedfile
+#arg3 is the input location of promoter-5UTR bedfile
+#arg4 is the output location of the 5UTR bedfile
+#arg5 is the output location of the 5UTR bedfile with artificially switched strands for sliding window analysis
+#arg6 is the output location of genes which have no 5UTR
+
+python ../data_sorting/./create_5UTRs.py $file_names ../../data/output/$file_names/FIMO/EPD_promoters.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/FIMO/EPD_5UTR.bed ../../data/output/$file_names/FIMO/EPD_5UTR_swapped_strands.bed ../../data/output/$file_names/FIMO/EPD_genes_no_5UTR.bed
+
 #create sliding windows starting from the Araport TSS for the 5'UTRs with numbering going downstream towards the ATG start codon
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter bed file
@@ -139,7 +173,17 @@ python ../data_sorting/./create_5UTRs.py $file_names ../../data/output/$file_nam
 #arg6 is the output location of the overlapping promoters bed file
 python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/Araport11_5UTR_swapped_strands.bed ../../data/output/$file_names/rolling_window/5UTR_windows_swapped_strands.bed ${window_size} ${window_offset} ../../data/output/$file_names/overlapping_5UTRs.bed
 
-#merge the promoters and 5UTR rolling windows, with window numbers going head to head around the Araport TSS (so window 1 of promoters becomes -1, while 5UTR window numbers stay the same)
+#create sliding windows starting from the EPD TSS for the 5'UTRs with numbering going downstream towards the ATG start codon
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the output location of rolling window bed file
+#arg4 is the size of the rolling window in bp
+#arg5 is the size of the window offset in bp
+#arg6 is the output location of the overlapping promoters bed file
+python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file_names/FIMO/EPD_5UTR_swapped_strands.bed ../../data/output/$file_names/rolling_window/EPD_5UTR_windows_swapped_strands.bed ${window_size} ${window_offset} ../../data/output/$file_names/EPD_overlapping_5UTRs.bed
+
+
+#merge the promoters and Araport11 5UTR rolling windows, with window numbers going head to head around the Araport TSS (so window 1 of promoters becomes -1, while 5UTR window numbers stay the same)
 #arg1 is the promoter extraction output folder name
 #arg2 is the input location of 5UTR sliding windows
 #arg3 is the input location of the promoter 5UTR bed file to get strand information
@@ -147,7 +191,20 @@ python ../rolling_window/./rolling_window.py $file_names ../../data/output/$file
 #arg5 is the output location of the promoter + 5UTR sliding window numbers going outwards from the TSS
 #arg6 is the size of the rolling window in bp
 #arg7 is the size of the window offset in bp
-python ../rolling_window/./TSS_outward_rw.py $file_names ../../data/output/$file_names/rolling_window/5UTR_windows_swapped_strands.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_windows.bed ${window_size} ${window_offset}
+python ../rolling_window/./TSS_outward_rw.py $file_names ../../data/output/$file_names/rolling_window/5UTR_windows_swapped_strands.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed ${window_size} ${window_offset}
+
+#merge the promoters and EPD 5UTR rolling windows, with window numbers going head to head around the Araport TSS (so window 1 of promoters becomes -1, while 5UTR window numbers stay the same)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of 5UTR sliding windows
+#arg3 is the input location of the promoter 5UTR bed file to get strand information
+#arg4 is the input location of the promoter sliding windows file
+#arg5 is the output location of the promoter + 5UTR sliding window numbers going outwards from the TSS
+#arg6 is the size of the rolling window in bp
+#arg7 is the size of the window offset in bp
+python ../rolling_window/./TSS_outward_rw.py $file_names ../../data/output/$file_names/rolling_window/EPD_5UTR_windows_swapped_strands.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/rolling_window/EPD_promoters_windows.bed ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed ${window_size} ${window_offset}
+
+
+
 
 #Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
 #arg1 is the promoter extraction output folder name
@@ -179,6 +236,25 @@ python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage_rw ../../dat
 #arg4 is the output location of the rolling window % coverage bed file
 python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage_rw_promoterno5UTR ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/rolling_window/TFBS_coverage_rw_promoterno5UTR/promoters_bpcovered_rw.bed
 
+#TFBS coverage sliding window promoters/5UTR TSS outward windows (Araport 11 TSS)
+#arg1 is the promoter extraction output folder name
+#arg2 is the name of the output directory
+#arg3 is the input location of rolling window bed file
+#arg4 is the input location of bed file for which % coverage is being calculated for
+#arg4 is the output location of the rolling window % coverage bed file
+python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage_rw_Araport11_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/rolling_window/TFBS_coverage_rw_Araport11_TSS_outward_promoter5UTR/Araport11_TSS_outward_promoter5UTR_bpcovered_rw.bed
+
+
+#TFBS coverage sliding window promoters/5UTR TSS outward windows (EPD TSS)
+#arg1 is the promoter extraction output folder name
+#arg2 is the name of the output directory
+#arg3 is the input location of rolling window bed file
+#arg4 is the input location of bed file for which % coverage is being calculated for
+#arg4 is the output location of the rolling window % coverage bed file
+python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage_rw_EPD_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/rolling_window/TFBS_coverage_rw_EPD_TSS_outward_promoter5UTR/EPD_TSS_outward_promoter5UTR_bpcovered_rw.bed
+
+
+
 #Root open chromatin coverage sliding window promoters_5'UTR
 python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/ATAC-seq/potter2018/Roots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed
 
@@ -191,11 +267,30 @@ python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw ../../dat
 #Root open chromatin coverage sliding window promoters only
 python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_promoterno5UTR ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/ATAC-seq/potter2018/Roots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_promoterno5UTR/promoters_root_bpcovered_rw.bed
 
-#Root open chromatin coverage sliding window promoters only
+#Shoot open chromatin coverage sliding window promoters only
 python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_promoterno5UTR ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/ATAC-seq/potter2018/Shoots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_promoterno5UTR/promoters_shoot_bpcovered_rw.bed
 
 #Root open chromatin coverage sliding window promoters only
 python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_promoterno5UTR ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/ATAC-seq/potter2018/intersectRootsShoots_PeaksInBoth.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_promoterno5UTR/promoters_rootshootintersect_bpcovered_rw.bed
+
+#Root open chromatin coverage sliding window promoters/5UTR TSS outward windows (Araport11)
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_Araport11_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed ../../data/ATAC-seq/potter2018/Roots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_Araport11_TSS_outward_promoter5UTR/Araport11_TSS_outward_promoter5UTR_root_bpcovered_rw.bed
+
+#Shoot open chromatin coverage sliding window promoters/5UTR TSS outward windows (Araport11)
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_Araport11_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed ../../data/ATAC-seq/potter2018/Shoots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_Araport11_TSS_outward_promoter5UTR/Araport11_TSS_outward_promoter5UTR_shoot_bpcovered_rw.bed
+
+#Root/Shoot intersect coverage sliding window promoters/5UTR TSS outward windows (Araport11)
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_Araport11_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed ../../data/ATAC-seq/potter2018/intersectRootsShoots_PeaksInBoth.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_Araport11_TSS_outward_promoter5UTR/Araport11_TSS_outward_promoter5UTR_rootshootintersect_bpcovered_rw.bed
+
+#Root open chromatin coverage sliding window promoters/5UTR TSS outward windows (EPD)
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_EPD_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed ../../data/ATAC-seq/potter2018/Roots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_EPD_TSS_outward_promoter5UTR/EPD_TSS_outward_promoter5UTR_root_bpcovered_rw.bed
+
+#Shoot open chromatin coverage sliding window promoters/5UTR TSS outward windows (EPD)
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_EPD_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed ../../data/ATAC-seq/potter2018/Shoots_NaOH_peaks_all.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_EPD_TSS_outward_promoter5UTR/EPD_TSS_outward_promoter5UTR_shoot_bpcovered_rw.bed
+
+#Root/Shoot intersect coverage sliding window promoters/5UTR TSS outward windows (EPD)
+python ../rolling_window/./coverage_rw.py $file_names OpenChromatin_rw_EPD_TSS_outward_promoter5UTR ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed ../../data/ATAC-seq/potter2018/intersectRootsShoots_PeaksInBoth.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw_EPD_TSS_outward_promoter5UTR/EPD_TSS_outward_promoter5UTR_rootshootintersect_bpcovered_rw.bed
+
 
 
 
@@ -217,6 +312,26 @@ python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_
 #arg6 is the output folder name
 python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw_promoterno5UTR/promoters_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/promoters_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/promoters_windows.fasta GC_content_rw_promoterno5UTR
 
+#GC content sliding window promoters/5UTR TSS outward windows (Araport11)
+#arg1 is the promoter extraction output folder name
+#arg2 is the output location of the rolling window GC content tsv
+#arg3 is the input location of the rolling window bed file
+#arg4 is the input location of the genome fasta file
+#arg5 is the output location of the rolling window fasta file
+#arg6 is the output folder name
+python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw_Araport11_TSS_outward_promoter5UTR/Araport11_TSS_outward_promoter5UTR_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.fasta  GC_content_rw_Araport11_TSS_outward_promoter5UTR
+
+#GC content sliding window promoters/5UTR TSS outward windows (EPD)
+#arg1 is the promoter extraction output folder name
+#arg2 is the output location of the rolling window GC content tsv
+#arg3 is the input location of the rolling window bed file
+#arg4 is the input location of the genome fasta file
+#arg5 is the output location of the rolling window fasta file
+#arg6 is the output folder name
+python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/rolling_window/GC_content_rw_EPD_TSS_outward_promoter5UTR/EPD_TSS_outward_promoter5UTR_GCcontent_rw.tsv ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed $genome_fasta ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.fasta  GC_content_rw_EPD_TSS_outward_promoter5UTR
+
+
+
 #TF_diversity sliding window promoters & 5'UTR
 #arg1 is the promoter extraction output folder name
 #arg2 is the input location of the rolling window bed file
@@ -234,6 +349,26 @@ python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$fil
 #arg5 is the output location of the window TF_diversity_bed
 #arg6 is the output folder name
 python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$file_names/rolling_window/promoters_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/rolling_window/promoters_windows_motifs.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw_promoterno5UTR/promoters_TF_diversity.bed TF_diversity_rw_promoterno5UTR
+
+#TF_diversity sliding window promoters/5UTR TSS outward windows (Araport11)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of the rolling window bed file
+#arg3 is the input location of the promoters mapped motif bed
+#arg4 is the output location of windows_motifs intersect bed
+#arg5 is the output location of the window TF_diversity_bed
+#arg6 is the output folder name
+python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/rolling_window/Araport11_TSS_outward_promoter5UTR_windows_motifs.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw_Araport11_TSS_outward_promoter5UTR/Araport11_TSS_outward_promoter5UTR_TF_diversity.bed TF_diversity_rw_Araport11_TSS_outward_promoter5UTR
+
+#TF_diversity sliding window promoters/5UTR TSS outward windows (EPD)
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of the rolling window bed file
+#arg3 is the input location of the promoters mapped motif bed
+#arg4 is the output location of windows_motifs intersect bed
+#arg5 is the output location of the window TF_diversity_bed
+#arg6 is the output folder name
+python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/rolling_window/EPD_TSS_outward_promoter5UTR_windows_motifs.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw_EPD_TSS_outward_promoter5UTR/EPD_TSS_outward_promoter5UTR_TF_diversity.bed TF_diversity_rw_EPD_TSS_outward_promoter5UTR
+
+
 
 #prepare files for gat analysis TATA enrichment
 #arg1 is the promoter extraction output folder name
