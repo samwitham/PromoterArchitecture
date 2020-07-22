@@ -10,7 +10,7 @@ parser.add_argument('GC_content_tsv', type=str, help='Output location of rolling
 parser.add_argument('window_bed', type=str, help='Input location of rolling window bed file')
 parser.add_argument('genome_fasta', type=str, help='Input location of genome fasta file')
 parser.add_argument('window_fasta', type=str, help='Output location of rolling window fasta file')
-parser.add_argument('outputfolder', type=str, help='Output folder name')
+parser.add_argument('outputfolder', type=str, help='Output folder name', default = '', nargs="?")
 args = parser.parse_args()
 
 def make_window_fasta(window_bed,genome_fasta,window_fasta):

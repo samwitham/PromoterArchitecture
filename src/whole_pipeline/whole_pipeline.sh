@@ -23,6 +23,21 @@ python ../data_sorting/extract_promoter.py $directory_path $file_names 1000 --pr
 #$2 output file name
 #../meme_suite/./preFIMO.sh ../../data/FIMO/motif_data/dap_data_v4/motifs dap_combined.meme
 
+#Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
+#Also filters out promoters which have 100% overlapping promoters with other genes (where only a 5UTR is present that's not overlapping)
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the location of the Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
+#arg4 is the input location of the Mergner et al 2020 ranked cv dataset
+#arg5 is the size, N, of the gene subsets
+#arg6 is the czechowski gene category output file containing the selected gene subsets of size N
+#arg7 is the mergner gene category output file containing the selected gene subsets of size N
+#arg8 is the input location of the promoter mapped motifs bed file
+#arg9 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
+#arg10 is the output location of all filtered microarray genes
+#arg11 is the output location of all filtered RNAseq genes
+#arg12 is the input location of promoters gff3 file
+python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
 
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
 #remember to change location depending on if promoter file used or UTR file
@@ -206,19 +221,7 @@ python ../rolling_window/./TSS_outward_rw.py $file_names ../../data/output/$file
 
 
 
-#Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
-#arg1 is the promoter extraction output folder name
-#arg2 is the promoter bed file
-#arg3 is the location of the Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
-#arg4 is the input location of the Mergner et al 2020 ranked cv dataset
-#arg5 is the size, N, of the gene subsets
-#arg6 is the czechowski gene category output file containing the selected gene subsets of size N
-#arg7 is the mergner gene category output file containing the selected gene subsets of size N
-#arg8 is the input location of the promoter mapped motifs bed file
-#arg9 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
-#arg10 is the output location of all filtered microarray genes
-#arg11 is the output location of all filtered RNAseq genes
-python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt
+
 
 #TFBS coverage sliding window promoters/5'UTR
 #arg1 is the promoter extraction output folder name
@@ -398,7 +401,8 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 #arg1 is the promoter extraction output folder name
 #arg2 is the input location of Czechowski gene categories text file
 #arg3 is the input location of promoters GC_content tsv file
-python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv
+#arg4 is the output folder name ending in a forward slash
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv 
 
 
 #Plot TFBS coverage
@@ -462,7 +466,8 @@ python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage ../../data/o
 #arg3 is the input location of the shortened promoter bed file
 #arg4 is the input location of the genome fasta file
 #arg5 is the output location of the shortened promoter fasta file
-python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed $genome_fasta ../../data/output/$file_names/${promoterpref}_${promoter_length}bp.fasta
+#arg6 is the output folder name
+python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed $genome_fasta ../../data/output/$file_names/${promoterpref}_${promoter_length}bp.fasta 
 
 #%coverage of open chromatin
 #$1 is promoter bed file
@@ -500,7 +505,7 @@ python ../data_sorting/create_motif_mapped_from_intersect.py ../../data/output/$
 #arg2 is the input location of Czechowski gene categories text file
 #arg3 is the input location of promoters mapped motif bed
 #arg4 is the optional output folder name ending in a forward slash
-python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp/
+python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp/
 
 #Open chromatin coverage shoot-root intersect using Potter et al 2018 ATAC-seq negative controls for root/shoot open chromatin
 #arg1 is the promoter extraction output folder name
@@ -604,7 +609,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$4 is the genome fasta file location
 #$5 is the constitutive promoter fasta file output location
 #$6 is the constitutive, variable and random promoters fasta file output location
-../meme_suite/./precentrimo.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.bed ../../data/output/$file_names/TFBS_enrichment/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.bed $file_names $genome_fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta
+../meme_suite/./precentrimo.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_constitutive_gat.bed ../../data/output/$file_names/TFBS_enrichment/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable_gat.bed $file_names $genome_fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta
 
 #activate memesuite conda environment (install memesuite 5.0.2 using conda install 'meme=5.0.2' 'icu=58.2'. Centrimo is broken on memesuite versions higher than 5.0.2)
 #MemeSuite4 env has 
@@ -614,7 +619,7 @@ conda activate MemeSuite4
 #$2 is the promoter fasta file location of constitutive, variable and random genes only
 #$3 is meme motif file 
 #$4 is the folder name
-../meme_suite/./centrimo.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_allgenetypes.fasta ../../data/FIMO/motif_data/dap_combined.meme $file_names
+../meme_suite/./centrimo.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/dap_combined.meme $file_names
 
 #run ciiider software
 #$1 is the promoter fasta file location of constitutive genes only
@@ -622,9 +627,9 @@ conda activate MemeSuite4
 #$3 is jaspar motif file
 #$4 is the folder name
 #$5 is the CiiiDER output folder name (Czechowski_400bp_promoters_5UTR_constitutive)
-../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Czechowski_400bp_promoters_5UTR_constitutive
+#../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Czechowski_400bp_promoters_5UTR_constitutive
 
-
+conda activate PromoterArchitecturePipeline
 #flag genes from the czechowski constitutive/variable/control gene_set which are transcription factors
 #arg1 is the promoter extraction output folder name
 #arg2 is the gene_categories input file

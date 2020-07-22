@@ -14,6 +14,7 @@ parser.add_argument('promoter_mapped_motifs', type=str, help='Input location of 
 parser.add_argument('promoters_filtered_contain_motifs', type=str, help='output location of the promoter bed file filtered so that each promoter contains at least one TFBS')
 parser.add_argument('Czechowski_allgenes', type=str, help='Output location of all filtered microarray genes')
 parser.add_argument('Mergner_allgenes', type=str, help='Output location of all filtered RNAseq genes')
+parser.add_argument('promoters_gff3', type=str, help='Input location of promoters gff3 file')
 args = parser.parse_args()
 
 def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filtered_contain_motifs):
@@ -34,7 +35,35 @@ def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filt
     idx = filtered_df.promoter_AGI.drop_duplicates().index
     #this will return filtered df
     no_dups = filtered_df.loc[idx,:]
-    no_dups.to_csv(promoters_filtered_contain_motifs, sep='\t', header=None, index=False)    
+    no_dups.to_csv(promoters_filtered_contain_motifs, sep='\t', header=None, index=False)
+    
+def remove_only5UTR(promoter5UTR_bedfile, promoters_gff3):
+    """remove genes where only the Araport11 5'UTR is present due to the promoter overlapping other genes"""
+    #read in df
+    promoter5UTR = pd.read_table(promoter5UTR_bedfile,sep='\t', header=None)
+    col = ['chr','start','stop','AGI','dot1', 'strand','source','type','dot2','attributes']
+    promoter5UTR.columns = col
+    
+    # read in promoter only gff3
+    promoter_no_5UTR_df = pd.read_table(promoters_gff3, sep='\t', header=None)
+    col = ['chr', 'source', 'type', 'start','stop', 'dot1','strand','dot2','attributes']
+    promoter_no_5UTR_df.columns = col
+    #add AGI column
+    promoter_no_5UTR_df_agi = promoter_no_5UTR_df.assign(AGI=promoter_no_5UTR_df.attributes.str.extract(r'ID=gene:(.*?)\;'))
+    
+    #filter promoters in promoter5UTR but not in promoter_no_5UTR_df_agi
+    filtered = promoter5UTR[promoter5UTR.AGI.isin(promoter_no_5UTR_df_agi.AGI)]    
+    
+    #rename promoter5UTR_bedfile as including genes with only non-overlapping 5'UTRs
+    
+    oldextension = os.path.splitext(promoter5UTR_bedfile)[1]
+    oldname = os.path.splitext(promoter5UTR_bedfile)[0]
+    os.rename(promoter5UTR_bedfile, oldname + '_incl_only5UTR' + oldextension)
+    
+    #make a new file called the same name as promoter5UTR_bedfile
+    filtered.to_csv(promoter5UTR_bedfile,sep='\t', header=None, index=False) 
+    
+
 
 def filter_genes_czechowski(promoter_bed, select_genes_file):
     """filter out genes from the microarray data which aren't in the promoter_bed"""
@@ -132,7 +161,8 @@ except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
     
-remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)  
+remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)
+remove_only5UTR(args.promoter_bedfile, args.promoters_gff3)
 filtered_czechowski = filter_genes_czechowski(args.promoters_filtered_contain_motifs,args.Czechowski_rankedcv)
 filtered_mergner = filter_genes_mergner(args.promoters_filtered_contain_motifs,args.Mergner_rankedcv)
 #czechowksi subset
