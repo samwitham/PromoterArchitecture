@@ -10,6 +10,7 @@ import scipy.cluster.hierarchy as shc
 from sklearn.cluster import AgglomerativeClustering, KMeans
 import argparse
 from statannot import add_stat_annotation
+import scikit_posthocs as sp
 
 parser = argparse.ArgumentParser(description='TF_diversity_plots')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
@@ -119,7 +120,11 @@ def all_prom_distribution(df, x_variable, x_label, output_prefix):
     plt.xlabel(x_label)
 
     #save to file
-    dist_plot_fig.savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_distribution.pdf', format='pdf')    
+    dist_plot_fig.savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_distribution.pdf', format='pdf')
+
+def dunn_posthoc_test(df,dependent_variable, between):
+    """dunn_posthoc tests with bonferroni multiple correction"""
+    return sp.posthoc_dunn(df, val_col=dependent_variable, group_col=between, p_adjust='bonferroni')
     
 def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind):
     """function to make and save plot"""
@@ -133,19 +138,36 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order)
     #plot points
     ax = sns.swarmplot(x=x, y=y, data=df, color=".25",order=order)
-    #add significance if necessary
+    #add significance if necessary - dunn's posthocs with multiple Bonferroni correction
+    stat = dunn_posthoc_test(df,y_variable,x_variable)
+    #label box pairs
+    box_pairs=[("constitutive", "variable"),("constitutive", "control"),("variable", "control")]
+    #make empty list of p_values
+    p_values = []
+    #populate the list of p_values accoridng to the box_pairs
+    for pair in box_pairs:
+        print(pair)
+        #select p value for each pair
+        p = stat.loc[pair[0],pair[1]]
+        p_values.append(p)
+
+
+    
+    #add stats annotation to the plot
     test_results = add_stat_annotation(ax, data=df, x=x, y=y, order=order,
-                                      box_pairs=[("constitutive", "variable"),("constitutive", "control"),("variable", "control",)],
-                                      test='Kruskal', text_format='star',
-                                      loc='outside',verbose=2)
+                                      box_pairs=box_pairs,
+                                      text_format='star',
+                                      loc='outside',verbose=2,
+                                      perform_stat_test=False,
+                                       pvalues=p_values, test_short_name='Dunn')
     
     #change axes labels
     plt.ylabel(y_label)
     plt.xlabel(x_label)
     #tight layout
-    plt.tight_layout()
+    plt.tight_layout()  
     #save figure
-    ax.get_figure().savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_{plot_kind}.pdf', format='pdf')   
+    ax.get_figure().savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_{plot_kind}.pdf', format='pdf')         
     
     
     

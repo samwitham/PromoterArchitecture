@@ -520,7 +520,7 @@ python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_
 python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_${promoter_length}bp/
 
 
-#prepare files for gat analysis TATA enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, whole promoters open chromatin
+#prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, whole promoters open chromatin
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter prefix name
 #arg3 is the Input location of the Czechowski gene categories text file
@@ -530,7 +530,7 @@ python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped_openchromrootshootintersect.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_openchromrootshootintersect_TFfamily.bed
 
-#prepare files for gat analysis TATA enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, whole promoters
+#prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, whole promoters
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter prefix name
 #arg3 is the Input location of the Czechowski gene categories text file
@@ -540,7 +540,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_TFfamily.bed
 
-#prepare files for gat analysis TATA enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, 400bp promoters, openchromatin
+#prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, 400bp promoters, openchromatin
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter prefix name
 #arg3 is the Input location of the Czechowski gene categories text file
@@ -550,7 +550,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed Czechowski_400bp ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect_TFfamily.bed
 
-#prepare files for gat analysis TATA enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, 400bp promoters
+#prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, 400bp promoters
 #arg1 is the promoter extraction output folder name
 #arg2 is the promoter prefix name
 #arg3 is the Input location of the Czechowski gene categories text file
@@ -562,7 +562,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 
 
 
-#run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories - whole promoters open chromatin only
+#run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - whole promoters open chromatin only
 #$1 is the workspace file containing all promoters of interest
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
@@ -572,7 +572,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$7 is the optional --ignore-segment-tracks or --with-segment-tracks flag
 ../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_constitutive_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_variable_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_openchromrootshootintersect_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoterpref}_Czechowski_TFBS_openchrom --with-segment-tracks
 
-#run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories - whole promoters 
+#run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - whole promoters 
 #$1 is the workspace file containing all promoters of interest
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
@@ -582,7 +582,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$7 is the optional --ignore-segment-tracks or --with-segment-tracks flag
 ../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_constitutive_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_variable_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoterpref}_Czechowski_TFBS --with-segment-tracks
 
-#run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories - 400bp promoters open chromatin only
+#run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - 400bp promoters open chromatin only
 #$1 is the workspace file containing all promoters of interest
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
@@ -592,7 +592,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$7 is the optional --ignore-segment-tracks flag or --with-segment-tracks flag
 ../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_constitutive_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_variable_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoter_length}bp_${promoterpref}_Czechowski_TFBS_openchrom --with-segment-tracks
 
-#run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories - 400bp promoters
+#run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - 400bp promoters
 #$1 is the workspace file containing all promoters of interest
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
