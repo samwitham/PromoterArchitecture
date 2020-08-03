@@ -84,7 +84,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     box_pairs=[("constitutive", "variable"),("constitutive", "control"),("variable", "control")]
     #make empty list of p_values
     p_values = []
-    #populate the list of p_values accoridng to the box_pairs
+    #populate the list of p_values according to the box_pairs
     for pair in box_pairs:
         print(pair)
         #select p value for each pair
