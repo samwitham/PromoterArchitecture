@@ -23,36 +23,25 @@ python ../data_sorting/extract_promoter.py $directory_path $file_names 1000 --pr
 #$2 output file name
 #../meme_suite/./preFIMO.sh ../../data/FIMO/motif_data/dap_data_v4/motifs dap_combined.meme
 
-#Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
-#Also filters out promoters which have 100% overlapping promoters with other genes (where only a 5UTR is present that's not overlapping)
-#arg1 is the promoter extraction output folder name
-#arg2 is the promoter bed file
-#arg3 is the location of the Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
-#arg4 is the input location of the Mergner et al 2020 ranked cv dataset
-#arg5 is the size, N, of the gene subsets
-#arg6 is the czechowski gene category output file containing the selected gene subsets of size N
-#arg7 is the mergner gene category output file containing the selected gene subsets of size N
-#arg8 is the input location of the promoter mapped motifs bed file
-#arg9 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
-#arg10 is the output location of all filtered microarray genes
-#arg11 is the output location of all filtered RNAseq genes
-#arg12 is the input location of promoters gff3 file
-python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
-
-##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
+#locations of promoter gff3 file and genome_fasta file
 #remember to change location depending on if promoter file used or UTR file
 #promoter_gff_file=../../data/genomes/$file_names/promoters_renamedChr.gff3
 promoter_gff_file=../../data/output/$file_names/promoters_5UTR.gff3
 genome_fasta=../../data/genomes/TAIR10_chr_all.fas
 
+#identify the base filename
+promoterbase=${promoter_gff_file##*/}
+promoterpref=${promoterbase%.*}
+
+
+
+##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
 ../meme_suite/./preFIMO.sh $promoter_gff_file $genome_fasta $file_names
 
 ## create FIMO background file:
 #activate correct conda env
 conda activate MemeSuite3
-#identify the output filename created by preFIMO.sh
-promoterbase=${promoter_gff_file##*/}
-promoterpref=${promoterbase%.*}
+
 #run FIMO.sh
 #$1 is promoter fasta file. 
 #$2 is pvalue threshold. 
@@ -86,7 +75,21 @@ python ../meme_suite/./map_motif_ids.py  ../../data/output/$file_names/FIMO/${pr
 #map plantpan motifs
 #python ../meme_suite/./map_motif_ids.py ../../data/output/$file_names/FIMO/${promoterpref}_motifs_plantpan.bed ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs__plantpan_mapped.bed
 
-
+#Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
+#Also filters out promoters which have 100% overlapping promoters with other genes (where only a 5UTR is present that's not overlapping)
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the location of the Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
+#arg4 is the input location of the Mergner et al 2020 ranked cv dataset
+#arg5 is the size, N, of the gene subsets
+#arg6 is the czechowski gene category output file containing the selected gene subsets of size N
+#arg7 is the mergner gene category output file containing the selected gene subsets of size N
+#arg8 is the input location of the promoter mapped motifs bed file
+#arg9 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
+#arg10 is the output location of all filtered microarray genes
+#arg11 is the output location of all filtered RNAseq genes
+#arg12 is the input location of promoters gff3 file
+python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
 
 
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
@@ -380,17 +383,39 @@ python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$fil
 #arg4 is the Input location of promoters bed file
 #arg5 is the Gene category prefix (eg. Czechowski)
 #arg6 is the Input location of TATAbox_location bed file (from Eukaryotic promoter database)
-python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed
+#use ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
+
+#This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
+#Used the following search parameters for download:
+## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
+##Series : EPDnew, the Arabidopsis Curated Promoter Database
+##Sample : TSS from EPDnew rel 004
+##Repeat masking: off
+##5' border: -100     3' border: 100
+##Search mode: forward
+##Selection mode : all matches)
+python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed
 
 #run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories
 #$1 is the workspace file containing all promoters of interest
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
 #$4 is the segments bed file
+#use ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
+
+#This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
+#Used the following search parameters for download:
+## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
+##Series : EPDnew, the Arabidopsis Curated Promoter Database
+##Sample : TSS from EPDnew rel 004
+##Repeat masking: off
+##5' border: -100     3' border: 100
+##Search mode: forward
+##Selection mode : all matches)
 #$5 is the output folder location
 #$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
 #7 is the optional --ignore-segment-tracks flag
-../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_variable.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Czechowski_TATA --ignore-segment-tracks
+../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_variable.bed ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Czechowski_TATA --ignore-segment-tracks
 
 
 

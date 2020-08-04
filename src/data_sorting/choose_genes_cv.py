@@ -160,9 +160,8 @@ try:
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
-    
+remove_only5UTR(args.promoter_bedfile, args.promoters_gff3)    
 remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)
-remove_only5UTR(args.promoter_bedfile, args.promoters_gff3)
 filtered_czechowski = filter_genes_czechowski(args.promoters_filtered_contain_motifs,args.Czechowski_rankedcv)
 filtered_mergner = filter_genes_mergner(args.promoters_filtered_contain_motifs,args.Mergner_rankedcv)
 #czechowksi subset
