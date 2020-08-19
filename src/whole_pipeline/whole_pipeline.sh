@@ -383,7 +383,17 @@ python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$fil
 #arg4 is the Input location of promoters bed file
 #arg5 is the Gene category prefix (eg. Czechowski)
 #arg6 is the Input location of TATAbox_location bed file (from Eukaryotic promoter database)
-#use ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
+#use ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed (stringent TATAs))
+#Used the following search parameters for download:
+## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
+##Series : EPDnew, the Arabidopsis Curated Promoter Database
+##Sample : TSS from EPDnew rel 004
+##Repeat masking: off
+##5' border: -50     3' border: 0 
+##Search mode: forward
+##Selection mode : all matches)
+
+#or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
 
 #This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
 #Used the following search parameters for download:
@@ -394,14 +404,14 @@ python ../rolling_window/./TF_diversity_rw.py $file_names ../../data/output/$fil
 ##5' border: -100     3' border: 100
 ##Search mode: forward
 ##Selection mode : all matches)
-python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed
+python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Czechowski ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed
 
 #run gat (Genomic association tester) enrichment for TATA boxes using Czechowski gene categories
 #$1 is the workspace file containing all promoters of interest
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
 #$4 is the segments bed file
-#use ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
+#use ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
 
 #This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
 #Used the following search parameters for download:
@@ -415,7 +425,7 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 #$5 is the output folder location
 #$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
 #7 is the optional --ignore-segment-tracks flag
-../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_variable.bed ../../data/EPD_promoter_analysis/TATA/TATA_15bp.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Czechowski_TATA --ignore-segment-tracks
+../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Czechowski_${promoterpref}_variable.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Czechowski_TATA --ignore-segment-tracks
 
 
 
