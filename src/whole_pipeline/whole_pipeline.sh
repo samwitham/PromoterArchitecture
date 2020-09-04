@@ -91,6 +91,9 @@ python ../meme_suite/./map_motif_ids.py  ../../data/output/$file_names/FIMO/${pr
 #arg12 is the input location of promoters gff3 file
 python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 100 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
 
+#run again with 300 genes per promoter category for gene ontology enrichment analysis
+python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/genes/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/genes/RNA_CVs.csv 300 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_300.txt ../../data/output/${file_names}/genes/${promoterpref}_mergner_constitutive_variable_random_300.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_mergner_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
+
 
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
@@ -671,3 +674,19 @@ conda activate PromoterArchitecturePipeline
 #arg3 is the input location of the Arabidopsis transcription factor list
 #arg4 is the output location of the flagged TF genes
 python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/genes/Ath_TF_list.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_variable_TFs_only.txt
+
+## gene ontology enricment analysis
+
+#arg1 is the promoter extraction output folder name
+#arg2 is the directory location of go term enrichment files
+#arg3 is the location of background gene set
+#arg4 is the location of NCBI gene list
+#For this I downloaded all Arabidopsis protein coding genes from NCBI using the following search (instructions shown here https://github.com/tanghaibao/goatools/blob/master/notebooks/backround_genes_ncbi.ipynb):
+
+#"3702"[Taxonomy ID] AND alive[property] AND genetype protein coding[Properties]
+
+#I downloaded the tabular file format of all the genes (27562) on 19/08/20
+
+#arg5 is the location of genes of interest
+#analysis of top 300 constitutive and top 300 variable genes
+python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_czechowski_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_czechowski_constitutive_variable_random_300.txt

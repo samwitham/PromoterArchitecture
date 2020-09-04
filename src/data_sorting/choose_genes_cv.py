@@ -140,7 +140,9 @@ def subSet_onCV(in_df, out_dir, no_of_genes):
     mid_range['bins'] = pd.Series(pd.qcut(mid_range['expression_CV'], q = 10, precision = 2))
 
     #extract 10 random rows from these bins and label as the control set
-    samples_from_bins = mid_range.groupby('bins').apply(pd.DataFrame.sample, 10, random_state = 2)
+    sample = no_of_genes/10
+    sample_integar = int(str(sample).replace('.0', '')) #convert sample to an integar
+    samples_from_bins = mid_range.groupby('bins').apply(pd.DataFrame.sample, sample_integar, random_state = 2)
     samples_from_bins['state'] = 'control'
 
     #concatenate and write as output
