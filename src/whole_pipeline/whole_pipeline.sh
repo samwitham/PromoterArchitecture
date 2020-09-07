@@ -673,7 +673,7 @@ conda activate PromoterArchitecturePipeline
 #arg2 is the gene_categories input file
 #arg3 is the input location of the Arabidopsis transcription factor list
 #arg4 is the output location of the flagged TF genes
-python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/genes/Ath_TF_list.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_variable_TFs_only.txt
+python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/genes/Ath_TF_list.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_variable_TFs_only.txt
 
 ## gene ontology enricment analysis
 
