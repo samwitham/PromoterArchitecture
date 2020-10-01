@@ -11,6 +11,8 @@ parser.add_argument('gene_categories', type=str, help='Input location of the gen
 parser.add_argument('promoter_bed_file', type=str, help='Input location of the promoters bed file')
 parser.add_argument('output_genecat_prefix', type=str, help='Gene category prefix (eg. Czechowski)')
 parser.add_argument('TATA_box_locations', type=str, help='Input location of TATAbox_location bed file (from Eukaryotic promoter database)')
+#optional argument
+parser.add_argument('variable2_name', nargs='?', default='variable')
 args = parser.parse_args()
 
 promoter_TATA_intersect_bed = f'../../data/output/{args.file_names}/TATA/{args.promoterpref}_TATA_intersect.bed'
@@ -73,7 +75,7 @@ def prepare_gat(df):
     df.to_csv(buffer,sep='\t', header=None, index = False)
     buffer.seek(0)
     #select only constitutive and variable genes
-    df = df[(df.gene_type == 'constitutive') | (df.gene_type == 'variable')]
+    df = df[(df.gene_type == 'constitutive') | (df.gene_type == args.variable2_name)]
     #reorder columns
     df_reordered = df[['chr','start','stop','gene_type', 'strand', 'source', 'attributes','AGI']]
     #sort by chromosome and start
@@ -88,9 +90,9 @@ def prepare_gat(df):
     #make a new gat workspace file with all promoters (first 3 columns)
     bed = BedTool.from_dataframe(sorted_motifs[['chr','start','stop']]).saveas(f'../../data/output/{args.file_names}/TATA/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_workspace.bed')
     #select only variable promoters
-    variable_promoters_extended = sorted_motifs[sorted_motifs['gene_type'] == 'variable']
+    variable_promoters_extended = sorted_motifs[sorted_motifs['gene_type'] == args.variable2_name]
     sorted_variable = variable_promoters_extended.sort_values(['chr','start'])
-    bed = BedTool.from_dataframe(sorted_variable).saveas(f'../../data/output/{args.file_names}/TATA/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_variable.bed')
+    bed = BedTool.from_dataframe(sorted_variable).saveas(f'../../data/output/{args.file_names}/TATA/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable2_name}.bed')
     #make a constitutive only file
     constitutive_promoters = sorted_motifs[sorted_motifs['gene_type'] == 'constitutive']
     sorted_constitutive = constitutive_promoters.sort_values(['chr','start'])

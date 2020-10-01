@@ -675,7 +675,7 @@ conda activate PromoterArchitecturePipeline
 #arg4 is the output location of the flagged TF genes
 python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/genes/Ath_TF_list.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_variable_TFs_only.txt
 
-## gene ontology enricment analysis
+## gene ontology enrichment analysis
 
 #arg1 is the promoter extraction output folder name
 #arg2 is the directory location of go term enrichment files
@@ -690,3 +690,233 @@ python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_na
 #arg5 is the location of genes of interest
 #analysis of top 300 constitutive and top 300 variable genes
 python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_czechowski_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_czechowski_constitutive_variable_random_300.txt
+
+#need to add KEGG analysis to this too
+
+####
+####
+####
+#### TAU ANALYSIS
+
+
+#Ran filter_microarray_conditions.ipynb to filter conditions of interest, outputting AtGE_dev_gcRMA.txt.newline.filtered
+
+
+#Prepare raw Czechowski et al 2005 microarray data this time not filtering out genes that aren't expressed in >80% of tissues/conditions
+#arg1 is the input file
+#arg2 is the mas5 affymetrix presence/absence data
+#arg3 is the current Arabidopsis thaliana annotation data
+#arg4 is the Araport housekeeping genes from Data S4 from Cheng et al. 2016
+#arg5 is the output directory
+#arg6 is the promoter extraction output folder name
+
+python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/tissue_specific $file_names
+
+#filter microarray to include only conditions of interest for TAU tissue specificity
+#arg1 is the input location of expression data table (schmid et al 2005 microarray AtGE_dev_gcRMA.txt.newline)
+#arg2 is the output location of filtered microarray
+#arg3 is the output location of TAU table
+
+python ../data_sorting/./filter_microarray_conditions.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt
+
+
+
+#Create Scmid et al 2005 ranked tau dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, tissue_specific or control genes
+#Also filters out promoters which have 100% overlapping promoters with other genes (where only a 5UTR is present that's not overlapping)
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter bed file
+#arg3 is the location of the Czechowski et al 2005 ranked cv dataset reanalysed by Will Nash
+#arg4 is the size, N, of the gene subsets
+#arg5 is the schmid gene category output file containing the selected gene subsets of size N
+#arg6 is the input location of the promoter mapped motifs bed file
+#arg7 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
+#arg8 is the output location of all filtered microarray genes
+#arg9 is the input location of promoters gff3 file
+
+python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 100 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
+
+#run again with 300 genes per promoter category for gene ontology enrichment analysis
+python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 300 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random_300.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
+
+
+#prepare files for gat analysis TATA enrichment
+#arg1 is the promoter extraction output folder name
+#arg2 is the promoter prefix name
+#arg3 is the Input location of the Schmid gene categories text file
+#arg4 is the Input location of promoters bed file
+#arg5 is the Gene category prefix (eg. Czechowski)
+#arg6 is the Input location of TATAbox_location bed file (from Eukaryotic promoter database)
+#arg7 is the optional replacement name for the non-constitutive variable (eg. tissue_specific)
+#use ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed (stringent TATAs))
+#Used the following search parameters for download:
+## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
+##Series : EPDnew, the Arabidopsis Curated Promoter Database
+##Sample : TSS from EPDnew rel 004
+##Repeat masking: off
+##5' border: -50     3' border: 0 
+##Search mode: forward
+##Selection mode : all matches)
+
+#or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
+
+#This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
+#Used the following search parameters for download:
+## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
+##Series : EPDnew, the Arabidopsis Curated Promoter Database
+##Sample : TSS from EPDnew rel 004
+##Repeat masking: off
+##5' border: -100     3' border: 100
+##Search mode: forward
+##Selection mode : all matches)
+python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed tissue_specific
+
+
+#run gat (Genomic association tester) enrichment for TATA boxes using Schmid gene categories
+#$1 is the workspace file containing all promoters of interest
+#$2 is the constitutive promoters file for annotations
+#$3 is the variable promoters file for annotations
+#$4 is the segments bed file
+#use ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
+
+#This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
+#Used the following search parameters for download:
+## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
+##Series : EPDnew, the Arabidopsis Curated Promoter Database
+##Sample : TSS from EPDnew rel 004
+##Repeat masking: off
+##5' border: -100     3' border: 100
+##Search mode: forward
+##Selection mode : all matches)
+#$5 is the output folder location
+#$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
+#7 is the optional --ignore-segment-tracks flag
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_tissue_specific.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Schmid_TATA --ignore-segment-tracks
+
+
+##PLOTS TAU
+#Whole promoter plots:
+
+#Plot GC content
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters GC_content tsv file
+#arg4 is the output folder name ending in a forward slash
+#arg5 is the optional variable2 name (default is 'variable')
+#arg6 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv tau/ tissue_specific Schmid
+
+
+#Plot TFBS coverage
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters bp_covered txt file
+#arg4 is the output folder name ending in a forward slash
+#arg5 is the optional variable2 name (default is 'variable')
+#arg6 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt tau/ tissue_specific Schmid
+
+#Plot TF and TF family diversity, and do PCA and Kmeans clustering
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters mapped motif bed
+#arg4 is the output folder name ending in a forward slash
+#arg5 is the optional variable2 name (default is 'variable')
+#arg6 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed tau/ tissue_specific Schmid
+
+#TATA enrichment plot Czechowski gene categories
+#arg1 is the promoter extraction output folder name
+#arg2 is the Location of constitutive promoter gat analysis output
+#arg3 is the Location of variable promoter gat analysis output
+#arg4 is the Output prefix to add to plot file name
+#arg5 is the output folder name ending in a forward slash
+#arg6 is the optional variable2 name (default is 'variable')
+
+python ../plotting/./TATA_enrichment_plots.py $file_names ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_constitutive.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_tissuespecific.out Czechowski_${promoterpref} tau/ tissue_specific
+
+#Open chromatin coverage shoot-root intersect using Potter et al 2018 ATAC-seq negative controls for root/shoot open chromatin
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of open chromatin bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash - open chromatin tissue
+#arg5 is the optional output folder name ending in a forward slash - promoter set name 
+#arg6 is the optional variable2 name (default is 'variable')
+#arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_tau/ tissue_specific Schmid
+#Open chromatin coverage root
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}RootOpenChrom.bp_covered.txt Root/ ${promoterpref}_tau/ tissue_specific Schmid
+#Open chromatin coverage shoot
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_tau/ tissue_specific Schmid
+
+
+
+#rerun analyses at shorter promoter length
+
+
+#PLOTTING
+
+#Shortened promoter plots:
+
+#Plot GC content
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters GC_content tsv file
+#arg4 is the output folder name ending in a forward slash
+#arg5 is the optional variable2 name (default is 'variable')
+#arg6 is the optional replacement name for author in reference to the geneset (default Czechowski)
+
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ${promoterpref}_${promoter_length}bp_tau/ tissue_specific Schmid
+
+
+
+#Plot TFBS coverage
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters bp_covered txt file
+#arg4 is the output folder name ending in a forward slash
+#arg5 is the optional variable2 name (default is 'variable')
+#arg6 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bp.bp_covered.txt ${promoterpref}_${promoter_length}bp_tau/ tissue_specific Schmid
+
+#Plot TF and TF family diversity, and do PCA and Kmeans clustering
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters mapped motif bed
+#arg4 is the output folder name ending in a forward slash
+#arg5 is the optional variable2 name (default is 'variable')
+#arg6 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_tau/ tissue_specific Schmid
+
+
+
+#Open chromatin coverage shoot-root intersect using Potter et al 2018 ATAC-seq negative controls for root/shoot open chromatin
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of open chromatin bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash - open chromatin tissue
+#arg5 is the optional output folder name ending in a forward slash - promoter set name 
+#arg6 is the optional variable2 name (default is 'variable')
+#arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_${promoter_length}bp_tau/ tissue_specific Schmid
+#Open chromatin coverage root
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpRootOpenChrom.bp_covered.txt Root/ ${promoterpref}_${promoter_length}bp_tau/ tissue_specific Schmid
+#Open chromatin coverage shoot
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_${promoter_length}bp_tau/ tissue_specific Schmid
+
+
+
+## gene ontology enrichment analysis
+
+#arg1 is the promoter extraction output folder name
+#arg2 is the directory location of go term enrichment files
+#arg3 is the location of background gene set
+#arg4 is the location of NCBI gene list
+#For this I downloaded all Arabidopsis protein coding genes from NCBI using the following search (instructions shown here https://github.com/tanghaibao/goatools/blob/master/notebooks/backround_genes_ncbi.ipynb):
+
+#"3702"[Taxonomy ID] AND alive[property] AND genetype protein coding[Properties]
+
+#I downloaded the tabular file format of all the genes (27562) on 19/08/20
+
+#arg5 is the location of genes of interest
+#analysis of top 300 constitutive and top 300 variable genes
+python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_schmid_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_schmid_constitutive_tissuespecific_random_300.txt

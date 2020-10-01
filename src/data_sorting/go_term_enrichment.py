@@ -17,6 +17,8 @@ parser.add_argument('go_directory', type=str, help='Directory location of go ter
 parser.add_argument('background_gene_set', type=str, help='Location of background gene set')
 parser.add_argument('NCBI_gene_list', type=str, help='Location of NCBI gene list')
 parser.add_argument('genes_of_interest', type=str, help='Location of genes of interest')
+parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
+parser.add_argument('author_name', type=str, help='Optional replacement name for author in reference to the geneset',default = 'Czechowski', nargs="?")
 args = parser.parse_args()
 
 NCBI_gene_list_filtered = 'gene_result_filtered.txt'
@@ -188,7 +190,7 @@ study_genes = map_AGI2NCBI(NCBI_gene_list_filtered,args.genes_of_interest)
 
 #select gene_types of interest
 constitutive_genes = study_genes[study_genes.gene_type == 'constitutive']
-variable_genes = study_genes[study_genes.gene_type == 'variable']
+variable_genes = study_genes[study_genes.gene_type == args.variable2_name]
 
 #make dictionary where key is geneid and value is gene symbol
 constitutive_geneid2symbol = dict(zip(constitutive_genes.GeneID,constitutive_genes.Symbol))
@@ -200,8 +202,8 @@ variable_NCBI_IDs = variable_geneid2symbol.keys()
 
 ## Run Gene Ontology Enrichment Analysis (GOEA) using Benjamini/Hochberg FDR correction
 #keep only significant results
-constitutive_goea_sig,constitutive_goea_all = run_GOEA(constitutive_NCBI_IDs,'constitutive_czechowski')
-variable_goea_sig,variable_goea_all = run_GOEA(variable_NCBI_IDs,'variable_czechowski')
+constitutive_goea_sig,constitutive_goea_all = run_GOEA(constitutive_NCBI_IDs,f'constitutive_{args.author_name}')
+variable_goea_sig,variable_goea_all = run_GOEA(variable_NCBI_IDs,f'{args.variable2_name}_{args.author_name}')
 # #plot colouring by significance - constitutive
 # # GO terms colored by P-value:
 

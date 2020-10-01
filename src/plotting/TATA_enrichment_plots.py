@@ -2,14 +2,42 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='TATA_enrichment_plots')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('gat_TATA_constitutive_output', type=str, help='Location of constitutive promoter gat analysis output')
 parser.add_argument('gat_TATA_variable_output', type=str, help='Location of variable promoter gat analysis output')
 parser.add_argument('output_prefix', type=str, help='Output prefix to add to plot file name')
+parser.add_argument('output_folder_name', type=str, help='Optional output folder name ending in a forward slash',default = '', nargs="?")
+parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
+
 
 args = parser.parse_args()
+
+
+
+
+#make directory for the plots to be exported to
+dirName = f'../../data/output/{args.file_names}/TATA/{args.output_folder_name}'
+try:
+    # Create target Directory
+    os.mkdir(dirName)
+    print("Directory " , dirName ,  " created") 
+except FileExistsError:
+    print("Directory " , dirName ,  " already exists")
+    
+    
+    
+#make directory for the plots to be exported to
+dirName = f'../../data/output/{args.file_names}/TATA/{args.output_folder_name}/plots'
+try:
+    # Create target Directory
+    os.mkdir(dirName)
+    print("Directory " , dirName ,  " created") 
+except FileExistsError:
+    print("Directory " , dirName ,  " already exists")
+
 
 def create_plot(gat_TATA_constitutive_output,gat_TATA_variable_output):
     """import and process the raw outputs after running gat (Genomic association tester). Then create barplot of constitutive and variable gene TATA enrichment"""
@@ -21,10 +49,10 @@ def create_plot(gat_TATA_constitutive_output,gat_TATA_variable_output):
     #set style to ticks
     sns.set(style="ticks", color_codes=True)
     #bar chart, 95% confidence intervals
-    plot = sns.barplot(x="annotation", y="l2fold", data=merged,order=["constitutive", "variable"])
+    plot = sns.barplot(x="annotation", y="l2fold", data=merged,order=["constitutive", args.variable2_name])
     plot.axhline(0, color='black')
     plt.xlabel("Gene type")
-    plt.ylabel("Log2-fold enrichment over background").get_figure().savefig(f'../../data/output/{args.file_names}/TATA/plots/{args.output_prefix}_log2fold.pdf', format='pdf')
+    plt.ylabel("Log2-fold enrichment over background").get_figure().savefig(f'../../data/output/{args.file_names}/TATA/{args.output_folder_name}plots/{args.output_prefix}_log2fold.pdf', format='pdf')
     
 #Create barplot
 create_plot(args.gat_TATA_constitutive_output,args.gat_TATA_variable_output)

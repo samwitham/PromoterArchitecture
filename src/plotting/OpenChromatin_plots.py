@@ -13,6 +13,8 @@ parser.add_argument('Czechowski_gene_categories', type=str, help='Input location
 parser.add_argument('Chromatin_bp_covered', type=str, help='Input location of bp covered of chromatin in promoters text file')
 parser.add_argument('output_folder_name', type=str, help='Optional output folder name ending in a forward slash',default = '', nargs="?")
 parser.add_argument('output_folder_name_promoter', type=str, help='Optional output folder name ending in a forward slash (name this after promoter set name)',default = '', nargs="?")
+parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
+parser.add_argument('author_name', type=str, help='Optional replacement name for author in reference to the geneset',default = 'Czechowski', nargs="?")
 args = parser.parse_args()
 
 
@@ -84,14 +86,14 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     #plot
     x=x_variable
     y=y_variable
-    order=["constitutive", "variable", "control"]
+    order=["constitutive", args.variable2_name, "control"]
     plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order)
     #plot points
     ax = sns.swarmplot(x=x, y=y, data=df, color=".25",order=order)
     #add significance if necessary - dunn's posthocs with multiple Bonferroni correction
     stat = dunn_posthoc_test(df,y_variable,x_variable)
     #label box pairs
-    box_pairs=[("constitutive", "variable"),("constitutive", "control"),("variable", "control")]
+    box_pairs=[("constitutive", args.variable2_name),("constitutive", "control"),(args.variable2_name, "control")]
     #make empty list of p_values
     p_values = []
     #populate the list of p_values accoridng to the box_pairs
@@ -142,4 +144,4 @@ cats = merge_genecategories(chromatin_coverage, args.Czechowski_gene_categories)
 all_prom_distribution(cats,'percentage_bases_covered', '% bp covered', f'{dependent_variable}_allproms')
 
 #Czechowski_gene_categories box plot
-make_plot(cats,'gene_type','percentage_bases_covered','Gene type','% bp covered', f'Czechowski_{dependent_variable}', 'box')
+make_plot(cats,'gene_type','percentage_bases_covered','Gene type','% bp covered', f'{args.author_name}_{dependent_variable}', 'box')
