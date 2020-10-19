@@ -3,12 +3,15 @@ import pandas as pd
 import tspex
 import seaborn as sns
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='filter_microarray_conditions')
 
 parser.add_argument('input_file', type=str, help='Input location of expression data table (schmid et al 2005 microarray AtGE_dev_gcRMA.txt.newline)')
 parser.add_argument('output_file', type=str, help='Output location of filtered microarray')
 parser.add_argument('output_tau', type=str, help='Output location of TAU table')
+parser.add_argument('file_names',       type=str, help='The promoter extraction output folder name')
+
 args = parser.parse_args()
 
 
@@ -26,6 +29,16 @@ def filter_conditions(input_file,output_file):
 
 def calculate_tau(expression_data,output_tau):
     """calculate the TAU tissue specificity, log transforming the expression data in the process"""
+    
+    #make directory for the output to be exported to
+    dirName = f'../../data/output/{args.file_names}/genes/tissue_specific'
+    try:
+        # Create target Directory
+        os.mkdir(dirName)
+        print("Directory " , dirName ,  " created") 
+    except FileExistsError:
+        print("Directory " , dirName ,  " already exists")
+      
     df = expression_data
     #remove NaN in AGI code column
     df_filtered = df.dropna()

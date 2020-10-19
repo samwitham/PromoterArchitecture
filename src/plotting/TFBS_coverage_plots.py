@@ -13,6 +13,7 @@ parser.add_argument('bp_covered_file', type=str, help='Input location of promote
 parser.add_argument('output_folder_name', type=str, help='Optional output folder name ending in a forward slash',default = '', nargs="?")
 parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
 parser.add_argument('author_name', type=str, help='Optional replacement name for author in reference to the geneset',default = 'Czechowski', nargs="?")
+parser.add_argument('palette', type=str, help='Optional replacement colour palette for plots',default = None, nargs="?")
 args = parser.parse_args()
 
 dependent_variable = 'TFBS_coverage'
@@ -71,7 +72,7 @@ def dunn_posthoc_test(df,dependent_variable, between):
     """dunn_posthoc tests with bonferroni multiple correction"""
     return sp.posthoc_dunn(df, val_col=dependent_variable, group_col=between, p_adjust='bonferroni')
     
-def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind):
+def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind,palette):
     """function to make and save plot"""
     #allow colour codes in seaborn
     sns.set(color_codes=True)
@@ -80,9 +81,16 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     x=x_variable
     y=y_variable
     order=["constitutive", args.variable2_name, "control"]
-    plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order)
+    #set colour palette
+    colours = sns.color_palette(palette)
+    
+    plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order, palette = colours)
+
+
+
     #plot points
     ax = sns.swarmplot(x=x, y=y, data=df, color=".25",order=order)
+
     #add significance if necessary - dunn's posthocs with multiple Bonferroni correction
     stat = dunn_posthoc_test(df,y_variable,x_variable)
     #label box pairs
@@ -124,7 +132,7 @@ bp_covered_Czechowski_gene_categories = merge_coverage_genecategories(bp_covered
 all_prom_distribution(bp_covered_df, 'percentage_bases_covered', '% bp covered', f'{dependent_variable}_allproms')
 
 #Czechowski_gene_categories violin plot
-make_plot(bp_covered_Czechowski_gene_categories,'gene_type','percentage_bases_covered','Gene type','% bp covered', f'{args.author_name}_{dependent_variable}', 'violin')
+make_plot(bp_covered_Czechowski_gene_categories,'gene_type','percentage_bases_covered','Gene type','% bp covered', f'{args.author_name}_{dependent_variable}', 'violin',args.palette)
 
 #Czechowski_gene_categories box plot
-make_plot(bp_covered_Czechowski_gene_categories,'gene_type','percentage_bases_covered','Gene type','% bp covered', f'{args.author_name}_{dependent_variable}', 'box')
+make_plot(bp_covered_Czechowski_gene_categories,'gene_type','percentage_bases_covered','Gene type','% bp covered', f'{args.author_name}_{dependent_variable}', 'box',args.palette)

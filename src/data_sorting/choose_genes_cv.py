@@ -70,7 +70,8 @@ def filter_genes_czechowski(promoter_bed, select_genes_file):
     select_genes = pd.read_table(select_genes_file, sep='\t', header=None)
     cols = ['rank','probe_id','AGI','expression_mean','expression_SD','expression_CV','proportion_of_values_present_in_mas5','presence_in_araport11','constitutive_in_araport11']
     select_genes.columns = cols
-    
+    #make AGI uppercase
+    select_genes.AGI = select_genes.AGI.str.upper()
     promoters = pd.read_table(promoter_bed, sep='\t', header=None)
     col = ['chr','start','stop','AGI','dot1', 'strand','source','type','dot2','attributes']
     promoters.columns = col

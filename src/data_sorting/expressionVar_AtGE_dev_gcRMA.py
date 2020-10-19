@@ -21,7 +21,7 @@ import sys
 import csv
 import time
 import argparse
-import pandas as pd
+
 import numpy as np
 
 from operator import itemgetter
@@ -69,7 +69,7 @@ def loader (in_data):
                 sys.exit()
 
     return processed_dict
-   
+
 
 def mas5Stats (expressionSet, mas5calls):
     '''
@@ -98,10 +98,10 @@ def mas5Stats (expressionSet, mas5calls):
 
         #calculate the total proportion of samples Present
         prop_present  = int((present_count / n_samples)*100)
-        
-        #filter values that appear below 0% presence and collate output into result dict
+
+        #filter values that appear below 80% presence and collate output into result dict
         #also filter Affymetrix normalisation probes
-        if prop_present >= args.filter_threshold and not probe_id.startswith('AFFX'):
+        if prop_present >= 80 and not probe_id.startswith('AFFX'):
             statistics_dict[probe_id] = [full_probe_id.split(':')[1].upper(),expression_mean, expression_stdev, expression_CV, prop_present]
 
     return statistics_dict
@@ -148,18 +148,10 @@ def currentAnnotCheck(input_stats, input_annot, Araport_housekeeping_set):
             stats.append('1')
 
 
-def main (raw_expr, mas5_pres, ara_annot, araport_houskeeeping, output_directory, file_names,filter_threshold):
-       
-       
-    dirName = output_directory
-    try:
-        # Create target Directory
-        os.mkdir(dirName)
-        print("Directory " , dirName ,  " created") 
-    except FileExistsError:
-        print("Directory " , dirName ,  " already exists")
-    
-    
+
+
+
+def main (raw_expr, mas5_pres, ara_annot, araport_houskeeeping, output_directory):
     print('\nexpressionVar_bins.py')
     print('\nReading AtGE_dev_gcRMA expression set from: ', raw_expr)
     print('Reading mas5 presence/absence calls from: ', mas5_pres, '\n')
@@ -177,20 +169,14 @@ def main (raw_expr, mas5_pres, ara_annot, araport_houskeeeping, output_directory
     currentAnnotCheck(expSet_statistics, ara_annot, araport_houskeeeping)
 
     with open(os.path.join(output_directory, 'AtGE_dev_gcRMA__all_probes__CV.tsv'), 'w') as all_out:
-        all_out.write('\t'.join('rank,probe_id,gene_id,mean,SD,CV,propP,current,Araport_const'))
+        all_out.write('\t'.join('rank,probe_id,gene_id,mean,SD,CV,propP,current,Araport_const'
         count = 1
         for k, v in expSet_statistics.items():
             all_out.write('\t'.join([str(count),k,'\t'.join([str(x) for x in v ])])+'\n')
             count = count + 1
             # time.sleep(.1)
-             
     print('All probe output written to: ', os.path.join(output_directory, 'AtGE_dev_gcRMA__all_probes__CV.tsv'))
-    
-    
-    
-    
     # with open(os.join(output_directory, 'AtGE_dev_gcRMA__all_probes__CV.tsv'), 'w') as all_out:
-    
 
 
     # print(expSet_statistics['253287_at'])
@@ -204,12 +190,10 @@ if __name__ == "__main__":
     parser.add_argument('annotation',    type=str, help='current Athal annotation')
     parser.add_argument('housekeeping_set',  type=str, help='Araport housekeeping genes from Data S4 from Cheng et al. 2016')
     parser.add_argument('out_dir',       type=str, help='path to directory where the output should be written')
-    parser.add_argument('file_names',       type=str, help='The promoter extraction output folder name')
-    parser.add_argument('filter_threshold',       type=int, help='The % presence across conditions under which genes are filtered')
 
     args = parser.parse_args()
 
-    main(args.raw_expression_in, args.mas5_presence, args.annotation, args.housekeeping_set,  args.out_dir, args.file_names,args.filter_threshold)
+    main(args.raw_expression_in, args.mas5_presence, args.annotation, args.housekeeping_set,  args.out_dir)
 
 __author__ = "Will Nash"
 __copyright__ = "Copyright 2020, The Earlham Institute"
