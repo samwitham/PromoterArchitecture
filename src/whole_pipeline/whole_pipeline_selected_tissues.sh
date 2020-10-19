@@ -555,8 +555,60 @@ python ../rolling_window/./GC_content_rw.py $file_names ../../data/output/$file_
 #arg9 is the input location of shoot chromatin bed file
 #arg10 is the input location of rootshootintersect chromatin bed file
 #arg11 is the optional replacement colour palette for plots',default = None
-python ../plotting/rolling_window/./GC_content_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 GC_content_rw ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed Set1
+python ../plotting/rolling_window/./GC_content_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 GC_content_rw ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep
 
+#TF diversity sliding window plot
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of the window bed file
+#arg4 is the input location of the TF diversity bed file
+#arg5 is the input location of eukaryotic promoter database transcription start site bed file
+#arg6 is the input location of promoter bed file
+#arg7 is the input location of promoter no 5UTR bed file
+#arg8 is the output folder name prefix to use
+#arg9 is the input location of root chromatin bed file
+#arg10 is the input location of shoot chromatin bed file
+#arg11 is the input location of rootshootintersect chromatin bed file
+#arg12 is the optional replacement colour palette for plots',default = None
+#arg13 is the optional author name to add to output file names',default = 'Czechowski
+#arg14 is the optional variable 2 name eg. tissue_specific',default = 'variable'
+
+python ../plotting/rolling_window/./TF_diversity_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TF_diversity_rw ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep
+
+#TFBS coverage sliding window plot
+
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of the TFBS base pairs covered file
+#arg4 is the input location of eukaryotic promoter database transcription start site bed file
+#arg5 is the input location of promoter bed file
+#arg6 is the input location of promoter no 5UTR bed file
+#arg7 is the output folder name prefix to use
+#arg8 is the input location of root chromatin bed file
+#arg9 is the input location of shoot chromatin bed file
+#arg10 is the input location of rootshootintersect chromatin bed file
+#arg11 is the optional replacement colour palette for plots',default = None
+#arg12 is the optional author name to add to output file names',default = 'Czechowski
+#arg13 is the optional variable 2 name eg. tissue_specific',default = 'variable'
+
+python ../plotting/rolling_window/./TFBScoverage_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TFBS_coverage_rw ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep
+
+#open chromatin coverage sliding window plot
+
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of the GC content TSV file
+#arg4 is the input location of eukaryotic promoter database transcription start site bed file
+#arg5 is the input location of promoter bed file
+#arg6 is the input location of promoter no 5UTR bed file
+#arg7 is the output folder name prefix to use
+#arg8 is the input location of root chromatin bed file
+#arg9 is the input location of shoot chromatin bed file
+#arg10 is the input location of rootshootintersect chromatin bed file
+#arg11 is the optional replacement colour palette for plots',default = None
+#arg12 is the optional author name to add to output file names',default = 'Czechowski
+#arg13 is the optional variable 2 name eg. tissue_specific',default = 'variable'
+python ../plotting/rolling_window/./openchromatin_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 OpenChromatin_rw ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep
 
 #PLOTTING
 
@@ -895,6 +947,76 @@ python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_
 #Open chromatin coverage shoot
 python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_tau/ tissue_specific Schmid Set2
 
+
+
+##PLOT SLIDING WINDOWS TAU
+
+#GC content sliding window
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of GC content tsv file
+#arg4 is the input location of eukaryotic promoter database transcription start site bed file
+#arg5 is the input location of promoter bed file
+#arg6 is the input location of promoter no 5UTR bed file
+#arg7 is the output folder name prefix to use
+#arg8 is the input location of root chromatin bed file
+#arg9 is the input location of shoot chromatin bed file
+#arg10 is the input location of rootshootintersect chromatin bed file
+#arg11 is the optional replacement colour palette for plots',default = None
+python ../plotting/rolling_window/./GC_content_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 GC_content_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed Set2 Schmid tissue_specific
+
+#TF diversity sliding window plot
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of the window bed file
+#arg4 is the input location of the TF diversity bed file
+#arg5 is the input location of eukaryotic promoter database transcription start site bed file
+#arg6 is the input location of promoter bed file
+#arg7 is the input location of promoter no 5UTR bed file
+#arg8 is the output folder name prefix to use
+#arg9 is the input location of root chromatin bed file
+#arg10 is the input location of shoot chromatin bed file
+#arg11 is the input location of rootshootintersect chromatin bed file
+#arg12 is the optional replacement colour palette for plots',default = None
+#arg13 is the optional author name to add to output file names',default = 'Czechowski
+#arg14 is the optional variable 2 name eg. tissue_specific',default = 'variable'
+
+python ../plotting/rolling_window/./TF_diversity_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TF_diversity_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed Set2 Schmid tissue_specific
+
+#TFBS coverage sliding window plot
+
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of the TFBS base pairs covered file
+#arg4 is the input location of eukaryotic promoter database transcription start site bed file
+#arg5 is the input location of promoter bed file
+#arg6 is the input location of promoter no 5UTR bed file
+#arg7 is the output folder name prefix to use
+#arg8 is the input location of root chromatin bed file
+#arg9 is the input location of shoot chromatin bed file
+#arg10 is the input location of rootshootintersect chromatin bed file
+#arg11 is the optional replacement colour palette for plots',default = None
+#arg12 is the optional author name to add to output file names',default = 'Czechowski
+#arg13 is the optional variable 2 name eg. tissue_specific',default = 'variable'
+
+python ../plotting/rolling_window/./TFBScoverage_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TFBS_coverage_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed Set2 Schmid tissue_specific
+
+#open chromatin coverage sliding window plot
+
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of the GC content TSV file
+#arg4 is the input location of eukaryotic promoter database transcription start site bed file
+#arg5 is the input location of promoter bed file
+#arg6 is the input location of promoter no 5UTR bed file
+#arg7 is the output folder name prefix to use
+#arg8 is the input location of root chromatin bed file
+#arg9 is the input location of shoot chromatin bed file
+#arg10 is the input location of rootshootintersect chromatin bed file
+#arg11 is the optional replacement colour palette for plots',default = None
+#arg12 is the optional author name to add to output file names',default = 'Czechowski
+#arg13 is the optional variable 2 name eg. tissue_specific',default = 'variable'
+python ../plotting/rolling_window/./openchromatin_rw_plots_single.py arabidopsis_selected_tissues ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 OpenChromatin_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed Set2 Schmid tissue_specific
 
 
 #rerun analyses at shorter promoter length

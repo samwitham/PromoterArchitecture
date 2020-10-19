@@ -6,10 +6,10 @@ import os
 from scipy import stats
 import argparse
 
-parser = argparse.ArgumentParser(description='GC_content_plots_rw')
+parser = argparse.ArgumentParser(description='TFBScoverage_plots_rw')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('Czechowski_gene_categories', type=str, help='Input location of Czechowski gene categories text file')
-parser.add_argument('GC_content_tsv', type=str, help='Input location of GC content tsv file')
+parser.add_argument('GC_content_tsv', type=str, help='Input location of GC content tsv')
 parser.add_argument('EPD_TSS_bed', type=str, help='Input location of eukaryotic promoter database transcription start site bed file')
 parser.add_argument('promoter_bed', type=str, help='Input location of promoter bed file')       
 parser.add_argument('promoter_no_5UTR', type=str, help='Input location of promoter no 5UTR bed file')  
@@ -21,6 +21,7 @@ parser.add_argument('palette', type=str, help='Optional replacement colour palet
 parser.add_argument('author_name', type=str, help='Optional author name to add to output file names',default = 'Czechowski', nargs="?")
 parser.add_argument('variable2_name', type=str, help='Optional variable 2 name eg. tissue_specific',default = 'variable', nargs="?")
 args = parser.parse_args()
+
 
 #make directory for the plots to be exported to
 dirName = f'../../data/output/{args.file_names}/rolling_window/'
@@ -51,14 +52,13 @@ try:
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
-    
-def process_input_files(Czechowski_gene_categories,GC_content_tsv):
-    """function to import and process the input files for the rest of the script"""
+def process_input_files(GC_content_tsv,Czechowski_gene_categories):
+    """process and merge the input files into a df"""
     promoters = pd.read_csv(Czechowski_gene_categories, sep='\t', header=None)
     cols = ['AGI','gene_type']
     promoters.columns = cols
+    #read in GC content table just to get the window locations (GC content not wanted, just open chromatin)
     GC_content = pd.read_table(GC_content_tsv, sep='\t', header=None)
-    GC_content
     cols2 = ['name', 'percentage_GC_content']
     GC_content.columns = cols2
     #Make AGI column
@@ -76,15 +76,19 @@ def process_input_files(Czechowski_gene_categories,GC_content_tsv):
     #add window length column
     GC_content = GC_content.assign(window_length=GC_content.stop - GC_content.start)
 
+    #merge to limit to genes of interest
+    GC_content = pd.merge(promoters, GC_content, how ='left', on='AGI')
+    
+    #remove windows with fewer than 100 promoters extending to that location
+    GC_content = GC_content[GC_content['window_number'].map(GC_content['window_number'].value_counts()) > 99]
+    
     #allow colour codes in seaborn
     sns.set(color_codes=True)
     sns.set_style("ticks")
     sns.set_palette(args.palette)
-
-    #remove windows with fewer than 100 promoters extending to that location
-    GC_content = GC_content[GC_content['window_number'].map(GC_content['window_number'].value_counts()) > 99]
     
     return GC_content
+
 
 def add_coverage(df,coverage_bed,suffix):
     """add % bp covered data from a bed file to the df. Prefix is a name added to any new columns"""
@@ -104,6 +108,7 @@ def add_coverage(df,coverage_bed,suffix):
     #remove NaN
     #merged = merged[merged['name'].notnull()] 
     return merged
+
 
 def rep_sample(df, col, n, random_state):
     """function to return a df with equal sample sizes
@@ -134,8 +139,8 @@ def rep_sample(df, col, n, random_state):
     #return concatenated sub dfs
     return pd.concat(subs)
 
-def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,variable_of_interest_df,promoter_bed,promoter_no_5UTR,
-                   window_offset,EPD_TSS_bed,includeEPDTSS=False,includechromatin=False,chromatin_tissue_variable='percentage_bases_covered_rootshootintersect_chrom',
+def windows_coords(output_prefix,variable_of_interest_name,variable_of_interest_df,promoter_bed,promoter_no_5UTR,
+                   window_offset,EPD_TSS_bed,includeEPDTSS=False,chromatin_tissue_variable='percentage_bases_covered_rootshootintersect_chrom',
                    chromatin_tissue_variable_name='% open chromatin root and shoot intersect',x_range=False,estimator='median',ci=95, n_boot=10000, 
                    genetype=False, genetype2=False, genetype3=False):
     """function to add the centre of each window corresponding to each window no. and return a lineplot. Also add promoter length distribution, Araport TSS distribution,
@@ -149,7 +154,7 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
     #merge promoter_bed with variable_of_interest_df on AGI
     merged = pd.merge(variable_of_interest_df, promoter_df, on='AGI',  how='left',suffixes=('','_wholeprom'))
     #remove NaN
-    merged = merged[merged[variable_of_interest].notnull()]
+    merged = merged[merged['percentage_GC_content'].notnull()]
     #make columns integars
     merged = merged.astype({'stop_wholeprom':'int','start_wholeprom':'int','start':'int','stop':'int'})
     #split merged into 2 dfs by strand
@@ -176,25 +181,25 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
     merged2 = merged2[merged2.chr_no_UTR.notnull()]
     #Get most common transcript TSS location from eukaryotic promoter database (last modified on EPD 06/06/2018)
     #Note - not all promoters have a TSS on EPD
-    if includeEPDTSS==True:
-        EPD_TSS_df = pd.read_table(EPD_TSS_bed, delim_whitespace=True, header=None, skiprows=4)
-        cols = ['chr','start','stop','transcript_EPD','score_EPD','strand_EPD','thickstart_EPD','thickend_EPD']
-        EPD_TSS_df.columns = cols
-        #add AGI column
-        EPD_TSS_df['AGI'] = EPD_TSS_df.transcript_EPD.str.split('_',expand=True)[0]
-        #add TSS location column
-        EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '+', 'TSS_EPD'] = EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '+', 'thickstart_EPD']
-        EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '-', 'TSS_EPD'] = EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '-', 'thickend_EPD'] -1
-        #merged with windows
-        merged2 = pd.merge(merged2,EPD_TSS_df, on='AGI', how='left', suffixes=('','_EPD'))
+#     if includeEPDTSS==True:
+#         EPD_TSS_df = pd.read_table(EPD_TSS_bed, delim_whitespace=True, header=None, skiprows=4)
+#         cols = ['chr','start','stop','transcript_EPD','score_EPD','strand_EPD','thickstart_EPD','thickend_EPD']
+#         EPD_TSS_df.columns = cols
+#         #add AGI column
+#         EPD_TSS_df['AGI'] = EPD_TSS_df.transcript_EPD.str.split('_',expand=True)[0]
+#         #add TSS location column
+#         EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '+', 'TSS_EPD'] = EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '+', 'thickstart_EPD']
+#         EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '-', 'TSS_EPD'] = EPD_TSS_df.loc[EPD_TSS_df.strand_EPD == '-', 'thickend_EPD'] -1
+#         #merged with windows
+#         merged2 = pd.merge(merged2,EPD_TSS_df, on='AGI', how='left', suffixes=('','_EPD'))
 
-        #remove NaN (promoters in EPD but not in promoters_5UTR)
-        merged2 = merged2[merged2.length.notnull()]
-        #transfrom EPD TSS column in the same way as the position column
-        merged2.loc[merged2.strand == '-', 'TSS_transformed_EPD'] = merged2.loc[merged2.strand == '-', 'TSS_EPD'] - merged2.loc[merged2.strand == '-','start_wholeprom']
-        merged2.loc[merged2.strand == '+', 'TSS_transformed_EPD'] = merged2.loc[merged2.strand == '+', 'stop_wholeprom'] - merged2.loc[merged2.strand == '+', 'TSS_EPD']
-        #make integars
-        merged2 = merged2.astype({'TSS_transformed_EPD':'float64'})
+#         #remove NaN (promoters in EPD but not in promoters_5UTR)
+#         merged2 = merged2[merged2.length.notnull()]
+#         #transfrom EPD TSS column in the same way as the position column
+#         merged2.loc[merged2.strand == '-', 'TSS_transformed_EPD'] = merged2.loc[merged2.strand == '-', 'TSS_EPD'] - merged2.loc[merged2.strand == '-','start_wholeprom']
+#         merged2.loc[merged2.strand == '+', 'TSS_transformed_EPD'] = merged2.loc[merged2.strand == '+', 'stop_wholeprom'] - merged2.loc[merged2.strand == '+', 'TSS_EPD']
+#         #make integars
+#         merged2 = merged2.astype({'TSS_transformed_EPD':'float64'})
     
     #calculate longest promoter length based on window cutoff
     number_of_windows = len(variable_of_interest_df.window_number.unique())
@@ -210,10 +215,9 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
     #transform TSS location in the same way as the position column
     merged2.loc[merged2.strand == '-', 'TSS_transformed_Araport11'] = merged2.loc[merged2.strand == '-', 'TSS'] - merged2.loc[merged2.strand == '-','start_wholeprom']
     merged2.loc[merged2.strand == '+', 'TSS_transformed_Araport11'] = merged2.loc[merged2.strand == '+', 'stop_wholeprom'] - merged2.loc[merged2.strand == '+', 'TSS']
-   
-    
+
     #make integars
-    merged2 = merged2.astype({'start_no_UTR':'float64','stop_no_UTR':'float64','TSS':'float64','TSS_transformed_Araport11':'float64',f'{variable_of_interest}':'float64',f'{chromatin_tissue_variable}':'float64'})
+    merged2 = merged2.astype({'start_no_UTR':'float64','stop_no_UTR':'float64','TSS':'float64','TSS_transformed_Araport11':'float64',f'{chromatin_tissue_variable}':'float64'})
     #return merged2[['AGI','strand','start','stop','start_wholeprom','stop_wholeprom','start_no_UTR','stop_no_UTR','TSS','TSS_transformed','position','chr_no_UTR','window_number']]
 
 
@@ -243,6 +247,20 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
 #         #promlengthsplot = axes[subplots-(subplots-2)]
 #         variableofinterestplot = axes[subplots-(subplots-2)]
 
+#     if includeEPDTSS == True:
+#         subplots = subplots + 1
+#         f, axes = plt.subplots(subplots, figsize=(10,8))
+#         OpenChromplot = axes[subplots-subplots]
+#         #Araport11TSSplot = axes[subplots-(subplots-1)]
+#         EPDTSSplot = axes[subplots-(subplots-1)]   
+#         #promlengthsplot = axes[subplots-(subplots-3)]
+#         variableofinterestplot = axes[subplots-(subplots-2)]
+#     else:
+#         f, axes = plt.subplots(subplots, figsize=(10,6))
+#         OpenChromplot = axes[subplots-subplots]
+#         #Araport11TSSplot = axes[subplots-(subplots-1)]
+#         #promlengthsplot = axes[subplots-(subplots-2)]
+#         variableofinterestplot = axes[subplots-(subplots-1)]
 
    
     
@@ -294,33 +312,31 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
         
         #length_of_longest_promoter = merged_positive.length.max()
         #if openchromplot variable present, add that plot
-       
-        #if variableofinterestplot variable present, add that plot
+        #next plot letter name
 
-        #variable of interest lineplot
-        plot = sns.lineplot(y=merged2[variable_of_interest], x=merged2.position, estimator=new_estimator,ci=ci, n_boot=n_boot) #.get_figure()
+
+        #Open chromatin lineplot
+        plot = sns.lineplot(y=merged2[chromatin_tissue_variable],x=merged2.position,estimator=new_estimator,ci=ci, n_boot=n_boot).get_figure()
         #set titles and axes labels
-        #plt.set_title(f'All promoters sliding windows {variable_of_interest_name}', weight='bold')
-        plt.ylabel(f'{estimator} {variable_of_interest_name}')
+        #OpenChromplot.set_title(f'All promoters {chromatin_tissue_variable_name}', weight='bold')
+        plt.ylabel(f'{estimator} % open chromatin')
         plt.xlabel('position upstream of ATG')
-
+           
                
     elif genetype2==False:
         #filter so only genetype subset present
         merged2 = merged2[merged2.gene_type.notnull()]
         
-          #if openchromplot variable present, add that plot
-
-        
-
-        #if variableofinterestplot variable present, add that plot
-        #variable of interest lineplot
-        plot = sns.lineplot(y=merged2[merged2.gene_type == genetype][variable_of_interest], 
-                        x=merged2[merged2.gene_type == genetype].position, estimator=new_estimator,ci=ci, n_boot=n_boot)
+      
+          
+        #Open chromatin lineplot
+        sns.lineplot(y=merged2[merged2.gene_type == genetype][chromatin_tissue_variable],x=merged2[merged2.gene_type == genetype].position,
+                     estimator=new_estimator,ci=ci, n_boot=n_boot).get_figure()
         #set titles and axes labels
-        #plt.set_title(f'{genetype} {variable_of_interest_name}', weight='bold')
-        plt.ylabel(f'{estimator} {variable_of_interest_name}')
+        #plt.set_title(f'{nextletter}: {genetype} {chromatin_tissue_variable_name}', weight='bold')
+        plt.ylabel(f'{estimator} % open chromatin')
         plt.xlabel('position upstream of ATG')
+          
             
         
         #set y axis as maximum mean window % bp covered of all genetype subset        
@@ -358,19 +374,17 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
         # now filter out genes which were not selected using the minimum sample size
         to_remove = merged2_unique[~merged2_unique.AGI.isin(equal_samplesizes.AGI)]
         merged2 = merged2[~merged2.AGI.isin(to_remove.AGI)]
-        
-        
-        #if variableofinterestplot variable present, add that plot
+                   
+        #Open chromatin lineplot
+        sns.lineplot(y=merged2[merged2.gene_type == genetype][chromatin_tissue_variable],x=merged2[merged2.gene_type == genetype].position,
+                     estimator=new_estimator,label=genetype,ci=ci, n_boot=n_boot).get_figure()
+        sns.lineplot(y=merged2[merged2.gene_type == genetype2][chromatin_tissue_variable],x=merged2[merged2.gene_type == genetype2].position,
+                     estimator=new_estimator,label=genetype2,ci=ci, n_boot=n_boot)
+        #set titles & axes names
+        #plt.set_title(f'{chromatin_tissue_variable_name}', weight='bold')
+        plt.ylabel(f'{estimator} % open chromatin')
+        plt.xlabel('position upstream of ATG')           
 
-        #lineplot variable of interest
-        plot=sns.lineplot(y=merged2[merged2.gene_type == genetype][variable_of_interest], x=merged2[merged2.gene_type == genetype].position,
-                        label=genetype,estimator=new_estimator,ci=ci, n_boot=n_boot,)
-        sns.lineplot(y=merged2[merged2.gene_type == genetype2][variable_of_interest], x=merged2[merged2.gene_type == genetype2].position,
-                        label=genetype2,estimator=new_estimator,ci=ci, n_boot=n_boot) 
-            #set titles & axes names
-        #plt.set_title(f'{variable_of_interest_name}', weight='bold')
-        plt.ylabel(f'{estimator} {variable_of_interest_name}')
-        plt.xlabel('position upstream of ATG')
         #set y axis as maximum mean window % bp covered of all genetype subset        
         #axes[2].set_ylim([0,merged2.groupby('window_number').percentage_bases_covered.median().max()+20])
         #gene_type labels
@@ -408,18 +422,24 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
         to_remove = merged2_unique[~merged2_unique.AGI.isin(equal_samplesizes.AGI)]
         merged2 = merged2[~merged2.AGI.isin(to_remove.AGI)]
         
-        #if variableofinterestplot variable present, add that plot
-        #lineplot
-        plot=sns.lineplot(y=merged2[merged2.gene_type == genetype][variable_of_interest], x=merged2[merged2.gene_type == genetype].position,
-                        label=genetype,estimator=new_estimator,ci=ci, n_boot=n_boot)
-        sns.lineplot(y=merged2[merged2.gene_type == genetype2][variable_of_interest], x=merged2[merged2.gene_type == genetype2].position,
-                        label=genetype2,estimator=new_estimator,ci=ci, n_boot=n_boot)
-        sns.lineplot(y=merged2[merged2.gene_type == genetype3][variable_of_interest], x=merged2[merged2.gene_type == genetype3].position,
-                        label=genetype3,estimator=new_estimator,ci=ci, n_boot=n_boot)
-            #set titles & axes names      
-        #plt.set_title(f'{variable_of_interest_name}', weight='bold')
-        plt.ylabel(f'{estimator} {variable_of_interest_name}')
-        plt.xlabel('position upstream of ATG')
+        
+        
+        
+    
+                    
+        #Open chromatin lineplot
+        sns.lineplot(y=merged2[merged2.gene_type == genetype][chromatin_tissue_variable],x=merged2[merged2.gene_type == genetype].position,ax=OpenChromplot,
+                     estimator=new_estimator,label=genetype,ci=ci, n_boot=n_boot).get_figure()
+        sns.lineplot(y=merged2[merged2.gene_type == genetype2][chromatin_tissue_variable],x=merged2[merged2.gene_type == genetype2].position,ax=OpenChromplot,
+                     estimator=new_estimator,label=genetype2,ci=ci, n_boot=n_boot)
+        sns.lineplot(y=merged2[merged2.gene_type == genetype3][chromatin_tissue_variable],x=merged2[merged2.gene_type == genetype3].position,ax=OpenChromplot,
+                     estimator=new_estimator,label=genetype3,ci=ci, n_boot=n_boot)
+            #set titles & axes names 
+           # plt.set_title(f'{chromatin_tissue_variable_name}', weight='bold')
+        plt.ylabel(f'{estimator} % open chromatin')
+        plt.xlabel('position upstream of ATG')           
+      
+     
         #set y axis as maximum mean window % bp covered of all genetype subset        
         #axes[2].set_ylim([0,merged2.groupby('window_number').percentage_bases_covered.median().max()+20])
         #gene_type labels
@@ -446,35 +466,34 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
     else:
         length_of_longest_promoter = x_range
         
-
-    
+    #for all subplots:
     #remove grids
     plt.grid(False)
     #plt.set_xlim([(-length_of_longest_promoter-50),0])
     #set a tight layout
-    plt.tight_layout()   
+    plt.tight_layout()
     #save figure
-    plt.savefig(f'../../data/output/{args.file_names}/rolling_window/{args.foldername_prefix}/plots/{output_prefix}_{variable_of_interest}_{estimator}_sliding_window.pdf', format='pdf')
+    plt.savefig(f'../../data/output/{args.file_names}/rolling_window/{args.foldername_prefix}/plots/{output_prefix}_{chromatin_tissue_variable}_{estimator}_sliding_window.pdf', format='pdf')
     #remove plot
-    plt.clf()
+    plt.clf()   
     return merged2
 
 def plot_length(df,output_prefix, genetype=False, genetype2=False, genetype3=False):
     """function to plot length distribution of promoter"""
     #make lengths positive by squaring and then square rooting
     df.length = (df.length**2)**(1/2)
-
+    
     if genetype==False:
         dist_plot = df['length']
         #create figure with no transparency
-        dist_plot_fig = sns.distplot(dist_plot,axlabel='length (bp)') #.get_figure()
+        dist_plot_fig = sns.distplot(dist_plot,axlabel='length (bp)').get_figure()
 
     elif genetype2==False:
         sns.distplot(df[df.gene_type == genetype].length, label=genetype,axlabel='length (bp)')
         
     elif genetype3==False:
         plot = sns.distplot(df[df.gene_type == genetype].length,hist=None,label=genetype)
-        sns.distplot(df[df.gene_type == genetype2].length,hist=None,label=genetype2,axlabel='length (bp)') #.get_figure()
+        sns.distplot(df[df.gene_type == genetype2].length,hist=None,label=genetype2,axlabel='length (bp)').get_figure()
         plt.legend()
     else:
         plot = sns.distplot(df[df.gene_type == genetype].length,hist=None,label=genetype)
@@ -486,10 +505,9 @@ def plot_length(df,output_prefix, genetype=False, genetype2=False, genetype3=Fal
     plt.tight_layout()
     #save figure
     plt.savefig(f'../../data/output/{args.file_names}/rolling_window/{args.foldername_prefix}/plots/{output_prefix}_promoter_lengths.pdf', format='pdf')
-    #remove plot 
-    plt.clf()
+    #remove plot
+    plt.clf() 
         
-
 
 def add_genetype(df,gene_categories):
     """function to add gene type to the df, and remove random genes"""
@@ -504,43 +522,29 @@ def add_genetype(df,gene_categories):
     
     return merged
 
-
-
 #process input files
-GC_content = process_input_files(args.Czechowski_gene_categories,args.GC_content_tsv)
-
-#add root chromatin coverage data to the df
-GC_content = add_coverage(GC_content, args.root_chrom_bp_covered,'root_chrom')
-#add shoot chromatin coverage data to the df
-GC_content = add_coverage(GC_content, args.shoot_chrom_bp_covered,'shoot_chrom')
-#add rootshootintersect chromatin coverage data to the df
-GC_content = add_coverage(GC_content, args.rootshootintersect_chrom_bp_covered,'rootshootintersect_chrom')
-
-
+GC_content = process_input_files(args.GC_content_tsv,args.Czechowski_gene_categories)
+#add root chromatin coverage data
+openchrom = add_coverage(GC_content, args.root_chrom_bp_covered,'root_chrom')
+#add shoot chromatin coverage data
+openchrom = add_coverage(openchrom, args.shoot_chrom_bp_covered,'shoot_chrom')
+#add rootshootintersect chromatin coverage data
+openchrom = add_coverage(openchrom, args.rootshootintersect_chrom_bp_covered,'rootshootintersect_chrom')
+                                 
 #plot all promoters in genome
-#all_proms = windows_coords('all_proms','percentage_GC_content','% GC content',GC_content,promoter_bed,promoter_no_5UTR,50,EPD_TSS_bed,estimator='mean')
-
-all_proms = windows_coords('all_proms','percentage_GC_content','% GC content',GC_content,args.promoter_bed,args.promoter_no_5UTR,50,args.EPD_TSS_bed,estimator='median')
-
-
-##Now do constitutive and variable promoter from Czechowski et al 2005
-GC_prom_types = add_genetype(GC_content, args.Czechowski_gene_categories)
-
-
-rolling_rootshootintersect = windows_coords(f'{args.author_name}_genetypenocontrol','percentage_GC_content','% GC content',GC_prom_types,args.promoter_bed,args.promoter_no_5UTR,
+all_proms = windows_coords('all_proms','% open chromatin',openchrom,args.promoter_bed,args.promoter_no_5UTR,50,args.EPD_TSS_bed,estimator='median')
+                                 
+#add gene type
+openchrom_prom_types = add_genetype(openchrom, args.Czechowski_gene_categories)
+#rename genetype column
+if 'gene_type_x' in openchrom_prom_types.columns:
+    openchrom_prom_types.rename(columns={"gene_type_x": "gene_type"},inplace=True)
+#plot with genetypes                                 
+rolling_rootshootintersect = windows_coords(f'{args.author_name}_genetypenocontrol','% open chromatin',openchrom_prom_types,args.promoter_bed,args.promoter_no_5UTR,
                          50,args.EPD_TSS_bed,includeEPDTSS=False,x_range=1350,estimator='median',  genetype='constitutive', genetype2=args.variable2_name,ci=95, n_boot=10000)
 
-
-rolling_incl_control = windows_coords(f'{args.author_name}_genetype','percentage_GC_content','% GC content',GC_prom_types,
+                                 
+#plot including control                                 
+rolling_incl_control = windows_coords(f'{args.author_name}_genetype','% open chromatin',openchrom_prom_types,
                                       args.promoter_bed,args.promoter_no_5UTR, 50,args.EPD_TSS_bed,includeEPDTSS=False,estimator='median',x_range=1350,
                                       genetype='constitutive', genetype2=args.variable2_name, genetype3='control')
-
-#plot lengths 
-GC_prom_types_length = add_genetype(all_proms, args.Czechowski_gene_categories)
-plot_length(GC_prom_types_length,'Czechowski_genetypenocontrol', genetype='constitutive', genetype2=args.variable2_name)
-
-plot_length(GC_prom_types_length,'Czechowski_genetype', genetype='constitutive', genetype2=args.variable2_name, genetype3='control')
-
-
-
-
