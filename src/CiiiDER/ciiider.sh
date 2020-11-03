@@ -14,4 +14,4 @@ mkdir -p ../../data/output/$4/CiiiDER/$5
 
 
 
-java –jar ../../software/CiiiDER/CiiiDER.jar –n ../../software/CiiiDER/config.ini
+java -jar ../../software/CiiiDER/CiiiDER.jar -n ../../software/CiiiDER/config.ini

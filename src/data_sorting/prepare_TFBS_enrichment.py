@@ -6,11 +6,13 @@ import argparse
 parser = argparse.ArgumentParser(description='prepare_TFBS_enrichment')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('promoterpref', type=str, help='Promoter prefix name')
-parser.add_argument('Czechowski_gene_categories', type=str, help='Input location of Czechowski gene categories text file')
+parser.add_argument('gene_categories', type=str, help='Input location of gene categories text file')
 parser.add_argument('promoter_bed_file', type=str, help='Input location of promoters bed file')
 parser.add_argument('output_genecat_prefix', type=str, help='Gene category prefix (eg. Czechowski)')
 parser.add_argument('mapped_motifs', type=str, help='input location of mapped_motifs bed file')#
 parser.add_argument('mapped_motifs_out', type=str, help='output location of mapped_motifs bed file with TF family in column 4')
+parser.add_argument('variable1_name', type=str, help='Optional replacement name for 2nd variable eg. non-specific',default = 'constitutive', nargs="?")
+parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue&condition_specific',default = 'variable', nargs="?")
 args = parser.parse_args()
 
 #make directory for the plots to be exported to
@@ -113,30 +115,30 @@ def prepare_gat(df):
     bed = BedTool.from_dataframe(sorted_motifs_gene_type).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/{args.output_genecat_prefix}_{args.promoterpref}_allgenetypes_AGI.bed')
     
     #save bed file with only constitutive and variable genetypes
-    sorted_motifs_gene_type2 = sorted_motifs_gene_type[(sorted_motifs_gene_type.gene_type == 'constitutive') | (sorted_motifs_gene_type.gene_type == 'variable')]
-    sorted_motifs_AGI2 = sorted_motifs_AGI[(sorted_motifs_AGI.gene_type == 'constitutive') | (sorted_motifs_AGI.gene_type == 'variable')]
-    bed = BedTool.from_dataframe(sorted_motifs_gene_type2).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/{args.output_genecat_prefix}_{args.promoterpref}_constitutivevariable_gat.bed')
-    bed = BedTool.from_dataframe(sorted_motifs_AGI2).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/{args.output_genecat_prefix}_{args.promoterpref}_constitutivevariable_AGI.bed')
+    sorted_motifs_gene_type2 = sorted_motifs_gene_type[(sorted_motifs_gene_type.gene_type == args.variable1_name) | (sorted_motifs_gene_type.gene_type == args.variable2_name)]
+    sorted_motifs_AGI2 = sorted_motifs_AGI[(sorted_motifs_AGI.gene_type == args.variable1_name) | (sorted_motifs_AGI.gene_type == args.variable2_name)]
+    bed = BedTool.from_dataframe(sorted_motifs_gene_type2).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable1_name}{args.variable2_name}_gat.bed')
+    bed = BedTool.from_dataframe(sorted_motifs_AGI2).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable1_name}{args.variable2_name}_AGI.bed')
     #make a new gat workspace file with all promoters (first 3 columns)
     bed = BedTool.from_dataframe(sorted_motifs_gene_type[['chr','start','stop']]).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_workspace.bed')
     #select only variable promoters
-    variable_promoters_extended = sorted_motifs_gene_type[sorted_motifs_gene_type['gene_type'] == 'variable']
+    variable_promoters_extended = sorted_motifs_gene_type[sorted_motifs_gene_type['gene_type'] == args.variable2_name]
     sorted_variable = variable_promoters_extended.sort_values(['chr','start'])
-    bed = BedTool.from_dataframe(sorted_variable).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_variable_gat.bed')
+    bed = BedTool.from_dataframe(sorted_variable).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable2_name}_gat.bed')
     #same again for other enrichment analyses
-    variable_promoters_extended_agi = sorted_motifs_AGI[sorted_motifs_AGI['gene_type'] == 'variable']
+    variable_promoters_extended_agi = sorted_motifs_AGI[sorted_motifs_AGI['gene_type'] == args.variable2_name]
     sorted_variable_AGI = variable_promoters_extended_agi.sort_values(['chr','start'])
-    bed = BedTool.from_dataframe(sorted_variable_AGI).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/other_analysis/{args.output_genecat_prefix}_{args.promoterpref}_variable_AGI.bed')
+    bed = BedTool.from_dataframe(sorted_variable_AGI).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/other_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable2_name}_AGI.bed')
     #make a constitutive only file
-    constitutive_promoters = sorted_motifs_gene_type[sorted_motifs_gene_type['gene_type'] == 'constitutive']
+    constitutive_promoters = sorted_motifs_gene_type[sorted_motifs_gene_type['gene_type'] == args.variable1_name]
     sorted_constitutive = constitutive_promoters.sort_values(['chr','start'])
-    bed = BedTool.from_dataframe(sorted_constitutive).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_constitutive_gat.bed')
+    bed = BedTool.from_dataframe(sorted_constitutive).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable1_name}_gat.bed')
     #same again for other enrichment analyses with AGI in fourth column
-    constitutive_promoters_AGI = sorted_motifs_AGI[sorted_motifs_AGI['gene_type'] == 'constitutive']
+    constitutive_promoters_AGI = sorted_motifs_AGI[sorted_motifs_AGI['gene_type'] == args.variable1_name]
     sorted_constitutive_AGI = constitutive_promoters_AGI.sort_values(['chr','start'])
-    bed = BedTool.from_dataframe(sorted_constitutive_AGI).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/other_analysis/{args.output_genecat_prefix}_{args.promoterpref}_constitutive_AGI.bed')
+    bed = BedTool.from_dataframe(sorted_constitutive_AGI).saveas(f'../../data/output/{args.file_names}/TFBS_enrichment/other_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable1_name}_AGI.bed')
 
 
-promoters = sort_files(args.promoter_bed_file,args.mapped_motifs,args.Czechowski_gene_categories)
+promoters = sort_files(args.promoter_bed_file,args.mapped_motifs,args.gene_categories)
 #create gat files
 prepare_gat(promoters)

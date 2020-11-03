@@ -15,6 +15,7 @@ parser.add_argument('promoters_filtered_contain_motifs', type=str, help='output 
 parser.add_argument('Schmid_allgenes', type=str, help='Output location of all filtered microarray genes')
 #parser.add_argument('Mergner_allgenes', type=str, help='Output location of all filtered RNAseq genes')
 parser.add_argument('promoters_gff3', type=str, help='Input location of promoters gff3 file')
+parser.add_argument('CV_gene_categories', type=str, help='Input location of gene categories ranked by coefficient of variation')
 args = parser.parse_args()
 
 def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filtered_contain_motifs):
@@ -121,21 +122,31 @@ def filter_genes_schmid(promoter_bed, select_genes_file):
     
 #     return filtered_df   
 
-def subSet_ontau(in_df, out_dir, no_of_genes):
+def subSet_ontau(in_df, out_dir, no_of_genes, CV_gene_categories):
     '''
-    Extract the constitutive, tissue_specific, and control subsets based on tau values
+    Extract the non-specific, tissue_specific, and control subsets based on tau values
     '''
     #filtering based on presence in the Araport11 annotation, define the first
     #n rows as the constitutive set and add label
     constitutive          = in_df[0:no_of_genes].copy()
-    constitutive['state'] = 'constitutive'
+    constitutive['state'] = 'non-specific'
 
     #define the last n rows as the variable set and add label
     variable          = in_df[-no_of_genes:].copy()
     variable['state'] = 'tissue_specific'
-
+    
+    #read in czechowski gene categories so the midrange samples exclude the constitutive and variable genes from there
+    CV_categories = pd.read_table(CV_gene_categories,sep='\t',header=None)
+    #Name columns
+    cols = ['AGI','gene_type']
+    CV_categories.columns = cols
+    #exclude control genes
+    CV_categories_nocontrol = CV_categories[~(CV_categories.gene_type=='control')]
+    
     #extract the rest of the rows as the control search space
-    mid_range    = in_df[(no_of_genes+1):-(no_of_genes+1)].copy()
+    mid_range_full    = in_df[(no_of_genes+1):-(no_of_genes+1)].copy()
+    #exclude the constitutive and variable genes
+    mid_range = mid_range_full[~(mid_range_full.AGI.isin(CV_categories_nocontrol.AGI))]
 
     #create 10 labelled bins
     mid_range['bins'] = pd.Series(pd.qcut(mid_range['tau'], q = 10, precision = 2))
@@ -177,6 +188,6 @@ remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.prom
 filtered_schmid = filter_genes_schmid(args.promoters_filtered_contain_motifs,args.Schmid_rankedtau)
 #filtered_mergner = filter_genes_mergner(args.promoters_filtered_contain_motifs,args.Mergner_rankedcv)
 #schmid subset
-subSet_ontau(filtered_schmid,args.Schmid_gene_categories,args.no_of_genes)
+subSet_ontau(filtered_schmid,args.Schmid_gene_categories,args.no_of_genes,args.CV_gene_categories)
 #mergner subset
 #subSet_ontau(filtered_mergner,args.Mergner_gene_categories,args.no_of_genes)

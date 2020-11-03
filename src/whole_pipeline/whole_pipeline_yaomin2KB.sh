@@ -4,7 +4,8 @@ eval "$(conda shell.bash hook)"
 conda activate PromoterArchitecturePipeline
 #directory_path=ei/workarea/group-eg/project_PromoterArchitecturePipeline
 directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture #remove this, better to use relative path
-file_names=arabidopsis_selected_tissues
+file_names=overlapping_includingbidirectional_all_genes_newannotation_2KB
+#arabidopsis_selected_tissues
 #non-overlapping_includingbidirectional_all_genes_newannotation
 
 ##extract promoters from a genome file
@@ -16,7 +17,7 @@ file_names=arabidopsis_selected_tissues
 #arg6 is an option to extend promoters to the first start codon.
 
 #python ../data_sorting/extract_promoter.py $directory_path $file_names --remove_bidirectional --prevent_overlapping_genes --fiveUTR
-python ../data_sorting/extract_promoter.py $directory_path $file_names 1000 --prevent_overlapping_genes --fiveUTR
+python ../data_sorting/extract_promoter.py $directory_path $file_names 2000 #--prevent_overlapping_genes
 ##extract promoters
 
 ## optional - merge meme files together into one file ready for FIMO
@@ -27,13 +28,12 @@ python ../data_sorting/extract_promoter.py $directory_path $file_names 1000 --pr
 #locations of promoter gff3 file and genome_fasta file
 #remember to change location depending on if promoter file used or UTR file
 #promoter_gff_file=../../data/genomes/$file_names/promoters_renamedChr.gff3
-promoter_gff_file=../../data/output/$file_names/promoters_5UTR.gff3
+promoter_gff_file=../../data/output/$file_names/promoters.gff3
 genome_fasta=../../data/genomes/TAIR10_chr_all.fas
 
 #identify the base filename
 promoterbase=${promoter_gff_file##*/}
 promoterpref=${promoterbase%.*}
-
 
 
 ##run preFIMO.sh script. $1 is promoter gff3 location. $2 is the genome.fasta file location.
@@ -78,13 +78,13 @@ python ../meme_suite/./map_motif_ids.py  ../../data/output/$file_names/FIMO/${pr
 
 
 
-#filter microarray to include only conditions of interest for TAU tissue specificity and CV values
+#filter microarray to include only conditions of interest for TAU tissue specificity and CV values - not filtering any more, just generating TAU table
 #arg1 is the input location of expression data table (schmid et al 2005 microarray AtGE_dev_gcRMA.txt.newline)
 #arg2 is the output location of filtered microarray
 #arg3 is the output location of TAU table
 #arg4 is the promoter extraction output folder name
 
-python ../data_sorting/./filter_microarray_conditions.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt $file_names
+python ../data_sorting/./filter_microarray_conditions.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/output/$file_names/genes/tissue_specific/${promoterpref}_schmid_allfilteredgenes_TAU.txt $file_names
 
 
 #Prepare raw Czechowski et al 2005 microarray data filtering out genes that aren't expressed in >=80% of tissues/conditions
@@ -96,7 +96,7 @@ python ../data_sorting/./filter_microarray_conditions.py ../../data/genes/AtGene
 #arg6 is the promoter extraction output folder name
 #arg7 is the filter_threshold (percentage of conditions genes have to be expressed in otherwise they are filtered)
 
-python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/filtered80 $file_names 80
+python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/filtered80 $file_names 80
 
 #remove the incorrect header line of the file
 tail -n +2 ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv > ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV_noheader.tsv
@@ -125,9 +125,9 @@ python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_
 ## run coverageBed to find TFBS % nucleotide coverage of a promoter
 #$1 is promoter bed file
 #$2 is the folder name
-../data_sorting/./TFBS_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names
-
-
+#$3 is the motifs file location
+#$4 is the output file location 
+../data_sorting/./TFBS_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt
 
 ##calculate promoter GC content
 #arg1 is the name of folder and filenames for the promoters extracted
@@ -136,9 +136,15 @@ python ../data_sorting/./choose_genes_cv.py $file_names ../../data/output/$file_
 python ../data_sorting/./promoter_GC_content.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.fasta ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv
 
 #%coverage of open chromatin
+#also generates a motifs file containing only TFBSs which overlap with open chromatin
 #$1 is promoter bed file
 #$2 is the folder name
-../data_sorting/./OpenChromatin_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names
+#$3 is the TFBS motifs bed file
+#$4 is the TFBS motifs_mapped bed file
+../data_sorting/./OpenChromatin_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names ../../data/output/$file_names/FIMO/${promoterpref}_motifs.bed ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed 
+
+
+
 
 window_size=100
 window_offset=50
@@ -789,6 +795,78 @@ python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_na
 #analysis of top 300 constitutive and top 300 variable genes
 python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_czechowski_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_czechowski_constitutive_variable_random_300.txt
 
+
+
+
+
+######Rerun TFBS coverage and diversity analyses and plotting just using TFBSs falling within open chromatin######
+
+
+
+
+
+## run coverageBed to find TFBS % nucleotide coverage of a promoter
+#$1 is promoter bed file
+#$2 is the folder name
+#$3 is the motifs file location
+#$4 is the output file location 
+../data_sorting/./TFBS_coverage.sh ../../data/output/$file_names/FIMO/${promoterpref}.bed $file_names ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsintersect.bed ../../data/output/$file_names/TFBS_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt
+
+
+#TFBS coverage of shortened promoters
+#arg1 is the promoter extraction output folder name
+#arg2 is the name of the output directory
+#arg3 is the input location of shortened promoter bed
+#arg4 is the input location of bed file for which % coverage is being calculated for
+#arg5 is the output location of the % coverage bed file
+python ../rolling_window/./coverage_rw.py $file_names TFBS_coverage ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsintersect.bed ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt
+
+
+###Whole promoter plots###
+#Plot TFBS coverage
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt whole_prom_openchrom/
+
+#Plot TF and TF family diversity, and do PCA and Kmeans clustering
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters mapped motif bed
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed whole_prom_openchrom/
+
+
+###Shortened promoter plots###
+
+#Plot TFBS coverage
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters bp_covered txt file
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt ${promoterpref}_${promoter_length}bp_openchrom/
+
+
+#Create shortened promoter motifs_mapped file in correct format for the TF_diversity_plots.py script
+#arg1 is the input location of the shortened promoter file
+#arg2 is the input location of the promoters mapped motif bed
+#arg3 is the output location of the shortened mapped_motifs bed
+python ../data_sorting/create_motif_mapped_from_intersect.py ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom_motifs_mapped.bed
+
+#Plot TF and TF family diversity, and do PCA and Kmeans clustering
+#arg1 is the promoter extraction output folder name
+#arg2 is the input location of Czechowski gene categories text file
+#arg3 is the input location of promoters mapped motif bed
+#arg4 is the optional output folder name ending in a forward slash
+python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_openchrom/
+
+
+
+
+
+
+
 #need to add KEGG analysis to this too
 
 ####
@@ -805,15 +883,16 @@ python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$fi
 
 #python ../data_sorting/./filter_microarray_conditions.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt
 
-#Prepare raw Czechowski et al 2005 microarray data this time not filtering out genes that aren't expressed in >80% of tissues/conditions
+#Prepare raw Czechowski et al 2005 microarray data this time not filtering out genes that aren't expressed in >80% of tissues/conditions (output file now currently used)
 #arg1 is the input file
 #arg2 is the mas5 affymetrix presence/absence data
 #arg3 is the current Arabidopsis thaliana annotation data
 #arg4 is the Araport housekeeping genes from Data S4 from Cheng et al. 2016
 #arg5 is the output directory
 #arg6 is the promoter extraction output folder name
+#arg7 is the filter_threshold (percentage of conditions genes have to be expressed in otherwise they are filtered)
 
-python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline.filtered ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/tissue_specific $file_names
+python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/tissue_specific $file_names 0
 
 
 #Create Scmid et al 2005 ranked tau dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, tissue_specific or control genes
@@ -827,11 +906,12 @@ python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/
 #arg7 is the output location of the promoter bed file filtered so that each promoter contains at least one TFBS
 #arg8 is the output location of all filtered microarray genes
 #arg9 is the input location of promoters gff3 file
+#arg10 is the location of the gene categories ranked by coefficient of variation
 
-python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 100 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
+python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 100 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt
 
 #run again with 300 genes per promoter category for gene ontology enrichment analysis
-python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 300 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random_300.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3
+python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 300 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random_300.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_300.txt
 
 
 #prepare files for gat analysis TATA enrichment

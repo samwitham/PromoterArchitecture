@@ -11,6 +11,7 @@ parser.add_argument('file_names', type=str, help='Name of folder and filenames f
 parser.add_argument('Czechowski_gene_categories', type=str, help='Input location of Czechowski gene categories text file')
 parser.add_argument('bp_covered_file', type=str, help='Input location of promoters bp_covered txt file')
 parser.add_argument('output_folder_name', type=str, help='Optional output folder name ending in a forward slash',default = '', nargs="?")
+parser.add_argument('variable1_name', type=str, help='Optional replacement name for 2nd variable eg. non-specific',default = 'constitutive', nargs="?")
 parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
 parser.add_argument('author_name', type=str, help='Optional replacement name for author in reference to the geneset',default = 'Czechowski', nargs="?")
 parser.add_argument('palette', type=str, help='Optional replacement colour palette for plots',default = None, nargs="?")
@@ -80,11 +81,15 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     #plot
     x=x_variable
     y=y_variable
-    order=["constitutive", args.variable2_name, "control"]
+    order=[args.variable1_name, args.variable2_name, "control"]
     #set colour palette
     colours = sns.color_palette(palette)
     
-    plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order, palette = colours)
+      #if violin plot don't extend past datapoints
+    if plot_kind == 'violin': 
+        plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order,palette=colours, cut=0)
+    else:
+        plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order,palette=colours)
 
 
 
@@ -94,7 +99,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     #add significance if necessary - dunn's posthocs with multiple Bonferroni correction
     stat = dunn_posthoc_test(df,y_variable,x_variable)
     #label box pairs
-    box_pairs=[("constitutive", args.variable2_name),("constitutive", "control"),(args.variable2_name, "control")]
+    box_pairs=[(args.variable1_name, args.variable2_name),(args.variable1_name, "control"),(args.variable2_name, "control")]
     #make empty list of p_values
     p_values = []
     #populate the list of p_values accoridng to the box_pairs

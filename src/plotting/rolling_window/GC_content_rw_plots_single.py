@@ -19,6 +19,7 @@ parser.add_argument('shoot_chrom_bp_covered', type=str, help='Input location of 
 parser.add_argument('rootshootintersect_chrom_bp_covered', type=str, help='Input location of rootshootintersect chromatin bed file')
 parser.add_argument('palette', type=str, help='Optional replacement colour palette for plots',default = None, nargs="?")
 parser.add_argument('author_name', type=str, help='Optional author name to add to output file names',default = 'Czechowski', nargs="?")
+parser.add_argument('variable1_name', type=str, help='Optional replacement name for 2nd variable eg. non-specific',default = 'constitutive', nargs="?")
 parser.add_argument('variable2_name', type=str, help='Optional variable 2 name eg. tissue_specific',default = 'variable', nargs="?")
 args = parser.parse_args()
 
@@ -528,18 +529,18 @@ GC_prom_types = add_genetype(GC_content, args.Czechowski_gene_categories)
 
 
 rolling_rootshootintersect = windows_coords(f'{args.author_name}_genetypenocontrol','percentage_GC_content','% GC content',GC_prom_types,args.promoter_bed,args.promoter_no_5UTR,
-                         50,args.EPD_TSS_bed,includeEPDTSS=False,x_range=1350,estimator='median',  genetype='constitutive', genetype2=args.variable2_name,ci=95, n_boot=10000)
+                         50,args.EPD_TSS_bed,includeEPDTSS=False,x_range=1350,estimator='median',  genetype=args.variable1_name, genetype2=args.variable2_name,ci=95, n_boot=10000)
 
 
 rolling_incl_control = windows_coords(f'{args.author_name}_genetype','percentage_GC_content','% GC content',GC_prom_types,
                                       args.promoter_bed,args.promoter_no_5UTR, 50,args.EPD_TSS_bed,includeEPDTSS=False,estimator='median',x_range=1350,
-                                      genetype='constitutive', genetype2=args.variable2_name, genetype3='control')
+                                      genetype=args.variable1_name, genetype2=args.variable2_name, genetype3='control')
 
 #plot lengths 
 GC_prom_types_length = add_genetype(all_proms, args.Czechowski_gene_categories)
-plot_length(GC_prom_types_length,'Czechowski_genetypenocontrol', genetype='constitutive', genetype2=args.variable2_name)
+plot_length(GC_prom_types_length,'Czechowski_genetypenocontrol', genetype=args.variable1_name, genetype2=args.variable2_name)
 
-plot_length(GC_prom_types_length,'Czechowski_genetype', genetype='constitutive', genetype2=args.variable2_name, genetype3='control')
+plot_length(GC_prom_types_length,'Czechowski_genetype', genetype=args.variable1_name, genetype2=args.variable2_name, genetype3='control')
 
 
 

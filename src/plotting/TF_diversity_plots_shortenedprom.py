@@ -17,8 +17,10 @@ parser.add_argument('file_names', type=str, help='Name of folder and filenames f
 parser.add_argument('Czechowski_gene_categories', type=str, help='Input location of Czechowski gene categories text file')
 parser.add_argument('mapped_motif_bed', type=str, help='Input location of promoters mapped motif bed')
 parser.add_argument('output_folder_name', type=str, help='Optional output folder name ending in a forward slash',default = '', nargs="?")
+parser.add_argument('variable1_name', type=str, help='Optional replacement name for 2nd variable eg. non-specific',default = 'constitutive', nargs="?")
 parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
 parser.add_argument('author_name', type=str, help='Optional replacement name for author in reference to the geneset',default = 'Czechowski', nargs="?")
+parser.add_argument('palette', type=str, help='Optional replacement colour palette for plots',default = None, nargs="?")
 args = parser.parse_args()
 
 dependent_variable = 'TF_diversity'
@@ -166,22 +168,29 @@ def dunn_posthoc_test(df,dependent_variable, between):
     """dunn_posthoc tests with bonferroni multiple correction"""
     return sp.posthoc_dunn(df, val_col=dependent_variable, group_col=between, p_adjust='bonferroni')
     
-def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind):
+def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind,palette):
     """function to make and save plot"""
     #allow colour codes in seaborn
     sns.set(color_codes=True)
     sns.set_style("whitegrid")
+            #set colour palette
+    colours = sns.color_palette(palette)
+    
     #plot
     x=x_variable
     y=y_variable
-    order=["constitutive", args.variable2_name, "control"]
-    plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order)
+    order=[args.variable1_name, args.variable2_name, "control"]
+      #if violin plot don't extend past datapoints
+    if plot_kind == 'violin': 
+        plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order,palette=colours, cut=0)
+    else:
+        plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order,palette=colours)
     #plot points
     ax = sns.swarmplot(x=x, y=y, data=df, color=".25",order=order)
     #add significance if necessary - dunn's posthocs with multiple Bonferroni correction
     stat = dunn_posthoc_test(df,y_variable,x_variable)
     #label box pairs
-    box_pairs=[("constitutive", args.variable2_name),("constitutive", "control"),(args.variable2_name, "control")]
+    box_pairs=[(args.variable1_name, args.variable2_name),(args.variable1_name, "control"),(args.variable2_name, "control")]
     #make empty list of p_values
     p_values = []
     #populate the list of p_values accoridng to the box_pairs
@@ -305,7 +314,7 @@ def plot_kmeans_clusters(k,PCA_df, pca_variance):
     #add custom palette size as sns doesnt like having numeric values for hue palette=sns.color_palette("Set1", 6)
 
     plot = sns.scatterplot(x=0, y=1, hue='Kmeans_PCA_cluster', data=PCA_df,s=100, palette=sns.color_palette("Set1", k), ax=ax1)
-    plot2 = sns.scatterplot(x=0, y=1, hue='gene_type', data=PCA_df, s=100, ax=ax2,hue_order=["constitutive", args.variable2_name, "control"]);
+    plot2 = sns.scatterplot(x=0, y=1, hue='gene_type', data=PCA_df, s=100, ax=ax2,hue_order=[args.variable1_name, args.variable2_name, "control"]);
     #add graph titles
     ax1.set(ylabel='', title='A')
     ax2.set(xlabel='', ylabel='', title='B')
@@ -334,20 +343,24 @@ all_prom_distribution(shannon_df,'total_TF_count', 'total TF count', 'total_TF_c
 all_prom_distribution(shannon_df,'TF_family_count', 'TF family count', 'TF_family_count_allproms')
 #Czechowski_gene_categories violin and boxplot
 #make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF','Gene type','TF Shannon diversity', f'Czechowski_TF_diversity', 'violin')
-make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF','Gene type','TF Shannon diversity', f'{args.author_name}_TF_diversity', 'box')
+make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF','Gene type','TF Shannon diversity', f'{args.author_name}_TF_diversity', 'box',args.palette)
+make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF','Gene type','TF Shannon diversity', f'{args.author_name}_TF_diversity', 'violin',args.palette)
 #Czechowski_gene_categories violin and boxplot
 #make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF_family','Gene type','TF family Shannon diversity', f'Czechowski_TF_family_diversity', 'violin')
-make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF_family','Gene type','TF family Shannon diversity', f'{args.author_name}_TF_family_diversity', 'box')
+make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF_family','Gene type','TF family Shannon diversity', f'{args.author_name}_TF_family_diversity', 'box',args.palette)
+make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF_family','Gene type','TF family Shannon diversity', f'{args.author_name}_TF_family_diversity', 'violin',args.palette)
 #Czechowski_gene_categories violin and boxplot
 #make_plot(shannon_Czechowski_gene_categories,'gene_type','unique_TF_count','Gene type','unique TF count', f'Czechowski_unique_TF_count', 'violin')
-make_plot(shannon_Czechowski_gene_categories,'gene_type','unique_TF_count','Gene type','unique TF count', f'{args.author_name}_unique_TF_count', 'box')
+make_plot(shannon_Czechowski_gene_categories,'gene_type','unique_TF_count','Gene type','unique TF count', f'{args.author_name}_unique_TF_count', 'box',args.palette)
+make_plot(shannon_Czechowski_gene_categories,'gene_type','unique_TF_count','Gene type','unique TF count', f'{args.author_name}_unique_TF_count', 'violin',args.palette)
 #Czechowski_gene_categories violin and boxplot
 #make_plot(shannon_Czechowski_gene_categories,'gene_type','total_TF_count','Gene type','unique TF count', f'Czechowski_unique_TF_count', 'violin')
-make_plot(shannon_Czechowski_gene_categories,'gene_type','total_TF_count','Gene type','total TF count', f'{args.author_name}_unique_TF_count', 'box')
+make_plot(shannon_Czechowski_gene_categories,'gene_type','total_TF_count','Gene type','total TF count', f'{args.author_name}_unique_TF_count', 'box',args.palette)
+make_plot(shannon_Czechowski_gene_categories,'gene_type','total_TF_count','Gene type','total TF count', f'{args.author_name}_unique_TF_count', 'violin',args.palette)
 #Czechowski_gene_categories violin and boxplot
 #make_plot(shannon_Czechowski_gene_categories,'gene_type','TF_family_count','Gene type','TF family count', f'Czechowski_TF_family_count', 'violin')
-make_plot(shannon_Czechowski_gene_categories,'gene_type','TF_family_count','Gene type','TF family count', f'{args.author_name}_TF_family_count', 'box')
-
+make_plot(shannon_Czechowski_gene_categories,'gene_type','TF_family_count','Gene type','TF family count', f'{args.author_name}_TF_family_count', 'box',args.palette)
+make_plot(shannon_Czechowski_gene_categories,'gene_type','TF_family_count','Gene type','TF family count', f'{args.author_name}_TF_family_count', 'violin',args.palette)
 #Run PCA of TF family count
 PCA_df,pca_variance = run_PCA(args.mapped_motif_bed)
 #Run hierarchical clustering

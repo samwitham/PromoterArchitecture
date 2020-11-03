@@ -17,6 +17,7 @@ parser.add_argument('go_directory', type=str, help='Directory location of go ter
 parser.add_argument('background_gene_set', type=str, help='Location of background gene set')
 parser.add_argument('NCBI_gene_list', type=str, help='Location of NCBI gene list')
 parser.add_argument('genes_of_interest', type=str, help='Location of genes of interest')
+parser.add_argument('variable1_name', type=str, help='Optional replacement name for 2nd variable eg. non-specific',default = 'constitutive', nargs="?")
 parser.add_argument('variable2_name', type=str, help='Optional replacement name for 2nd variable eg. tissue_specific',default = 'variable', nargs="?")
 parser.add_argument('author_name', type=str, help='Optional replacement name for author in reference to the geneset',default = 'Czechowski', nargs="?")
 args = parser.parse_args()

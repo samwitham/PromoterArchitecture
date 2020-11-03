@@ -566,26 +566,33 @@ if args.fiveUTR:
     prom_UTR = add_5UTR(promoters, genes)
     with open(promoters_5UTR,'w') as f:
         prom_UTR.to_csv(f,index=False,sep='\t',header=None)
+    #sort proms and proms+5'UTR, and remove AGI column
+    proms_UTR = pd.read_table(promoters_5UTR, sep='\t', header=None)
+    cols = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
+    proms_UTR.columns = cols
+    proms_UTR = proms_UTR.sort_values(['chr','start']).reset_index(drop=True)
+    cleaned_proms_UTR = filter_bad_proms(proms_UTR)
+    cleaned_proms_UTR.type = 'promoter'
+    cleaned_proms_UTR.to_csv(promoters_5UTR,index=False,sep='\t',header=None)
 else:
     pass
 #sort proms and proms+5'UTR, and remove AGI column
 proms = pd.read_table(promoters, sep='\t', header=None)
-proms_UTR = pd.read_table(promoters_5UTR, sep='\t', header=None)
+
 cols = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
 #cols2 = ['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']
 proms.columns = cols
-proms_UTR.columns = cols
 proms = proms.sort_values(['chr','start']).reset_index(drop=True)
 proms = proms[['chr', 'source', 'type', 'start','stop','dot1','strand','dot2','attributes']]
-proms_UTR = proms_UTR.sort_values(['chr','start']).reset_index(drop=True)
+
 cleaned_proms = filter_bad_proms(proms)
-cleaned_proms_UTR = filter_bad_proms(proms_UTR)
+
 #rename gene to promoter
 cleaned_proms.type = 'promoter'
-cleaned_proms_UTR.type = 'promoter'
+
 
 cleaned_proms.to_csv(promoters,index=False,sep='\t',header=None)
-cleaned_proms_UTR.to_csv(promoters_5UTR,index=False,sep='\t',header=None)
+
 # #remove empty lines from end of the files. DO NOT DO THIS AS GFF2BED REMOVES THE LAST LINE - BED FILES SEEM TO NEED AN EMPTY LINE
 # remove_empty_lines(promoters)
 # remove_empty_lines(promoters_5UTR)   
