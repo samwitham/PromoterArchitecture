@@ -98,8 +98,8 @@ python ../data_sorting/./filter_microarray_conditions.py ../../data/genes/AtGene
 
 python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/filtered80 $file_names 80
 
-#remove the incorrect header line of the file
-tail -n +2 ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv > ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV_noheader.tsv
+#remove the incorrect header line of the file - no longer needed fixed in the expressionVar_AtGE_dev_gcRMA.py and expressionVar_AtGE_dev_gcRMA_editedbySam.py scripts
+#tail -n +2 ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv > ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV_noheader.tsv
 
 
 #Create Czechowski et al 2005 ranked cv dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, variable or control genes
@@ -747,7 +747,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$7 is the optional --ignore-segment-tracks flag or --with-segment-tracks flag
 ../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_constitutive_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_variable_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoter_length}bp_${promoterpref}_Czechowski_TFBS --with-segment-tracks
 
-#run precentrimo.sh
+#run precentrimo.sh - 400bp promoters CV
 #$1 is the promoter bed file location of constitutive genes only
 #$2 is the promoter bed file location of constitutive and variable genes (background genes)
 #$3 is the folder name
@@ -756,25 +756,68 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$6 is the constitutive, variable and random promoters fasta file output location
 ../meme_suite/./precentrimo.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_constitutive_gat.bed ../../data/output/$file_names/TFBS_enrichment/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable_gat.bed $file_names $genome_fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta
 
+#run precentrimo.sh - 400bp promoters CV
+#$1 is the promoter bed file location of variable genes only
+#$2 is the promoter bed file location of constitutive and variable genes (background genes)
+#$3 is the folder name
+#$4 is the genome fasta file location
+#$5 is the constitutive promoter fasta file output location
+#$6 is the constitutive, variable and random promoters fasta file output location
+../meme_suite/./precentrimo.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoter_length}bp_${promoterpref}_variable_gat.bed ../../data/output/$file_names/TFBS_enrichment/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable_gat.bed $file_names $genome_fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_variable.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta
+
+
 #activate memesuite conda environment (install memesuite 5.0.2 using conda install 'meme=5.0.2' 'icu=58.2'. Centrimo is broken on memesuite versions higher than 5.0.2)
 #MemeSuite4 env has 
 conda activate MemeSuite4
 #run centrimo to look for enriched motifs in constitutive promoters (using whole promoters)
 #$1 is the promoter fasta file location of constitutive genes only
-#$2 is the promoter fasta file location of constitutive, variable and random genes only
+#$2 is the promoter fasta file location of the background genes
 #$3 is meme motif file 
 #$4 is the folder name
-../meme_suite/./centrimo.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/dap_combined.meme $file_names
+../meme_suite/./centrimo.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/dap_combined.meme $file_names 
 
-#run ciiider software
+../meme_suite/./centrimo.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_variable.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/dap_combined.meme $file_names 
+
+
+#run ciiider software - constitutive genes
 #$1 is the promoter fasta file location of constitutive genes only
-#$2 is the promoter fasta file location of constitutive, variable and random genes only
+#$2 is the background gene fasta file
 #$3 is jaspar motif file
 #$4 is the folder name
 #$5 is the CiiiDER output folder name (Czechowski_400bp_promoters_5UTR_constitutive)
-#../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Czechowski_400bp_promoters_5UTR_constitutive
+../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutive.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Czechowski_${promoter_length}bp_${promoterpref}_constitutive
 
+#run ciiider software - variable genes
+#$1 is the promoter fasta file location of variable genes only
+#$2 is the background gene fasta file
+#$3 is jaspar motif file
+#$4 is the folder name
+#$5 is the CiiiDER output folder name (Czechowski_400bp_promoters_5UTR_constitutive)
+../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_variable.fasta ../../data/output/$file_names/centrimo/Czechowski_${promoter_length}bp_${promoterpref}_constitutivevariable.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Czechowski_${promoter_length}bp_${promoterpref}_variable
+
+#change conda env
 conda activate PromoterArchitecturePipeline
+
+#sort CiiiDER output adding TF_family and AGI - constitutive genes
+#arg1 is the input location of the geneIDtable
+#arg2 is the input location of the motifs_csv output from CiiiDER output
+#arg3 is the output location of tsv file containing significantly enriched motifs with AGI and TF family name
+python ../data_sorting/./CiiiDER_sort_output.py ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_constitutive/enrichmentoutput_MostSigDeficit.txt ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_constitutive/enrichmentoutput_MostSigDeficit_mapped.tsv
+
+#sort CiiiDER output adding TF_family and AGI - variable genes
+#arg1 is the input location of the geneIDtable
+#arg2 is the input location of the motifs_csv output from CiiiDER output
+#arg3 is the output location of tsv file containing significantly enriched motifs with AGI and TF family name
+python ../data_sorting/./CiiiDER_sort_output.py ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_variable/enrichmentoutput_MostSigDeficit.txt ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_variable/enrichmentoutput_MostSigDeficit_mapped.tsv
+
+#create list of enriched TF families 
+#arg1 is the input location of enriched TFs with mapped AGI
+#arg2 is the output location of enriched TF family coutns text file
+#constitutive genes
+python ../data_sorting/./enriched_TFfamilies.py ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_constitutive/enrichmentoutput_MostSigDeficit_mapped.tsv ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_constitutive/enriched_TFBS_family_counts.txt
+#variable genes
+python ../data_sorting/./enriched_TFfamilies.py ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_variable/enrichmentoutput_MostSigDeficit_mapped.tsv ../../data/output/$file_names/CiiiDER/Czechowski_${promoter_length}bp_${promoterpref}_variable/enriched_TFBS_family_counts.txt
+
 #flag genes from the czechowski constitutive/variable/control gene_set which are transcription factors
 #arg1 is the promoter extraction output folder name
 #arg2 is the gene_categories input file
@@ -897,6 +940,8 @@ python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/
 
 python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline ../../data/genes/AtGeneExpress_CV_2020/E-TABM-17_affy_mas5_calls_20200529.txt ../../data/genomes/Arabidopsis_thaliana/annotation/Arabidopsis_thaliana.TAIR10.47.gff3 ../../data/genes/AtGeneExpress_CV_2020/Araport11_housekeeping_genes_fromDataS4_Chengetal2016.txt ../../data/output/$file_names/genes/tissue_specific $file_names 0
 
+#remove the incorrect header line of the file - no longer needed fixed in the expressionVar_AtGE_dev_gcRMA.py and expressionVar_AtGE_dev_gcRMA_editedbySam.py scripts
+#tail -n +2 ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv > ../../data/output/$file_names/genes/tissue_specific/AtGE_dev_gcRMA__all_probes__CV_noheader.tsv
 
 #Create Scmid et al 2005 ranked tau dataset gene categories filtering out any genes not in the extracted promoters from this pipeline. The create subsets of N constitutive, tissue_specific or control genes
 #Also filters out promoters which have 100% overlapping promoters with other genes (where only a 5UTR is present that's not overlapping)
@@ -911,10 +956,10 @@ python ../data_sorting/./expressionVar_AtGE_dev_gcRMA_editedbySam.py ../../data/
 #arg9 is the input location of promoters gff3 file
 #arg10 is the location of the gene categories ranked by coefficient of variation
 
-python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 100 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt
+python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 100 ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt
 
 #run again with 300 genes per promoter category for gene ontology enrichment analysis
-python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 300 ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random_300.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_300.txt
+python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt 300 ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specifictissuespecific_random_300.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/FIMO/${promoterpref}_filtered_contain_motifs.bed ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/promoters.gff3 ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random_300.txt
 
 
 #prepare files for gat analysis TATA enrichment
@@ -924,7 +969,8 @@ python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file
 #arg4 is the Input location of promoters bed file
 #arg5 is the Gene category prefix (eg. Czechowski)
 #arg6 is the Input location of TATAbox_location bed file (from Eukaryotic promoter database)
-#arg7 is the optional replacement name for the non-constitutive variable (eg. tissue_specific)
+#arg7 is the optional replacement name for first variable (eg. non-specific)
+#arg8 is the optional replacement name for the second variable (eg. tissue_specific)
 #use ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed (stringent TATAs))
 #Used the following search parameters for download:
 ## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
@@ -946,7 +992,7 @@ python ../data_sorting/./choose_genes_tau.py $file_names ../../data/output/$file
 ##5' border: -100     3' border: 100
 ##Search mode: forward
 ##Selection mode : all matches)
-python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed tissue_specific
+python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed non-specific tissue_specific
 
 
 #run gat (Genomic association tester) enrichment for TATA boxes using Schmid gene categories
@@ -968,7 +1014,7 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 #$5 is the output folder location
 #$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
 #7 is the optional --ignore-segment-tracks flag
-../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_constitutive.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_tissue_specific.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Schmid_TATA --ignore-segment-tracks
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_non-specific.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_tissue_specific.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Schmid_TATA --ignore-segment-tracks
 
 
 ##PLOTS TAU
@@ -983,7 +1029,7 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 #arg6 is the optional variable2 name (default is 'variable')
 #arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg8 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv tau/ non-specific tissue_specific Schmid tab10_r
 
 
 #Plot TFBS coverage
@@ -995,7 +1041,7 @@ python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_nam
 #arg6 is the optional variable2 name (default is 'variable')
 #arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg8 is the optional seaborn colour palette for plots, default is None (sns.color_palette())
-python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt tau/ non-specific tissue_specific Schmid tab10_r
 
 #Plot TF and TF family diversity, and do PCA and Kmeans clustering
 #arg1 is the promoter extraction output folder name
@@ -1006,7 +1052,7 @@ python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_
 #arg6 is the optional variable2 name (default is 'variable')
 #arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg8 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed tau/ non-specific tissue_specific Schmid tab10_r
 
 #TATA enrichment plot Czechowski gene categories
 #arg1 is the promoter extraction output folder name
@@ -1017,7 +1063,7 @@ python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_n
 #arg6 is the optional variable1 name (default is 'constitutive')
 #arg7 is the optional variable2 name (default is 'variable')
 #arg8 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./TATA_enrichment_plots.py $file_names ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_constitutive.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_tissuespecific.out Czechowski_${promoterpref} tau/ non-specific tissue_specific tab10_r
+python ../plotting/./TATA_enrichment_plots.py $file_names ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_non-specific.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_tissuespecific.out Schmid_${promoterpref} tau/ non-specific tissue_specific tab10_r
 
 #Open chromatin coverage shoot-root intersect using Potter et al 2018 ATAC-seq negative controls for root/shoot open chromatin
 #arg1 is the promoter extraction output folder name
@@ -1029,11 +1075,11 @@ python ../plotting/./TATA_enrichment_plots.py $file_names ../../data/output/$fil
 #arg7 is the optional variable2 name (default is 'variable')
 #arg8 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg9 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_tau/ non-specific tissue_specific Schmid tab10_r
 #Open chromatin coverage root
-python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}RootOpenChrom.bp_covered.txt Root/ ${promoterpref}_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}RootOpenChrom.bp_covered.txt Root/ ${promoterpref}_tau/ non-specific tissue_specific Schmid tab10_r
 #Open chromatin coverage shoot
-python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_tau/ non-specific tissue_specific Schmid tab10_r
 
 
 
@@ -1054,7 +1100,7 @@ python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_
 #arg13 is the optional author name to add to output file names',default = 'Czechowski
 #arg14 is the optional variable1 name (default is 'constitutive')
 #arg15 is the optional variable 2 name eg. tissue_specific',default = 'variable'
-python ../plotting/rolling_window/./GC_content_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 GC_content_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
+python ../plotting/rolling_window/./GC_content_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 GC_content_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
 
 #TF diversity sliding window plot
 #arg1 is the name of folder and filenames for the promoters extracted
@@ -1073,7 +1119,7 @@ python ../plotting/rolling_window/./GC_content_rw_plots_single.py $file_names ..
 #arg14 is the optional variable1 name (default is 'constitutive')
 #arg15 is the optional variable 2 name eg. tissue_specific',default = 'variable'
 
-python ../plotting/rolling_window/./TF_diversity_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TF_diversity_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
+python ../plotting/rolling_window/./TF_diversity_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TF_diversity_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
 
 #TFBS coverage sliding window plot
 
@@ -1092,7 +1138,7 @@ python ../plotting/rolling_window/./TF_diversity_rw_plots_single.py $file_names 
 #arg13 is the optional variable1 name (default is 'constitutive')
 #arg14 is the optional variable 2 name eg. tissue_specific',default = 'variable'
 
-python ../plotting/rolling_window/./TFBScoverage_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TFBS_coverage_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
+python ../plotting/rolling_window/./TFBScoverage_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TFBS_coverage_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
 
 #open chromatin coverage sliding window plot
 
@@ -1110,7 +1156,7 @@ python ../plotting/rolling_window/./TFBScoverage_rw_plots_single.py $file_names 
 #arg12 is the optional author name to add to output file names',default = 'Czechowski
 #arg13 is the optional variable1 name (default is 'constitutive')
 #arg14 is the optional variable 2 name eg. tissue_specific',default = 'variable'
-python ../plotting/rolling_window/./openchromatin_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 OpenChromatin_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
+python ../plotting/rolling_window/./openchromatin_rw_plots_single.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 OpenChromatin_rw_tau ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed tab10_r Schmid non-specific tissue_specific
 
 
 #rerun analyses at shorter promoter length
@@ -1130,7 +1176,7 @@ python ../plotting/rolling_window/./openchromatin_rw_plots_single.py $file_names
 #arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg8 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
 
-python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
 
 
 
@@ -1143,7 +1189,7 @@ python ../plotting/./GC_content_plots.py $file_names ../../data/output/$file_nam
 #arg6 is the optional variable2 name (default is 'variable')
 #arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg8 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bp.bp_covered.txt ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bp.bp_covered.txt ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
 
 #Plot TF and TF family diversity, and do PCA and Kmeans clustering
 #arg1 is the promoter extraction output folder name
@@ -1154,7 +1200,7 @@ python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_
 #arg6 is the optional variable2 name (default is 'variable')
 #arg7 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg8 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
 
 
 
@@ -1168,11 +1214,11 @@ python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/
 #arg7 is the optional variable2 name (default is 'variable')
 #arg8 is the optional replacement name for author in reference to the geneset (default Czechowski)
 #arg9 is the optional seaborn colour palette for plots, default is "" (sns.color_palette())
-python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
 #Open chromatin coverage root
-python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpRootOpenChrom.bp_covered.txt Root/ ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpRootOpenChrom.bp_covered.txt Root/ ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
 #Open chromatin coverage shoot
-python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_${promoter_length}bp_tau/ non-specific tissue_specific Schmid tab10_r
 
 
 
@@ -1194,7 +1240,7 @@ python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_
 #arg8 is the optional replacement name for author in reference to the geneset',default = 'Czechowski'
 
 #analysis of top 300 constitutive and top 300 variable genes
-python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_schmid_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_schmid_constitutive_tissuespecific_random_300.txt non-specific tissue_specific Schmid
+python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_schmid_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_schmid_non-specific_tissuespecific_random_300.txt non-specific tissue_specific Schmid
 
 
 ###TAU analysis only in open chromatin###
@@ -1209,7 +1255,7 @@ python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$fi
 #arg6 is the optional replacement name for 2nd variable eg. tissue_specific
 #arg7 is the optional replacement name for author in reference to the geneset
 #arg8 is the optional replacement colour palette for plots
-python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt whole_prom_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt whole_prom_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
 
 #Plot TF and TF family diversity, and do PCA and Kmeans clustering
 #arg1 is the promoter extraction output folder name
@@ -1220,7 +1266,7 @@ python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_
 #arg6 is the optional replacement name for 2nd variable eg. tissue_specific
 #arg7 is the optional replacement name for author in reference to the geneset
 #arg8 is the optional replacement colour palette for plots
-python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed whole_prom_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed whole_prom_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
 
 
 ###Shortened promoter plots###
@@ -1234,7 +1280,7 @@ python ../plotting/./TF_diversity_plots.py $file_names ../../data/output/$file_n
 #arg6 is the optional replacement name for 2nd variable eg. tissue_specific
 #arg7 is the optional replacement name for author in reference to the geneset
 #arg8 is the optional replacement colour palette for plots
-python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt ${promoterpref}_${promoter_length}bp_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt ${promoterpref}_${promoter_length}bp_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
 
 
 
@@ -1249,7 +1295,7 @@ python ../plotting/./TFBS_coverage_plots.py $file_names ../../data/output/$file_
 #arg7 is the optional replacement name for author in reference to the geneset
 #arg8 is the optional replacement colour palette for plotss
 
-python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
+python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_openchrom_tau/ non-specific tissue_specific Schmid tab10_r
 
 #Tau TFBS family enrichment
 
@@ -1263,7 +1309,7 @@ python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 #arg8 is the optional variable1 name (default is 'constitutive')
 #arg9 is the optional variable2 name eg. tissue_specific (default is 'variable')
-python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped_openchromrootshootintersect.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_openchromrootshootintersect_TFfamily.bed non-specific tissue_specific
+python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped_openchromrootshootintersect.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_openchromrootshootintersect_TFfamily.bed non-specific tissue_specific
 
 #prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, whole promoters
 #arg1 is the promoter extraction output folder name
@@ -1275,7 +1321,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 #arg8 is the optional variable1 name (default is 'constitutive')
 #arg9 is the optional variable2 name eg. tissue_specific (default is 'variable')
-python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_TFfamily.bed
+python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_TFfamily.bed non-specific tissue_specific
 
 #prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, 400bp promoters, openchromatin
 #arg1 is the promoter extraction output folder name
@@ -1287,7 +1333,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 #arg8 is the optional variable1 name (default is 'constitutive')
 #arg9 is the optional variable2 name eg. tissue_specific (default is 'variable')
-python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed Schmid_400bp ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect_TFfamily.bed
+python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed Schmid_400bp ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect_TFfamily.bed non-specific tissue_specific
 
 #prepare files for gat analysis TFs enrichment - TFBSs only in open chromatin (root-shoot intersect) - just looking at constitutive genes, 400bp promoters
 #arg1 is the promoter extraction output folder name
@@ -1299,7 +1345,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #arg7 is the output location of the mapped motifs bed file with TF family in column 4
 #arg8 is the optional variable1 name (default is 'constitutive')
 #arg9 is the optional variable2 name eg. tissue_specific (default is 'variable')
-python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_constitutive_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed Schmid_400bp ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_TFfamily.bed
+python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissuespecific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp.bed Schmid_400bp ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_TFfamily.bed non-specific tissue_specific
 
 #run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - whole promoters open chromatin only
 #$1 is the workspace file containing all promoters of interest
@@ -1309,7 +1355,7 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$5 is the output folder location
 #$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
 #$7 is the optional --ignore-segment-tracks or --with-segment-tracks flag
-../data_sorting/./gat_enrichment.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Czechowski_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_non-specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_tissue_specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_openchromrootshootintersect_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoterpref}_Schmid_TFBS_openchrom --with-segment-tracks
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_non-specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_tissue_specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_openchromrootshootintersect_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoterpref}_Schmid_TFBS_openchrom --with-segment-tracks
 
 #run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - whole promoters 
 #$1 is the workspace file containing all promoters of interest
@@ -1319,4 +1365,109 @@ python ../data_sorting/./prepare_TFBS_enrichment.py $file_names ${promoterpref} 
 #$5 is the output folder location
 #$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
 #$7 is the optional --ignore-segment-tracks or --with-segment-tracks flag
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_non-specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoterpref}_tissue_specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_motifs_mapped_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoterpref}_Schmid_TFBS --with-segment-tracks
 
+#run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - 400bp promoters open chromatin only
+#$1 is the workspace file containing all promoters of interest
+#$2 is the constitutive promoters file for annotations
+#$3 is the variable promoters file for annotations
+#$4 is the segments bed file
+#$5 is the output folder location
+#$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
+#$7 is the optional --ignore-segment-tracks flag or --with-segment-tracks flag
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_non-specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_openchromrootshootintersect_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoter_length}bp_${promoterpref}_Schmid_TFBS_openchrom --with-segment-tracks
+
+#run gat (Genomic association tester) enrichment for TFs using Czechowski gene categories - 400bp promoters
+#$1 is the workspace file containing all promoters of interest
+#$2 is the constitutive promoters file for annotations
+#$3 is the variable promoters file for annotations
+#$4 is the segments bed file
+#$5 is the output folder location
+#$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
+#$7 is the optional --ignore-segment-tracks flag or --with-segment-tracks flag
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_workspace.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_non-specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/${promoterpref}_${promoter_length}bp_motifs_mapped_TFfamily.bed ../../data/output/$file_names/TFBS_enrichment/gat_analysis ${promoter_length}bp_${promoterpref}_Schmid_TFBS --with-segment-tracks
+
+#run precentrimo.sh - 400bp promoters Tau - non-specific
+#$1 is the promoter bed file location of non-specific genes only
+#$2 is the promoter bed file location of non-specific and tissue_specific genes (background genes)
+#$3 is the folder name
+#$4 is the genome fasta file location
+#$5 is the constitutive promoter fasta file output location
+#$6 is the constitutive, variable and random promoters fasta file output location 
+
+../meme_suite/./precentrimo.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_non-specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific_gat.bed $file_names $genome_fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specific.fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific.fasta
+
+
+#run precentrimo.sh - 400bp promoters Tau - tissue_specific
+#$1 is the promoter bed file location of non-specific genes only
+#$2 is the promoter bed file location of non-specific and tissue_specific genes (background genes)
+#$3 is the folder name
+#$4 is the genome fasta file location
+#$5 is the constitutive promoter fasta file output location
+#$6 is the constitutive, variable and random promoters fasta file output location 
+
+../meme_suite/./precentrimo.sh ../../data/output/$file_names/TFBS_enrichment/gat_analysis/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific_gat.bed ../../data/output/$file_names/TFBS_enrichment/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific_gat.bed $file_names $genome_fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific.fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific.fasta
+
+#activate memesuite conda environment (install memesuite 5.0.2 using conda install 'meme=5.0.2' 'icu=58.2'. Centrimo is broken on memesuite versions higher than 5.0.2)
+#MemeSuite4 env has 
+conda activate MemeSuite4
+#run centrimo to look for enriched motifs in constitutive promoters (using whole promoters)
+#$1 is the promoter fasta file location of constitutive genes only
+#$2 is the promoter fasta file location of the background genes
+#$3 is meme motif file 
+#$4 is the folder name
+../meme_suite/./centrimo.sh ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specific.fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific.fasta ../../data/FIMO/motif_data/dap_combined.meme $file_names 
+
+#run ciiider software - non-specific genes
+#$1 is the promoter fasta file location of non-specific genes only
+#$2 is the background gene fasta file
+#$3 is jaspar motif file
+#$4 is the folder name
+#$5 is the CiiiDER output folder name (Czechowski_400bp_promoters_5UTR_constitutive)
+../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specific.fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Schmid_${promoter_length}bp_${promoterpref}_non-specific
+
+#run ciiider software - tissue_specific genes
+#$1 is the promoter fasta file location of tissue_specific genes only
+#$2 is the background gene fasta file
+#$3 is jaspar motif file
+#$4 is the folder name
+#$5 is the CiiiDER output folder name (Czechowski_400bp_promoters_5UTR_constitutive)
+../CiiiDER/ciiider.sh ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific.fasta ../../data/output/$file_names/centrimo/Schmid_${promoter_length}bp_${promoterpref}_non-specifictissue_specific.fasta ../../data/FIMO/motif_data/DAP_seq_motifs.jaspar $file_names Schmid_${promoter_length}bp_${promoterpref}_tissue_specific
+
+#run ciiider software - non-specific genes open chromatin
+
+#run ciiider software - tissue_specific genes open chromatin
+conda activate PromoterArchitecturePipeline
+
+#sort CiiiDER output adding TF_family and AGI - non-specific genes
+#arg1 is the input location of the geneIDtable
+#arg2 is the input location of the motifs_csv output from CiiiDER output
+#arg3 is the output location of tsv file containing significantly enriched motifs with AGI and TF family name
+python ../data_sorting/./CiiiDER_sort_output.py ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_non-specific/enrichmentoutput_MostSigDeficit.txt ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_non-specific/enrichmentoutput_MostSigDeficit_mapped.tsv
+
+
+#sort CiiiDER output adding TF_family and AGI - tissue_specific genes
+#arg1 is the input location of the geneIDtable
+#arg2 is the input location of the motifs_csv output from CiiiDER output
+#arg3 is the output location of tsv file containing significantly enriched motifs with AGI and TF family name
+python ../data_sorting/./CiiiDER_sort_output.py ../../data/FIMO/motif_data/motif_map_IDs.txt ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific/enrichmentoutput_MostSigDeficit.txt ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific/enrichmentoutput_MostSigDeficit_mapped.tsv
+
+
+#create list of enriched TF families 
+#arg1 is the input location of enriched TFs with mapped AGI
+#arg2 is the output location of enriched TF family coutns text file
+#non-specific genes
+python ../data_sorting/./enriched_TFfamilies.py ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_non-specific/enrichmentoutput_MostSigDeficit_mapped.tsv ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_non-specific/enriched_TFBS_family_counts.txt
+#tissue_specific genes
+python ../data_sorting/./enriched_TFfamilies.py ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific/enrichmentoutput_MostSigDeficit_mapped.tsv ../../data/output/$file_names/CiiiDER/Schmid_${promoter_length}bp_${promoterpref}_tissue_specific/enriched_TFBS_family_counts.txt
+
+
+
+
+
+#flag genes from the czechowski constitutive/variable/control gene_set which are transcription factors
+#arg1 is the promoter extraction output folder name
+#arg2 is the gene_categories input file
+#arg3 is the input location of the Arabidopsis transcription factor list
+#arg4 is the output location of the flagged TF genes
+python ../data_sorting/./flag_TF_genes.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/genes/Ath_TF_list.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random_variable_TFs_only.txt

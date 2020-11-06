@@ -183,8 +183,38 @@ def main (raw_expr, mas5_pres, ara_annot, araport_houskeeeping, output_directory
             all_out.write('\t'.join([str(count),k,'\t'.join([str(x) for x in v ])])+'\n')
             count = count + 1
             # time.sleep(.1)
-             
+    
+    
+    #fix the header, adding the row as a new row and removing unwanted column names and columns    
+    df = pd.read_table(os.path.join(output_directory, 'AtGE_dev_gcRMA__all_probes__CV.tsv'), sep='\t')
+    #make new df with last 9 columns
+    df2 = df[df.columns[-9:]]
+
+    #convert header to to dictionary
+    dictionary = {'rank':[df2.columns.tolist()[0]],'probe_id':[df2.columns.tolist()[1]],'gene_id':[df2.columns.tolist()[2]],'mean':[df2.columns.tolist()[3]],'SD':[df2.columns.tolist()[4]],'CV':[df2.columns.tolist()[5]],'propP':[df2.columns.tolist()[6]],'current':[df2.columns.tolist()[7]],'Araport_const':[df2.columns.tolist()[8]]}
+    #turn dictionary into df
+    final_row = pd.DataFrame.from_dict(dictionary)
+    #fix the value in the first column, removing string
+    final_row['rank'].replace('t','',regex=True,inplace=True)
+    
+    #remove header
+    df.columns = range(df.shape[1])
+    df_removed_cols = df.loc[:, 0:8]
+    #rename cols
+    cols = ['rank','probe_id','gene_id','mean','SD','CV','propP','current','Araport_const']
+    df_removed_cols.columns = cols
+
+    #merge dfs
+    df_final = pd.concat([df_removed_cols,final_row],ignore_index=True)
+    #convert rank column to numeric
+    df_final = df_final.astype({'rank': 'int'})
+    df_final.sort_values(['rank'], inplace=True, ignore_index=True)
+    #save file
+    df_final.to_csv(os.path.join(output_directory, 'AtGE_dev_gcRMA__all_probes__CV.tsv'), index=False, header=None,sep='\t')
+    
     print('All probe output written to: ', os.path.join(output_directory, 'AtGE_dev_gcRMA__all_probes__CV.tsv'))
+    
+    #sort out
     
     
     

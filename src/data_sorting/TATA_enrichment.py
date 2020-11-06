@@ -12,6 +12,7 @@ parser.add_argument('promoter_bed_file', type=str, help='Input location of the p
 parser.add_argument('output_genecat_prefix', type=str, help='Gene category prefix (eg. Czechowski)')
 parser.add_argument('TATA_box_locations', type=str, help='Input location of TATAbox_location bed file (from Eukaryotic promoter database)')
 #optional argument
+parser.add_argument('variable1_name', nargs='?', default='constitutive')
 parser.add_argument('variable2_name', nargs='?', default='variable')
 args = parser.parse_args()
 
@@ -75,7 +76,7 @@ def prepare_gat(df):
     df.to_csv(buffer,sep='\t', header=None, index = False)
     buffer.seek(0)
     #select only constitutive and variable genes
-    df = df[(df.gene_type == 'constitutive') | (df.gene_type == args.variable2_name)]
+    df = df[(df.gene_type == args.variable1_name) | (df.gene_type == args.variable2_name)]
     #reorder columns
     df_reordered = df[['chr','start','stop','gene_type', 'strand', 'source', 'attributes','AGI']]
     #sort by chromosome and start
@@ -94,9 +95,9 @@ def prepare_gat(df):
     sorted_variable = variable_promoters_extended.sort_values(['chr','start'])
     bed = BedTool.from_dataframe(sorted_variable).saveas(f'../../data/output/{args.file_names}/TATA/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable2_name}.bed')
     #make a constitutive only file
-    constitutive_promoters = sorted_motifs[sorted_motifs['gene_type'] == 'constitutive']
+    constitutive_promoters = sorted_motifs[sorted_motifs['gene_type'] == args.variable1_name]
     sorted_constitutive = constitutive_promoters.sort_values(['chr','start'])
-    bed = BedTool.from_dataframe(sorted_constitutive).saveas(f'../../data/output/{args.file_names}/TATA/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_constitutive.bed')
+    bed = BedTool.from_dataframe(sorted_constitutive).saveas(f'../../data/output/{args.file_names}/TATA/gat_analysis/{args.output_genecat_prefix}_{args.promoterpref}_{args.variable1_name}.bed')
 
 #sort data
 merged = sort_data(args.promoter_bed_file,args.gene_categories)

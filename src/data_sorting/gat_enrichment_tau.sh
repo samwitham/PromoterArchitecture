@@ -11,11 +11,11 @@
 
 #constitutive gene enrichment
 gat-run.py $7 --segments=$4 `#eg. TATA box annotations` \
-    --annotations=$2 `#constitutive promoter annotations` \
+    --annotations=$2 `#non-specific promoter annotations` \
     --workspace=$1 `#constitutive and tissuespecific promoters` \
-    --num-samples=1000 --log=$5/gat_$6_constitutive.log > $5/gat_$6_constitutive.out 
+    --num-samples=1000 --log=$5/gat_$6_non-specific.log > $5/gat_$6_non-specific.out 
 #variable gene enrichment
 gat-run.py $7 --segments=$4 `#eg. TATA box annotations` \
     --annotations=$3 `#tissuespecific promoter annotations` \
-    --workspace=$1 `#constitutive and tissuespecific promoters` \
-    --num-samples=1000 --log=$5/gat_$6_variable.log > $5/gat_$6_tissuespecific.out
+    --workspace=$1 `#non-specific and tissuespecific promoters` \
+    --num-samples=1000 --log=$5/gat_$6_tissue_specific.log > $5/gat_$6_tissue_specific.out
