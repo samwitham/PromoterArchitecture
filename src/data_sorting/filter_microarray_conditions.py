@@ -49,6 +49,11 @@ def calculate_tau(expression_data,output_tau):
     #set gene name as index column
     df_filtered2.set_index('AGI code',inplace=True)
     
+    #inverse log transform the expression data
+    df_filtered2_inverselog = df_filtered2.copy()
+    df_filtered2_inverselog.iloc[:,1:] = df_filtered2.iloc[:,1:].apply(lambda x: 2**x)
+    df_filtered2=df_filtered2_inverselog.copy()
+    
     #merge columns that are replicates
     #first make a list of all final column names
     list_of_conditions = []
@@ -79,7 +84,7 @@ def calculate_tau(expression_data,output_tau):
     df_filtered2.set_index('AGI code', inplace=True)
     
     #select only columns in the list
-    df_filtered2 = df_filtered2[[name for name in list_of_conditions]]    
+    df_filtered2 = df_filtered2[[name for name in list_of_conditions]]
     
     #Filter genes which have no expression
     df_filtered3 = df_filtered2.loc[(df_filtered2 > 0).any(axis=1)]
@@ -88,7 +93,7 @@ def calculate_tau(expression_data,output_tau):
     data = df_filtered3.copy()
     
     #create TissueSpecificity object
-    tso = tspex.TissueSpecificity(data, 'tau', log=True)
+    tso = tspex.TissueSpecificity(data, 'tau')
     #screate tau df
     tso_df = pd.DataFrame(tso.tissue_specificity)
     tso_df.columns = ['TAU']
