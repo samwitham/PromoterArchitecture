@@ -49,14 +49,13 @@ try:
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
     
-def map_cv(ranked_cvs_file,mapped_motifs_file):
+def map_tau(ranked_cvs_file,mapped_motifs_file):
     """function to map the CV value to the TFs which bind to each promoter"""
     #read in files
-    cvs = pd.read_table(ranked_cvs_file, sep='\t', header=None)
-    cols = ['rank','probe_id','TF_AGI','expression_mean','expression_SD','expression_CV','proportion_of_values_present_in_mas5','presence_in_araport11','constitutive_in_araport11']
-    cvs.columns = cols
+    tau = pd.read_table(ranked_cvs_file, sep='\t', header=0)
+    #make AGI uppercase
+    tau['AGI code'] = tau['AGI code'].str.upper()
     #filter out any genes that aren't present in araport11
-    cvs = cvs[cvs.presence_in_araport11==1]
     #read in mapped motifs
     mapped_motifs = pd.read_table(mapped_motifs_file, sep='\t', header=None)
     #if whole promoter, mapped motif will have 13 columns
@@ -84,10 +83,8 @@ def map_cv(ranked_cvs_file,mapped_motifs_file):
         cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 
              'q-value', 'matched_sequence', 'TF_name','TF_family','TF_AGI','chr_openchrom','start_openchrom','stop_openchrom','bp_overlap' ]
         mapped_motifs.columns = cols
-        
-    
     #merge CV df with mapped_motifs, adding the CVs to the respective TF AGIs
-    merged = pd.merge(mapped_motifs, cvs, how='left', on='TF_AGI')
+    merged = pd.merge(mapped_motifs, tau, how='left', left_on='TF_AGI', right_on='AGI code')
     #Groupby promoter and then keep only unique TFs in each promoter
     #unique_CV_means = merged.groupby(['promoter_AGI', 'TF_AGI'])['expression_mean'].agg(lambda x: x.unique())
     unique_TFs = merged.drop_duplicates(['promoter_AGI', 'TF_AGI']).reset_index(drop=True)
@@ -124,10 +121,6 @@ def rep_sample(df, col, n, random_state):
     #return concatenated sub dfs
     return pd.concat(subs)
 
-def dunn_posthoc_test(df,dependent_variable, between):
-    """dunn_posthoc tests with bonferroni multiple correction"""
-    return sp.posthoc_dunn(df, val_col=dependent_variable, group_col=between, p_adjust='bonferroni')
-
 def merge_genetype(df, gene_categories):
     """merge df with gene_categories file adding the genetype of the promoters (if in top 100 constitutive or top 100 variable promoters)"""
     gene_cats = pd.read_table(gene_categories, sep='\t', header=None)
@@ -136,21 +129,25 @@ def merge_genetype(df, gene_categories):
     merged = pd.merge(gene_cats,df, on='promoter_AGI', how='left')
     return merged
 
+def dunn_posthoc_test(df,dependent_variable, between):
+    """dunn_posthoc tests with bonferroni multiple correction"""
+    return sp.posthoc_dunn(df, val_col=dependent_variable, group_col=between, p_adjust='bonferroni')
+
 def calculate_mean_SD_CV(df):
     """calculate the mean coefficient of variation of the tFs binding to a promoter"""
     #group by promoter and calculate mean for each promoter
-    means = df.groupby('promoter_AGI')['expression_CV'].mean()
+    means = df.groupby('promoter_AGI')['TAU'].mean()
     #turn into a dataframe
     means_df = pd.DataFrame(means)
     #turn the index into a new column
     means_df.reset_index(level=0, inplace=True)
     #name columns
-    cols = ['promoter_AGI', 'mean_cv']
+    cols = ['promoter_AGI', 'mean_tau']
     means_df.columns = cols
     
         
     #group by promoter and calculate SD (standard deviation) for each promoter
-    sd = df.groupby('promoter_AGI')['expression_CV'].std()
+    sd = df.groupby('promoter_AGI')['TAU'].std()
     #turn into a dataframe
     sd_df = pd.DataFrame(sd)
     #turn the index into a new column
@@ -179,7 +176,6 @@ def all_prom_distribution(df, x_variable, x_label, output_prefix):
     
 def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind,palette):
     """function to make and save plot"""
-    print(df)
     #allow colour codes in seaborn
     sns.set(color_codes=True)
     sns.set_style("whitegrid")
@@ -190,6 +186,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     
     #set colour palette
     colours = sns.color_palette(palette)
+    
     #make copy of df
     merged2_unique = df.copy()
     #make sample sizes equal for comparison
@@ -197,9 +194,17 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     minimum_sample_size = merged2_unique.gene_type.value_counts().min()
     # print this
     print(f'sample size in each category = {minimum_sample_size}')
+    # multiply this by the number of categories
+    total_sample_size = minimum_sample_size * len(merged2_unique.gene_type.unique())
+    #select equal sample sizes of each category with a random state of 1 so it's reproducible
+    equal_samplesizes = rep_sample(merged2_unique, 'gene_type',total_sample_size,random_state = 1)
+    # now filter out genes which were not selected using the minimum sample size
+    to_remove = merged2_unique[~merged2_unique.promoter_AGI.isin(equal_samplesizes.promoter_AGI)]
+    df = df[~df.promoter_AGI.isin(to_remove.promoter_AGI)]
     #save sample size as file
     with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/number_of_genes_in_each_category.txt','w') as file:
         file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
+        
     
     # multiply this by the number of categories
     total_sample_size = minimum_sample_size * len(merged2_unique.gene_type.unique())
@@ -208,8 +213,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     # now filter out genes which were not selected using the minimum sample size
     to_remove = merged2_unique[~merged2_unique.promoter_AGI.isin(equal_samplesizes.promoter_AGI)]
     df = df[~df.promoter_AGI.isin(to_remove.promoter_AGI)]
-    
-    
+        
     #if violin plot don't extend past datapoints
     if plot_kind == 'violin': 
         plot = sns.catplot(x=x, y=y, data=df, kind=plot_kind,order=order,palette=colours, cut=0)
@@ -249,18 +253,19 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     ax.get_figure().savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_{plot_kind}.pdf', format='pdf')            
     
 #map coefficient of variation (CV) values to each TF in the mapped_motifs file
-Czechowski_merged, Czechowski_unique_TF = map_cv(args.all_genes_ranking, args.mapped_motif_bed)
+Czechowski_merged, Czechowski_unique_TF = map_tau(args.all_genes_ranking, args.mapped_motif_bed)
 
 #add gene_types for the promoters (eg. constitutive, variable or control)
 Czechowski_genetypes = merge_genetype(Czechowski_unique_TF, args.gene_categories)
-
+print(Czechowski_genetypes)
 #calculate CV means per promoter
 Czechowski_means_sd = calculate_mean_SD_CV(Czechowski_genetypes)
 #merge dfs
 Czechowski_means_sd_genetype = merge_genetype(Czechowski_means_sd, args.gene_categories)
-#remove promoters with no mean_cv
-Czechowski_means_sd_genetype = Czechowski_means_sd_genetype[Czechowski_means_sd_genetype.mean_cv.notnull()]
-#check how many of each promoter type have mean_cv values
+
+#remove promoters with no mean_tau
+Czechowski_means_sd_genetype = Czechowski_means_sd_genetype[Czechowski_means_sd_genetype.mean_tau.notnull()]
+#check how many of each promoter type have mean_tau values
 #constitutive
 print('number of' + args.variable1_name + 'genes')
 print(len(Czechowski_means_sd_genetype[Czechowski_means_sd_genetype.gene_type == args.variable1_name]))
@@ -270,11 +275,11 @@ print('number of' + 'control' + 'genes')
 print(len(Czechowski_means_sd_genetype[Czechowski_means_sd_genetype.gene_type == 'control']))
 
 #plot all promoter distribution of TF CV values
-all_prom_distribution(Czechowski_merged, 'expression_CV', 'expression CV', 'Czechowski_expressionCV')
+all_prom_distribution(Czechowski_merged, 'TAU', 'Tau tissue specificity', 'Czechowski_expressionCV')
 
 
 #plot the CV for each promoter gene_type - whole promoter individual TF CVs
-make_plot(Czechowski_genetypes,'gene_type', 'expression_CV','Gene type', 'Cognate TF expression CV', 'Czechowski_CV', 'box',args.palette)
+make_plot(Czechowski_genetypes,'gene_type', 'TAU','Gene type', 'Cognate TF Tau tissue specificity', 'Schmid_Tau', 'box',args.palette)
 
 #plot the mean CV for each promoter gene_type - whole promoter mean TF CVs
-make_plot(Czechowski_means_sd_genetype,'gene_type', 'mean_cv','Gene type', 'Mean cognate TF expression CV', 'Czechowski_CV_mean', 'box',args.palette)
+make_plot(Czechowski_means_sd_genetype,'gene_type', 'mean_tau','Gene type', 'Mean cognate TF Tau tissue specificity', 'Schmid_tau_mean', 'box',args.palette)

@@ -53,6 +53,38 @@ try:
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
 
+    
+def rep_sample(df, col, n, random_state):
+    """function to return a df with equal sample sizes
+    taken from here: https://stackoverflow.com/questions/39457762/python-pandas-conditionally-select-a-uniform-sample-from-a-dataframe"""
+    #identify number of categories
+    nu = df[col].nunique()
+    # find number of rows
+    m = len(df)
+    # integar divide total sample size by number of categories
+    mpb = n // nu
+    # multiply this by the number of categories and subtract from the number of samples to find the remainder
+    mku = n - mpb * nu
+    # make an array fileld with zeros corresponding to each category
+    fills = np.zeros(nu)
+
+    # make values in the array 1s up until the remainder
+    fills[:mku] = 1
+
+    # calculate sample sizes for each category
+    sample_sizes = (np.ones(nu) * mpb + fills).astype(int)
+
+    #group the df by categories
+    gb = df.groupby(col)
+    #define sample size function
+    sample = lambda sub_df, i: sub_df.sample(sample_sizes[i], random_state = random_state)
+    #run sample size function on each category
+    subs = [sample(sub_df, i) for i, (_, sub_df) in enumerate(gb)]
+    #return concatenated sub dfs
+    return pd.concat(subs) 
+    
+    
+    
 def percent_coverage(bp_covered):
     """function to calculate the % coverage from the output file of bedtools coverage"""
 
@@ -92,6 +124,24 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
      #set colour palette
     colours = sns.color_palette(palette)
     
+    #make copy of df
+    merged2_unique = df.copy()
+    #make sample sizes equal for comparison
+    # identify sample size of the minimum category
+    minimum_sample_size = merged2_unique.gene_type.value_counts().min()
+    # print this
+    print(f'sample size in each category = {minimum_sample_size}')
+    #save sample size as file
+    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name_promoter}{args.output_folder_name}plots/number_of_genes_in_each_category.txt','w') as file:
+        file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
+    
+    # multiply this by the number of categories
+    total_sample_size = minimum_sample_size * len(merged2_unique.gene_type.unique())
+    #select equal sample sizes of each category with a random state of 1 so it's reproducible
+    equal_samplesizes = rep_sample(merged2_unique, 'gene_type',total_sample_size,random_state = 1)
+    # now filter out genes which were not selected using the minimum sample size
+    to_remove = merged2_unique[~merged2_unique.AGI.isin(equal_samplesizes.AGI)]
+    df = df[~df.AGI.isin(to_remove.AGI)]
     
       #if violin plot don't extend past datapoints
     if plot_kind == 'violin': 

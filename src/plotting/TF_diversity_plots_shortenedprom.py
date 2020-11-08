@@ -12,6 +12,7 @@ import argparse
 from statannot import add_stat_annotation
 import scikit_posthocs as sp
 
+
 parser = argparse.ArgumentParser(description='TF_diversity_plots')
 parser.add_argument('file_names', type=str, help='Name of folder and filenames for the promoters extracted')
 parser.add_argument('Czechowski_gene_categories', type=str, help='Input location of Czechowski gene categories text file')
@@ -54,17 +55,69 @@ try:
     print("Directory " , dirName ,  " created") 
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
+    
+def rep_sample(df, col, n, random_state):
+    """function to return a df with equal sample sizes
+    taken from here: https://stackoverflow.com/questions/39457762/python-pandas-conditionally-select-a-uniform-sample-from-a-dataframe"""
+    #identify number of categories
+    nu = df[col].nunique()
+    # find number of rows
+    m = len(df)
+    # integar divide total sample size by number of categories
+    mpb = n // nu
+    # multiply this by the number of categories and subtract from the number of samples to find the remainder
+    mku = n - mpb * nu
+    # make an array fileld with zeros corresponding to each category
+    fills = np.zeros(nu)
+
+    # make values in the array 1s up until the remainder
+    fills[:mku] = 1
+
+    # calculate sample sizes for each category
+    sample_sizes = (np.ones(nu) * mpb + fills).astype(int)
+
+    #group the df by categories
+    gb = df.groupby(col)
+    #define sample size function
+    sample = lambda sub_df, i: sub_df.sample(sample_sizes[i], random_state = random_state)
+    #run sample size function on each category
+    subs = [sample(sub_df, i) for i, (_, sub_df) in enumerate(gb)]
+    #return concatenated sub dfs
+    return pd.concat(subs)
 
 def calculate_shannon_diversity(mapped_motif_bed):
     """read in mapped motifs_bed, calculate Shannon diversity"""
-    df = pd.read_table(mapped_motif_bed, sep='\t', header=None)
-    cols = ['chr', 'start', 'stop', 'promoter_AGI','dot1','strand','source','type','dot2','attributes',
+    
+    
+    #if whole promoter, mapped motif will have 13 columns
+    #if shortened promoter, mapped motif file will have 24 (as bp overlap is needed in TF_diversity_plots_shortenedprom.py to remove TFBSs where the middle isn't in the promoter)
+    #if 24 columns, only select the subset of 13 columns
+    #if 13 columns, keep them all
+    #This is to make the dfs have identical column names
+    mapped_motifs = pd.read_table(mapped_motif_bed, sep='\t', header=None)
+    if len(mapped_motifs.columns) == 24:
+        cols = ['chr', 'start', 'stop', 'promoter_AGI','dot1','strand','source','type','dot2','attributes',
             'motif_chr','motif_start','motif_stop','name_rep', 'score', 'motif_strand',
             'promoter_AGI2', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI','bp_overlap']
-    df.columns = cols
-    #filter columns
-    df = df[['chr', 'start', 'stop', 'promoter_AGI','strand','motif_chr','motif_start','motif_stop',
+        mapped_motifs.columns = cols
+        #filter columns
+        mapped_motifs = mapped_motifs[['chr', 'start', 'stop', 'promoter_AGI','strand','motif_chr','motif_start','motif_stop',
                                          'TF_name', 'TF_family', 'TF_AGI','bp_overlap']]
+        
+    elif len(mapped_motifs.columns) == 13:
+        cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
+        mapped_motifs.columns = cols
+        
+    elif len(mapped_motifs.columns) == 17:
+        cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 
+             'q-value', 'matched_sequence', 'TF_name','TF_family','TF_AGI','chr_openchrom','start_openchrom','stop_openchrom','bp_overlap' ]
+        mapped_motifs.columns = cols
+    
+    
+    
+    df = mapped_motifs.copy()
+
+
     #add motif length column
     df['motif_length'] = 0
     df.motif_length = df.motif_stop - df.motif_start
@@ -176,6 +229,26 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
             #set colour palette
     colours = sns.color_palette(palette)
     
+    #make copy of df
+    merged2_unique = df.copy()
+    #make sample sizes equal for comparison
+    # identify sample size of the minimum category
+    minimum_sample_size = merged2_unique.gene_type.value_counts().min()
+    # print this
+    print(f'sample size in each category = {minimum_sample_size}')
+    #save sample size as file
+    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/number_of_genes_in_each_category.txt','w') as file:
+        file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
+    
+    
+    # multiply this by the number of categories
+    total_sample_size = minimum_sample_size * len(merged2_unique.gene_type.unique())
+    #select equal sample sizes of each category with a random state of 1 so it's reproducible
+    equal_samplesizes = rep_sample(merged2_unique, 'gene_type',total_sample_size,random_state = 1)
+    # now filter out genes which were not selected using the minimum sample size
+    to_remove = merged2_unique[~merged2_unique.promoter_AGI.isin(equal_samplesizes.promoter_AGI)]
+    df = df[~df.promoter_AGI.isin(to_remove.promoter_AGI)]
+    
     #plot
     x=x_variable
     y=y_variable
@@ -220,12 +293,33 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     
 def run_PCA(mapped_motif_bed):
     """perform a PCA"""
-    df = pd.read_table(mapped_motif_bed, sep='\t', header=None)
-    #cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
-    cols = ['chr', 'start', 'stop', 'promoter_AGI','dot1','strand','source','type','dot2','attributes',
+    
+    
+    
+    mapped_motifs = pd.read_table(mapped_motif_bed, sep='\t', header=None)
+    if len(mapped_motifs.columns) == 24:
+        cols = ['chr', 'start', 'stop', 'promoter_AGI','dot1','strand','source','type','dot2','attributes',
             'motif_chr','motif_start','motif_stop','name_rep', 'score', 'motif_strand',
             'promoter_AGI2', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI','bp_overlap']
-    df.columns = cols
+        mapped_motifs.columns = cols
+        #filter columns
+        mapped_motifs = mapped_motifs[['chr', 'start', 'stop', 'promoter_AGI','strand','motif_chr','motif_start','motif_stop',
+                                         'TF_name', 'TF_family', 'TF_AGI','bp_overlap']]
+        
+    elif len(mapped_motifs.columns) == 13:
+        cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 'q-value', 'matched_sequence', 'TF_name', 'TF_family', 'TF_AGI']
+        mapped_motifs.columns = cols
+        
+    elif len(mapped_motifs.columns) == 17:
+        cols = ['chr', 'start', 'stop', 'name_rep', 'score', 'strand', 'promoter_AGI', 'p-value', 
+             'q-value', 'matched_sequence', 'TF_name','TF_family','TF_AGI','chr_openchrom','start_openchrom','stop_openchrom','bp_overlap' ]
+        mapped_motifs.columns = cols
+    
+    
+    
+    df = mapped_motifs.copy()
+    
+ 
     #count no. of TF families binding in each promoter
     groupby_promoter_counts_family = df.groupby('promoter_AGI')['TF_family'].value_counts().unstack(fill_value=0)
     #add gene type column

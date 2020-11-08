@@ -345,6 +345,9 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
         minimum_sample_size = merged2_unique.gene_type.value_counts().min()
         # print this
         print(f'sample size in each category = {minimum_sample_size}')
+          #save sample size as file
+        with open(f'../../data/output/{args.file_names}/rolling_window/{args.foldername_prefix}/plots/number_of_genes_in_each_category.txt','w') as file:
+            file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
         # multiply this by the number of categories
         total_sample_size = minimum_sample_size * len(merged2_unique.gene_type.unique())
         #select equal sample sizes of each category with a random state of 1 so it's reproducible
@@ -394,6 +397,9 @@ def windows_coords(output_prefix,variable_of_interest,variable_of_interest_name,
         minimum_sample_size = merged2_unique.gene_type.value_counts().min()
         # print this
         print(f'sample size in each category = {minimum_sample_size}')
+         #save sample size as file
+        with open(f'../../data/output/{args.file_names}/rolling_window/{args.foldername_prefix}/plots/number_of_genes_in_each_category.txt','w') as file:
+            file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
         # multiply this by the number of categories
         total_sample_size = minimum_sample_size * len(merged2_unique.gene_type.unique())
         #select equal sample sizes of each category with a random state of 1 so it's reproducible

@@ -16,6 +16,7 @@ parser.add_argument('Schmid_allgenes', type=str, help='Output location of all fi
 #parser.add_argument('Mergner_allgenes', type=str, help='Output location of all filtered RNAseq genes')
 parser.add_argument('promoters_gff3', type=str, help='Input location of promoters gff3 file')
 parser.add_argument('CV_gene_categories', type=str, help='Input location of gene categories ranked by coefficient of variation')
+parser.add_argument('CV_all_genes', type=str, help='Optional input location of coefficient of variation all genes after filtering to include only genes present in 80% of conditions',default = None, nargs="?")
 args = parser.parse_args()
 
 def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filtered_contain_motifs):
@@ -140,26 +141,44 @@ def subSet_ontau(in_df, out_dir, no_of_genes, CV_gene_categories):
     #Name columns
     cols = ['AGI','gene_type']
     CV_categories.columns = cols
-    #exclude control genes
+    #exclude control genes from CV gene categories
     CV_categories_nocontrol = CV_categories[~(CV_categories.gene_type=='control')]
     
     #extract the rest of the rows as the control search space
     mid_range_full    = in_df[(no_of_genes+1):-(no_of_genes+1)].copy()
+    
     #exclude the constitutive and variable genes
     mid_range = mid_range_full[~(mid_range_full.AGI.isin(CV_categories_nocontrol.AGI))]
-
+    
+    #exclude geens which aren't found within the CV all gene set
+    #read in CV all genes
+    if args.CV_all_genes == None:
+        mid_range_reduced = mid_range.copy()
+    else:
+        CV_all_genes_df = pd.read_table(args.CV_all_genes,header=0,sep='\t')
+        mid_range_reduced = mid_range[mid_range.AGI.isin(CV_all_genes_df.AGI)].copy()
+    
+    
     #create 10 labelled bins
-    mid_range['bins'] = pd.Series(pd.qcut(mid_range['tau'], q = 10, precision = 2))
+    mid_range_reduced['bins'] = pd.Series(pd.qcut(mid_range_reduced['tau'], q = 10, precision = 2)).copy()
 
     #extract 10 random rows from these bins and label as the control set
     sample = no_of_genes/10
     sample_integar = int(str(sample).replace('.0', '')) #convert sample to an integar
-    samples_from_bins = mid_range.groupby('bins').apply(pd.DataFrame.sample, sample_integar, random_state = 2)
+    samples_from_bins = mid_range_reduced.groupby('bins').apply(pd.DataFrame.sample, sample_integar, random_state = 2).copy()
     samples_from_bins['state'] = 'control'
 
     #concatenate and write as output
     output_set = pd.concat([constitutive[['AGI', 'state']], variable[['AGI', 'state']], samples_from_bins[['AGI', 'state']]], ignore_index = True)
     output_set.to_csv(out_dir, sep = '\t', index = False, header=False)
+    
+    #replace control genes in CV categories with same control genes as tau
+    if args.CV_all_genes == None:
+        pass
+    else:
+        CV_categories[CV_categories.gene_type=='control'] = output_set[output_set.state=='control']
+        #save CV gene categories
+        CV_categories.to_csv(CV_gene_categories,sep='\t',header=None,index=False)
     
     #function from expressionVar_subsets_plot.py
     #__author__ = "Will Nash"
