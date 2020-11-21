@@ -132,7 +132,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     # print this
     print(f'sample size in each category = {minimum_sample_size}')
     #save sample size as file
-    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name_promoter}{args.output_folder_name}plots/number_of_genes_in_each_category.txt','w') as file:
+    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name_promoter}{args.output_folder_name}plots/number_of_genes_in_each_category_{dependent_variable}.txt','w') as file:
         file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
     
     # multiply this by the number of categories

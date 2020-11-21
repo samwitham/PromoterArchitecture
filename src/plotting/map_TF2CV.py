@@ -86,12 +86,19 @@ def map_cv(ranked_cvs_file,mapped_motifs_file):
         mapped_motifs.columns = cols
         
     
-    #merge CV df with mapped_motifs, adding the CVs to the respective TF AGIs
+    #merge CV df with mapped_motifs, adding the CVs to the respective AGIs
     merged = pd.merge(mapped_motifs, cvs, how='left', on='TF_AGI')
+    merged_promotercv = pd.merge(mapped_motifs, cvs, how='left', left_on='promoter_AGI',right_on='TF_AGI',suffixes=['','_allgenes'])
     #Groupby promoter and then keep only unique TFs in each promoter
     #unique_CV_means = merged.groupby(['promoter_AGI', 'TF_AGI'])['expression_mean'].agg(lambda x: x.unique())
     unique_TFs = merged.drop_duplicates(['promoter_AGI', 'TF_AGI']).reset_index(drop=True)
-
+    unique_TFs_promotercv = merged_promotercv.drop_duplicates(['promoter_AGI', 'TF_AGI']).reset_index(drop=True)
+    #remove NaN
+    unique_TFs_promotercv_filtered = unique_TFs_promotercv[unique_TFs_promotercv.TF_AGI_allgenes.notna()]
+    
+    #save df as a file
+    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}promoter_TF_CV.txt','w') as f:
+        unique_TFs_promotercv_filtered.to_csv(f, sep='\t',header=True, index=False)
    
     return merged,unique_TFs
 
@@ -134,6 +141,13 @@ def merge_genetype(df, gene_categories):
     cols = ['promoter_AGI','gene_type']
     gene_cats.columns = cols
     merged = pd.merge(gene_cats,df, on='promoter_AGI', how='left')
+    #drop NaN
+    merged_filtered = merged.dropna()
+    #reset index
+    merged_filtered_index = merged_filtered.reset_index(drop=True)
+    
+    return merged_filtered_index
+    
     return merged
 
 def calculate_mean_SD_CV(df):
@@ -177,7 +191,7 @@ def all_prom_distribution(df, x_variable, x_label, output_prefix):
     
     
     
-def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind,palette):
+def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_kind,palette,mean=False):
     """function to make and save plot"""
     print(df)
     #allow colour codes in seaborn
@@ -191,14 +205,19 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     #set colour palette
     colours = sns.color_palette(palette)
     #make copy of df
-    merged2_unique = df.copy()
+    if mean == False:
+        merged2 = df.copy()
+   
+        merged2_unique = merged2.drop_duplicates(['promoter_AGI'],keep='last')
+    elif mean == True:
+        merged2_unique = df.copy()
     #make sample sizes equal for comparison
     # identify sample size of the minimum category
     minimum_sample_size = merged2_unique.gene_type.value_counts().min()
     # print this
     print(f'sample size in each category = {minimum_sample_size}')
     #save sample size as file
-    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/number_of_genes_in_each_category.txt','w') as file:
+    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/number_of_genes_in_each_category_{y_variable}.txt','w') as file:
         file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
     
     # multiply this by the number of categories
@@ -277,4 +296,4 @@ all_prom_distribution(Czechowski_merged, 'expression_CV', 'expression CV', 'Czec
 make_plot(Czechowski_genetypes,'gene_type', 'expression_CV','Gene type', 'Cognate TF expression CV', 'Czechowski_CV', 'box',args.palette)
 
 #plot the mean CV for each promoter gene_type - whole promoter mean TF CVs
-make_plot(Czechowski_means_sd_genetype,'gene_type', 'mean_cv','Gene type', 'Mean cognate TF expression CV', 'Czechowski_CV_mean', 'box',args.palette)
+make_plot(Czechowski_means_sd_genetype,'gene_type', 'mean_cv','Gene type', 'Mean cognate TF expression CV', 'Czechowski_CV_mean', 'box',args.palette,mean=True)

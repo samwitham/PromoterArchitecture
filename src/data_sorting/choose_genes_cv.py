@@ -15,6 +15,7 @@ parser.add_argument('promoters_filtered_contain_motifs', type=str, help='output 
 parser.add_argument('Czechowski_allgenes', type=str, help='Output location of all filtered microarray genes')
 parser.add_argument('Mergner_allgenes', type=str, help='Output location of all filtered RNAseq genes')
 parser.add_argument('promoters_gff3', type=str, help='Input location of promoters gff3 file')
+parser.add_argument('option_remove_only5UTR', type=str, help='Optionally remove genes where only the Araport11 5UTR is present due to the promoter overlapping other genes',default = True, nargs="?")
 args = parser.parse_args()
 
 def remove_proms_no_TFBS(promoter_bedfile, promoter_mapped_motifs,promoters_filtered_contain_motifs):
@@ -171,8 +172,9 @@ try:
     print("Directory " , dirName ,  " created") 
 except FileExistsError:
     print("Directory " , dirName ,  " already exists")
-    
-remove_only5UTR(args.promoter_bedfile, args.promoters_gff3)    
+
+if args.option_remove_only5UTR == True:
+    remove_only5UTR(args.promoter_bedfile, args.promoters_gff3)    
 remove_proms_no_TFBS(args.promoter_bedfile,args.promoter_mapped_motifs,args.promoters_filtered_contain_motifs)
 filtered_czechowski = filter_genes_czechowski(args.promoters_filtered_contain_motifs,args.Czechowski_rankedcv)
 filtered_mergner = filter_genes_mergner(args.promoters_filtered_contain_motifs,args.Mergner_rankedcv)

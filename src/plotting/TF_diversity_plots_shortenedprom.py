@@ -237,7 +237,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     # print this
     print(f'sample size in each category = {minimum_sample_size}')
     #save sample size as file
-    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/number_of_genes_in_each_category.txt','w') as file:
+    with open(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/number_of_genes_in_each_category_{y_variable}.txt','w') as file:
         file.write('number_of_genes_in_each_category='+str(minimum_sample_size))
     
     
@@ -290,6 +290,7 @@ def make_plot(df,x_variable, y_variable,x_label, y_label, output_prefix, plot_ki
     plt.tight_layout()  
     #save figure
     ax.get_figure().savefig(f'../../data/output/{args.file_names}/{dependent_variable}/{args.output_folder_name}plots/{output_prefix}_{plot_kind}.pdf', format='pdf')      
+    plt.clf()
     
 def run_PCA(mapped_motif_bed):
     """perform a PCA"""
@@ -419,7 +420,7 @@ def plot_kmeans_clusters(k,PCA_df, pca_variance):
     fig.text(0.0, 0.5, f'PC1 {(pca_variance[0]*100).round(1)}% of variance', ha='center', va='center', rotation='vertical')
    
     fig.savefig(f"../../data/output/{args.file_names}/TF_diversity/{args.output_folder_name}plots/PCA_Kmeans_TF_family_counts.pdf")
-    
+    plt.clf()
     
 #make shannon df
 shannon_df = calculate_shannon_diversity(args.mapped_motif_bed)
