@@ -1,13 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 #pip install pybiomart
-
-
-# In[1]:
 
 
 #conda install -y -c future requests requests-cache
@@ -31,6 +22,3 @@ pip install statannot
 # git config --global credential.helper 'cache --timeout=3600'
 # git pull -u origin master
 # git add .gitattributes
-
-
-

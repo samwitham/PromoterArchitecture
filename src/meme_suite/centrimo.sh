@@ -7,9 +7,9 @@
 
 #retrieve file name from file path
 xbaseconstitutive=${1##*/}
-xprefconstitutive=${xbase%.*}
+#xprefconstitutive=${xbase%.*}
 
 
 #run centrimo
 #--local = compute enrichment of all regions
-centrimo --neg $2 --o ../../data/output/$4/centrimo/output/${xbaseconstitutive}_DAPseq --local $1 $3
+centrimo --neg "$2" --o ../../data/output/"$4"/centrimo/output/"${xbaseconstitutive}"_DAPseq --local "$1" "$3"

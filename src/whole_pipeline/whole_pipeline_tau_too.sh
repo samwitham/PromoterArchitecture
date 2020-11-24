@@ -3,21 +3,20 @@
 eval "$(conda shell.bash hook)"
 conda activate PromoterArchitecturePipeline
 #directory_path=ei/workarea/group-eg/project_PromoterArchitecturePipeline
-directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture #remove this, better to use relative path
+#directory_path=/home/witham/Documents/pipeline_new/PromoterArchitecture #remove this, better to use relative path
 file_names=non-overlapping_includingbidirectional_all_genes_newannotation
 #arabidopsis_selected_tissues
 #non-overlapping_includingbidirectional_all_genes_newannotation
 
 ##extract promoters from a genome file
-#arg1 is the location of the base directory
-#arg2 is the name of folder and filenames for the promoters extracted
-#arg3 is the max length of promoters to be extracted upstream of the Araport TSS
-#arg4 is an option to exclude potentially bidirectional promoters with upstream TSS >2000bp from TSS in opposite direction
-#arg5 is an option to reduce the size of promoters if needed until they are not overlapping other genes.
-#arg6 is an option to extend promoters to the first start codon.
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the max length of promoters to be extracted upstream of the Araport TSS
+#arg3 is an option to exclude potentially bidirectional promoters with upstream TSS >2000bp from TSS in opposite direction
+#arg4 is an option to reduce the size of promoters if needed until they are not overlapping other genes.
+#arg5 is an option to extend promoters to the first start codon.
 
 #python ../data_sorting/extract_promoter.py $directory_path $file_names --remove_bidirectional --prevent_overlapping_genes --fiveUTR
-python ../data_sorting/extract_promoter.py $directory_path $file_names 1000 --prevent_overlapping_genes --fiveUTR
+python ../data_sorting/extract_promoter.py $file_names 1000 --prevent_overlapping_genes --fiveUTR
 ##extract promoters
 
 ## optional - merge meme files together into one file ready for FIMO

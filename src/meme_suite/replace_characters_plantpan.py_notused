@@ -1,0 +1,65 @@
+from Bio import SeqIO
+
+
+def remove_characters_linestart(input_location, output_location, characters):
+    """this function removes characters from the start of each line in the input file and sends modified lines to output"""
+    #     fasta_sequences = SeqIO.parse(open(input_location),'fasta')
+    #     #with open(output_file) as out_file:
+    #     for fasta in fasta_sequences:
+    #         name, sequence = fasta.id, str(fasta.seq)
+    #         print(name)
+
+    fasta = {}
+    with open(input_location) as file_one:
+        for line in file_one:
+            line = line.strip()  # removes hidden characters/spaces
+            if not line:
+                continue
+            if line.startswith(">"):
+                line = line.replace(
+                    characters, "# "
+                )  # convert to hash then space
+                active_sequence_name = line
+                if active_sequence_name not in fasta:
+                    fasta[active_sequence_name] = []
+                continue
+            sequence = line
+            fasta[active_sequence_name].append(sequence)
+
+    with open(output_location, "w") as output:
+        for k, v in fasta.items():
+            output.write(f"{k}\n{v[0]}\n{v[1]}\n{v[2]}\n{v[3]}\n")
+
+
+#     output = open(output_location, 'w') #make output file with write capability
+#     with open(input_location, 'r') as infile:
+
+#         for line in infile:
+#             line = line.strip() # removes hidden characters/spaces
+#             if line[0] == ">":
+#                 #print(line)
+#                 line = line.replace(characters, '# ') #convert to hash then space
+#                 output.write(line + '\n') #output to new file
+
+#     output.close()
+
+fasta_sequences = SeqIO.parse(open(input_file), "fasta")
+with open(output_file) as out_file:
+    for fasta in fasta_sequences:
+        name, sequence = fasta.id, str(fasta.seq)
+        new_sequence = some_function(sequence)
+        write_fasta(out_file)
+
+
+remove_characters_linestart(
+    "/home/witham/Documents/Data/plantpan/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt",
+    "/home/witham/Documents/Data/plantpan/Transcription_factor_weight_matrix_Arabidopsis_thaliana_BEEML",
+    ">",
+)
+
+
+if __name__ == "__main__":
+    import sys
+
+    main(sys.argv[1:])
+

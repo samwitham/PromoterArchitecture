@@ -6,9 +6,9 @@
 #$5 is the CiiiDER output folder name
 
 #make CiiiDER folder
-mkdir -p ../../data/output/$4
-mkdir -p ../../data/output/$4/CiiiDER
-mkdir -p ../../data/output/$4/CiiiDER/$5
+mkdir -p ../../data/output/"$4"
+mkdir -p ../../data/output/"$4"/CiiiDER
+mkdir -p ../../data/output/"$4"/CiiiDER/"$5"
 
 echo "[General parameters]
 STARTPOINT = 1
@@ -26,9 +26,9 @@ GENESCANRESULTS = binding_site_data.bsl
 BGGENELISTFILENAME = $2
 ENRICHMENTCOVERAGEPVALUE = 0.05
 ENRICHMENTSITEPVALUE = 1.0
-ENRICHMENTOUTPUTFILE = enrichmentoutput.txt" > ../../data/output/$4/CiiiDER/$5/config.ini
+ENRICHMENTOUTPUTFILE = enrichmentoutput.txt" > ../../data/output/"$4"/CiiiDER/"$5"/config.ini
 
 
 
 
-java -jar ../../software/CiiiDER/CiiiDER.jar -n ../../data/output/$4/CiiiDER/$5/config.ini
+java -jar ../../software/CiiiDER/CiiiDER.jar -n ../../data/output/"$4"/CiiiDER/"$5"/config.ini
