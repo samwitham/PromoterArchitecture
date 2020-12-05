@@ -147,9 +147,14 @@ def makeheatmap(gene_type_expression, file_names):
     # pivot df
     # keep only one condition
     # change font size
+
     sns.set(font_scale=1.5)
-    f, (ax1, ax2, ax3, ax4, axcb) = plt.subplots(
-        1, 5, gridspec_kw={"width_ratios": [1, 1, 1, 1, 0.08]}
+
+    # make white background
+    sns.set_style("white")
+
+    f, (ax1, ax2, l1, ax3, ax4, axcb) = plt.subplots(
+        1, 6, gridspec_kw={"width_ratios": [1, 1, 0.2, 1, 1, 0.08]}
     )
 
     f.set_size_inches(12, 5)
@@ -188,11 +193,24 @@ def makeheatmap(gene_type_expression, file_names):
         cbar=False,
         ax=ax3,
     )
+    # add a line separator between the coefficient of variation plots and the tau plots
+    line = sns.lineplot([0], [1], ax=l1)
+    line.axvline(0)
+    # remove axes so only line is visible
+    line.get_xaxis().set_visible(False)
+    line.get_yaxis().set_visible(False)
+    # remove borders
+    line.spines["top"].set_visible(False)
+    line.spines["bottom"].set_visible(False)
+    line.spines["left"].set_visible(False)
+    line.spines["right"].set_visible(False)
+
     g3.set_ylabel("")
     g3.set_title("Non-specific", weight="bold")
     g3.set_xlabel("Condition/tissue")
     g3.set_yticks([])
     g3.set_xticks([])
+    plt.axvline(1)
     g4 = sns.heatmap(
         gene_type_expression[
             gene_type_expression.gene_type == "tissue_specific"

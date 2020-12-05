@@ -1254,7 +1254,7 @@ python ../plotting/./OpenChromatin_plots.py $file_names ../../data/output/$file_
 #arg7 is the optional replacement name for 2nd variable eg. tissue_specific',default = 'variable'
 #arg8 is the optional replacement name for author in reference to the geneset',default = 'Czechowski'
 
-#analysis of top 300 constitutive and top 300 variable genes
+#analysis of top 300 non-specific and top 300 tissue_specific genes
 python ../data_sorting/./go_term_enrichment.py $file_names ../../data/output/$file_names/genes/gene_ontology ../${promoterpref}_schmid_allfilteredgenes.txt ../../../../genes/gene_result.txt ../${promoterpref}_schmid_non-specific_tissue_specific_random_300.txt non-specific tissue_specific Schmid
 
 
@@ -1594,3 +1594,163 @@ python ../plotting/./TF_target_genetype.py $file_names ../../data/output/${file_
 
 #TAU ranked genes
 python ../plotting/./TF_target_genetype.py $file_names ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_100.txt ../../data/output/${file_names}/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_Tau/promoter_TF_TAU.txt TAU TF_target/ non-specific tissue_specific Schmid tab10_r 
+
+
+#make combined CV tau GC content plots
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of coefficient of variation gene categories text file
+#arg3 is the input location of tau tissue specific gene categories text file
+#arg4 is the input location of promoters GC_content tsv file
+#arg5 is the optional output folder name ending in a forward slash
+#arg7 is the optional replacement colour palette for cv
+#arg8 is the optional replacement colour palette for tau
+
+#make combined CV tau GC content plots whole promoter
+python ../plotting/./GC_content_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_GC_content.tsv ${promoterpref}_combined_cv_tau/ deep tab10_r
+# shortened promoter combined GC content plot
+python ../plotting/./GC_content_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/GC_content/${promoterpref}_${promoter_length}bp_GC_content.tsv ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r
+
+#make combined CV tau % bp open chromatin plots
+
+#Combined cv and tau open chromatin plots whole promoters
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of coefficient of variation gene categories text file
+#arg3 is the input location of tau tissue specific gene categories text file
+#arg4 is the input location of bp covered of chromatin in promoters text file
+#arg5 is the optional output folder name ending in a forward slash
+#arg6 is the optional output folder name ending in a forward slash (name this after promoter set name
+#arg7 is the optional replacement colour palette for cv
+#arg8 is the optional replacement colour palette for tau
+
+#Open chromatin coverage root-shoot intersect
+python ../plotting/./OpenChromatin_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_combined_cv_tau/ deep tab10_r
+#Open chromatin coverage root
+python ../plotting/./OpenChromatin_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}RootOpenChrom.bp_covered.txt Root/ ${promoterpref}_combined_cv_tau/ deep tab10_r 
+#Open chromatin coverage shoot
+python ../plotting/./OpenChromatin_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_combined_cv_tau/ deep tab10_r 
+
+
+#Combined cv and tau open chromatin plots shortened promoters
+
+#Open chromatin coverage root-shoot intersect
+python ../plotting/./OpenChromatin_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt RootShootIntersect/ ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r
+#Open chromatin coverage root
+python ../plotting/./OpenChromatin_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpRootOpenChrom.bp_covered.txt Root/ ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r 
+#Open chromatin coverage shoot
+python ../plotting/./OpenChromatin_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootOpenChrom.bp_covered.txt Shoot/ ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r 
+
+
+#ATA enrichment combined cv and tau plot
+
+#arg1 is the promoter extraction output folder name
+#arg2 is the location of the constitutive promoter gat analysis output
+#arg3 is the location of the variable promoter gat analysis output
+#arg4 is the location of the non-specific promoter gat analysis output
+#arg5 is the location of the tissue_specific promoter gat analysis output
+#arg6 is the Output prefix to add to plot file name
+#arg7 is the optional output_folder_name
+#arg8 is the colour palette for the cv gene categories
+#arg8 is the colour palette for the tau gene categories
+
+python ../plotting/./TATA_enrichment_plots_combined.py $file_names ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Czechowski_TATA_constitutive.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Czechowski_TATA_variable.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_non-specific.out ../../data/output/$file_names/TATA/gat_analysis/gat_${promoterpref}_Schmid_TATA_tissue_specific.out TATA_enrichment ${promoterpref}_combined_cv_tau/ deep tab10_r
+
+
+#TF diversity combined plots cv and tau
+
+#arg1 is the Name of folder and filenames for the promoters extracted
+#arg2 is the input location of coefficient of variation gene categories text file
+#arg3 is the Input location of tau tissue specific gene categories text file
+#arg4 is the Input location of promoters mapped motif bed
+#arg5 is the Optional output folder name ending in a forward slash
+#arg6 is the Optional replacement colour palette for cv
+#arg7 is the Optional replacement colour palette for tau
+
+#whole promoter
+python ../plotting/./TF_diversity_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ${promoterpref}_combined_cv_tau/ deep tab10_r
+
+#whole promoter open chromatin
+python ../plotting/./TF_diversity_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_combined_cv_tau_openchrom/ deep tab10_r
+
+#shortened promoter
+python ../plotting/./TF_diversity_plots_shortenedprom_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r
+
+#shortened promoter open chromatin
+python ../plotting/./TF_diversity_plots_shortenedprom_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_${promoter_length}bp_combined_cv_tau_openchrom/ deep tab10_r
+
+#TFBS % coverage combined plots cv and tau
+#arg1 is the promoter extraction output folder name
+#arg2 is the Input location of coefficient of variation gene categories text file
+#arg3 is the Input location of tau tissue specific gene categories text file
+#arg4 is the Input location of promoters bp_covered txt file
+#arg5 is the Optional output folder name ending in a forward slash
+#arg6 is the Optional replacement colour palette for cv categories
+#arg7 is the Optional replacement colour palette for tau categories
+
+#whole promoter combined cv & tau plot
+python ../plotting/./TFBS_coverage_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}.bp_covered.txt ${promoterpref}_combined_cv_tau/ deep tab10_r
+
+#whole promoter open chromatin
+python ../plotting/./TFBS_coverage_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}ShootRootIntersectOpenChrom.bp_covered.txt ${promoterpref}_combined_cv_tau_openchrom/ deep tab10_r
+
+#shortened promoter
+python ../plotting/./TFBS_coverage_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bp.bp_covered.txt ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r 
+
+#shortened promoter open chromatin
+python ../plotting/./TFBS_coverage_plots_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/TFBS_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.bp_covered.txt ${promoterpref}_${promoter_length}bp_combined_cv_tau_openchrom/ deep tab10_r 
+
+
+#map_TF2CVandTAU combined plots
+
+#arg1 is the Name of folder and filenames for the promoters extracted
+#arg2 is the Input location of coefficient of variation gene categories text file
+#arg3 is the Input location of tau tissue specific gene categories text file
+#arg4 is the Input location of all genes ranking cv categories"
+#arg5 is the Input location of all genes ranking tau categories
+#arg6 is the Input location of mapped motifs bed file
+#arg7 is the Optional replacement colour palette for cv categories
+#arg8 is the Optional replacement colour palette for tau categories
+
+#whole promoters
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ${promoterpref}_combined_cv_tau/ deep tab10_r
+
+#whole promoters open chromatin
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_combined_cv_tau_openchrom/ deep tab10_r
+
+#shortened promoters
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r
+
+#shortened promoters open chromatin
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_${promoter_length}bp_combined_cv_tau_openchrom/ deep tab10_r
+
+
+#plot and analyse the TF-targets - are constitutive TFs more likely to bind genes with lower CVs?#
+
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the Input location of transcription factor gene categories
+#arg3 is the Input location of all ranked genes
+#arg4 is the Input location of mapped TF-promoter target file
+#arg5 is the dependent variable name [tau or expression_cv]
+#arg6 is the output folder name ending with a forward slash
+#arg7 is the optional replacement name for 1st variable eg. non-specific',default = 'constitutive'
+#arg8 is the optional replacement name for 2nd variable eg. tissue&condition_specific',default = 'variable'
+#arg9 is the optional replacement name for author in reference to the geneset',default = 'Czechowski'
+#arg10 is the optional replacement colour palette for plots',default = None
+#CV ranked genes
+python ../plotting/./TF_target_genetype.py $file_names ../../data/output/${file_names}/genes/tfs_czechowski_constitutive_variable_random_100.txt ../../data/output/${file_names}/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_CV/promoter_TF_CV.txt expression_CV TF_target/
+
+
+#TAU ranked genes
+python ../plotting/./TF_target_genetype.py $file_names ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_100.txt ../../data/output/${file_names}/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_Tau/promoter_TF_TAU.txt TAU TF_target/ non-specific tissue_specific Schmid tab10_r 
+
+#plot and analyse the TF-targets combined cv and tau plot
+#arg1 is the Name of folder and filenames for the promoters extracted
+#arg2 is the Input location of transcription factor gene categories cv
+#arg3 is the Input location of transcription factor gene categories tau
+#arg4 is the Input location of all ranked genes cv categories
+#arg5 is the Input location of all ranked genes tau categories
+#arg6 is the Input location of cv mapped TF-promoter target file
+#arg7 is the Input location of tau mapped TF-promoter target file
+#arg8 is the Output folder name ending in forward slash
+#arg9 is the Optional replacement colour palette for cv categories
+#arg10 is the Optional replacement colour palette for tau categories
+python ../plotting/./TF_target_genetype_combined.py $file_names ../../data/output/${file_names}/genes/tfs_czechowski_constitutive_variable_random_100.txt ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_100.txt ../../data/output/${file_names}/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/${file_names}/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_CV/promoter_TF_CV.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_Tau/promoter_TF_TAU.txt TF_target/ deep tab10_r

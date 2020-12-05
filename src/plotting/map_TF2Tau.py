@@ -291,8 +291,8 @@ def dunn_posthoc_test(df, dependent_variable, between):
     )
 
 
-def calculate_mean_SD_CV(df):
-    """calculate the mean coefficient of variation of the tFs binding to a promoter"""
+def calculate_mean_SD_tau(df):
+    """calculate the mean tau of the tFs binding to a promoter"""
     # group by promoter and calculate mean for each promoter
     means = df.groupby("promoter_AGI")["TAU"].mean()
     # turn into a dataframe
@@ -527,7 +527,7 @@ def main(args):
     )
     print(Czechowski_genetypes)
     # calculate CV means per promoter
-    Czechowski_means_sd = calculate_mean_SD_CV(Czechowski_genetypes)
+    Czechowski_means_sd = calculate_mean_SD_tau(Czechowski_genetypes)
     # merge dfs
     Czechowski_means_sd_genetype = merge_genetype(
         Czechowski_means_sd, args.gene_categories

@@ -271,7 +271,9 @@ def main(args):
     study_genes = map_AGI2NCBI(NCBI_gene_list_filtered, args.genes_of_interest)
 
     # select gene_types of interest
-    constitutive_genes = study_genes[study_genes.gene_type == "constitutive"]
+    constitutive_genes = study_genes[
+        study_genes.gene_type == args.variable1_name
+    ]
     variable_genes = study_genes[study_genes.gene_type == args.variable2_name]
 
     # make dictionary where key is geneid and value is gene symbol
@@ -289,7 +291,9 @@ def main(args):
     # Run Gene Ontology Enrichment Analysis (GOEA) using Benjamini/Hochberg FDR correction
     # keep only significant results
     constitutive_goea_sig, constitutive_goea_all = run_GOEA(
-        constitutive_NCBI_IDs, f"constitutive_{args.author_name}", goeaobj
+        constitutive_NCBI_IDs,
+        f"{args.variable1_name}_{args.author_name}",
+        goeaobj,
     )
     variable_goea_sig, variable_goea_all = run_GOEA(
         variable_NCBI_IDs, f"{args.variable2_name}_{args.author_name}", goeaobj

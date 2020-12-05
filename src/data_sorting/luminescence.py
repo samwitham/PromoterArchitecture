@@ -34,11 +34,24 @@ def combine_csvs(
     output_file_means,
     output_file_raw,
 ):
-    """Function to combine two csv files containingg luminescence data, and label values using layout csv file (plate layout)"""
+    """Function to combine two csv files containing luminescence data, and label values using layout csv file (plate layout)"""
     # read in files
-    fluc = pd.read_csv(input_fluc, header=0)
-    nluc = pd.read_csv(input_nluc, header=0)
+    fluc = pd.read_csv(input_fluc, header=None)
+    nluc = pd.read_csv(input_nluc, header=None)
+
+    # if experiment metadata present, take data from fow 10
+    if "User" in fluc.iloc[0, 0]:
+        fluc = pd.read_csv(input_fluc, header=9)
+    elif "Well Row" in fluc.iloc[0, 0]:
+        print(fluc.iloc[0, 0])
+        fluc = pd.read_csv(input_fluc, header=0)
+    if "User" in nluc.iloc[0, 0]:
+        nluc = pd.read_csv(input_nluc, header=9)
+    elif "Well Row" in nluc.iloc[0, 0]:
+        nluc = pd.read_csv(input_nluc, header=0)
+
     layout = pd.read_csv(layout_csv, header=0)
+
     # make new df with correct column names, including both fluc and nluc data
     combined = fluc[
         [
@@ -128,16 +141,27 @@ list(map(xlsx_2_csv, xlsx_filenames))
 # layout = '../../data/luminescence/to_be_sorted/30.8.19/layout.csv'
 # output = '../../data/luminescence/to_be_sorted/30.8.19/output.csv'
 # date = '30.8.19'
-date = "16.10.19+22.10.19"
-input_fluc = f"../../data/luminescence/to_be_sorted/{date}/Fluc_repleteLEAF_PROTOPLASTs_TFcoexpression16.csv"
-input_nluc = f"../../data/luminescence/to_be_sorted/{date}/Nluc_repleteLEAF_PROTOPLASTs_TFcoexpression16.csv"
-layout = f"../../data/luminescence/to_be_sorted/{date}/layout_16.10.19.csv"
-output = (
-    f"../../data/luminescence/to_be_sorted/{date}/output_means_16.10.19.csv"
+date = "27.11.20"
+input_fluc = (
+    f"../../data/luminescence/to_be_sorted/{date}/leaf_coexpression_fluc.csv"
 )
-output_raw = (
-    f"../../data/luminescence/to_be_sorted/{date}/output_raw_16.10.19.csv"
+input_nluc = (
+    f"../../data/luminescence/to_be_sorted/{date}/leaf_coexpression_nluc.csv"
 )
+layout = f"../../data/luminescence/to_be_sorted/{date}/layout.csv"
+output = f"../../data/luminescence/to_be_sorted/{date}/output_means.csv"
+output_raw = f"../../data/luminescence/to_be_sorted/{date}/output_raw.csv"
+
+
+# input_fluc = f"../../data/luminescence/to_be_sorted/{date}/Fluc_repleteLEAF_PROTOPLASTs_TFcoexpression16.csv"
+# input_nluc = f"../../data/luminescence/to_be_sorted/{date}/Nluc_repleteLEAF_PROTOPLASTs_TFcoexpression16.csv"
+# layout = f"../../data/luminescence/to_be_sorted/{date}/layout_16.10.19.csv"
+# output = (
+#     f"../../data/luminescence/to_be_sorted/{date}/output_means_16.10.19.csv"
+# )
+# output_raw = (
+#     f"../../data/luminescence/to_be_sorted/{date}/output_raw_16.10.19.csv"
+# )
 # input_fluc = '../../data/luminescence/to_be_sorted/26.11.19/nitrate_leaf_fluc.csv'
 # input_nluc = '../../data/luminescence/to_be_sorted/26.11.19/nitrate_leaf_nluc.csv'
 # layout = '../../data/luminescence/to_be_sorted/26.11.19/layout.csv'

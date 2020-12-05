@@ -943,7 +943,7 @@ def main(args):
         "total_TF_count",
         "Gene type",
         "total TF count",
-        f"{args.author_name}_unique_TF_count",
+        f"{args.author_name}_total_TF_count",
         "violin",
         args.palette,
         args.file_names,

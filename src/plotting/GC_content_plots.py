@@ -247,6 +247,7 @@ def make_plot(
     # add stats annotation to the plot
     add_stat_annotation(
         ax,
+        plot="catplot",
         data=df,
         x=x,
         y=y,

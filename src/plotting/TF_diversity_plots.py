@@ -571,7 +571,7 @@ def run_PCA(mapped_motif_bed, shannon_Czechowski_gene_categories):
 
     df = mapped_motifs.copy()
 
-    df.columns = cols
+    # df.columns = cols
     # count no. of TF families binding in each promoter
     groupby_promoter_counts_family = (
         df.groupby("promoter_AGI")["TF_family"]
@@ -913,7 +913,7 @@ def main(args):
         "total_TF_count",
         "Gene type",
         "total TF count",
-        f"{args.author_name}_unique_TF_count",
+        f"{args.author_name}_total_TF_count",
         "box",
         args.palette,
         args.file_names,
