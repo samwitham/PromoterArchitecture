@@ -1754,3 +1754,30 @@ python ../plotting/./TF_target_genetype.py $file_names ../../data/output/${file_
 #arg9 is the Optional replacement colour palette for cv categories
 #arg10 is the Optional replacement colour palette for tau categories
 python ../plotting/./TF_target_genetype_combined.py $file_names ../../data/output/${file_names}/genes/tfs_czechowski_constitutive_variable_random_100.txt ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_100.txt ../../data/output/${file_names}/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/${file_names}/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_CV/promoter_TF_CV.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_Tau/promoter_TF_TAU.txt TF_target/ deep tab10_r
+
+#sliding window plot with combined cv and tau
+
+#GC content sliding window
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the input location of coefficient of variation gene categories text file
+#arg3 is the input location of tau tissue specific gene categories text file
+#arg4 is the input location of GC content tsv file
+#arg5 is the input location of eukaryotic promoter database transcription start site bed file
+#arg6 is the input location of promoter bed file
+#arg7 is the input location of promoter no 5UTR bed file
+#arg8 is the output folder name prefix to use
+#arg9 is the input location of root chromatin bed file
+#arg10 is the input location of shoot chromatin bed file
+#arg11 is the input location of rootshootintersect chromatin bed file
+#arg12 is the optional replacement colour palette for cv categories
+#arg13 is the optional replacement colour palette for tau categories
+python ../plotting/rolling_window/./GC_content_rw_plots_single_cv_tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 GC_content_rw_combined ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep tab10_r
+
+#open chromatin sliding window
+python ../plotting/rolling_window/./openchromatin_rw_plots_single_cv_tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/rolling_window/GC_content_rw/${promoterpref}_GCcontent_rw.tsv ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 OpenChromatin_rw_combined ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep tab10_r
+
+#TF diversity sliding window
+python ../plotting/rolling_window/./TF_diversity_rw_plots_single_cv_tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/rolling_window/${promoterpref}_windows.bed ../../data/output/$file_names/rolling_window/TF_diversity_rw/${promoterpref}_TF_diversity.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TF_diversity_rw_combined ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep tab10_r
+
+#TFBS coverage sliding window
+python ../plotting/rolling_window/./TFBScoverage_rw_plots_single_cv_tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/rolling_window/TFBS_coverage_rw/${promoterpref}_bpcovered_rw.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/At_EPDnew.bed ../../data/output/$file_names/FIMO/${promoterpref}.bed ../../data/output/$file_names/promoters.gff3 TFBS_coverage_rw_combined ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_root_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_shoot_bpcovered_rw.bed ../../data/output/$file_names/rolling_window/OpenChromatin_rw/${promoterpref}_rootshootintersect_bpcovered_rw.bed deep tab10_r

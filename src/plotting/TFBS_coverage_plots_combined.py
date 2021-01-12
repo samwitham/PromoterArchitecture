@@ -207,6 +207,12 @@ def make_plot(
     def equalise_samples_sizes(
         df, variable1_name, variable2_name, palette, categorisation_name
     ):
+
+        # descriptive statistics
+        def describe_stats(df, dependent_variable, between):
+            """return descriptve statistics"""
+            return df.groupby([between])[dependent_variable].describe()
+
         order = [variable1_name, variable2_name, "control"]
 
         # set colour palette
@@ -246,6 +252,16 @@ def make_plot(
             ~merged2_unique.AGI.isin(equal_samplesizes.AGI)
         ]
         df = df[~df.AGI.isin(to_remove.AGI)]
+
+        # descriptive stats
+        describe = describe_stats(df, y, x)
+        # save sample size as file
+        with open(
+            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}.txt",
+            "w",
+        ) as file:
+            file.write(str(describe))
+
         return df, order, colours
 
     df_cv, order_cv, colours_cv = equalise_samples_sizes(
