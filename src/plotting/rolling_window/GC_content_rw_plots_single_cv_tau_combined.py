@@ -558,7 +558,7 @@ def windows_coords(
     )
     # allow colour codes in seaborn
     sns.set(color_codes=True)
-    sns.set_style("white")
+    sns.set_style("ticks")
     # set size
     plt.figure(figsize=(10, 5))
 
@@ -1071,7 +1071,7 @@ def main(args):
         args.palette_cv,
         args.palette_tau,
         includeEPDTSS=False,
-        x_range=1350,
+        x_range=1000,
         estimator="median",
         ci=95,
         n_boot=10000,
@@ -1096,7 +1096,7 @@ def main(args):
         args.palette_cv,
         args.palette_tau,
         includeEPDTSS=False,
-        x_range=1350,
+        x_range=1000,
         estimator="median",
         ci=95,
         n_boot=10000,

@@ -204,7 +204,7 @@ def make_plot(
     """function to make and save plot"""
     # allow colour codes in seaborn
     sns.set(color_codes=True)
-    sns.set_style("white")
+    sns.set_style("ticks")
     # plot
 
     def equalise_samples_sizes(
@@ -272,7 +272,7 @@ def make_plot(
         describe = describe_stats(df, y_variable, x_variable)
         # save sample size as file
         with open(
-            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}.txt",
+            f"../../data/output/{file_names}/{output_folder_name}/plots/{dependent_variable}_descriptivestats_{categorisation_name}.txt",
             "w",
         ) as file:
             file.write(str(describe))

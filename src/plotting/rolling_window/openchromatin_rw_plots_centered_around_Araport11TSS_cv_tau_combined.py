@@ -556,7 +556,7 @@ def windows_coords(
     )
     # allow colour codes in seaborn
     sns.set(color_codes=True)
-    sns.set_style("white")
+    sns.set_style("ticks")
     # set size
     plt.figure(figsize=(10, 5))
 

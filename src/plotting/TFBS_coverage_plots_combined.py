@@ -199,7 +199,7 @@ def make_plot(
     """function to make and save plot"""
     # allow colour codes in seaborn
     sns.set(color_codes=True)
-    sns.set_style("white")
+    sns.set_style("ticks")
     # plot
     x = x_variable
     y = y_variable

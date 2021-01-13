@@ -151,7 +151,7 @@ def makeheatmap(gene_type_expression, file_names):
     sns.set(font_scale=1.5)
 
     # make white background
-    sns.set_style("white")
+    sns.set_style("ticks")
 
     f, (ax1, ax2, l1, ax3, ax4, axcb) = plt.subplots(
         1, 6, gridspec_kw={"width_ratios": [1, 1, 0.2, 1, 1, 0.08]}
