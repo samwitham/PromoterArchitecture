@@ -1494,7 +1494,7 @@ python ../data_sorting/./flag_TF_genes_tau.py $file_names ../../data/output/$fil
 #arg2 is the input location of the coefficient of variation gene categories text file
 #arg3 is the input location of the tau tissue/condition specificity gene categories text file
 #arg4 is the input location of the log2_transformed microarray expression data in triplicates for each condition/tissue
-python ../plotting/./gene_group_expression.py $file_names ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation/genes/promoters_5UTR_czechowski_constitutive_variable_random.txt ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation/genes/promoters_5UTR_schmid_non-specific_tissue_specific_random.txt ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline
+python ../plotting/./gene_group_expression.py $file_names ../../data/output/$file_names/genes/promoters_5UTR_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/promoters_5UTR_schmid_non-specific_tissue_specific_random.txt ../../data/genes/AtGeneExpress_CV_2020/AtGE_dev_gcRMA.txt.newline
 
 
 

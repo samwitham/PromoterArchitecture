@@ -272,7 +272,7 @@ def make_plot(
         describe = describe_stats(df, y_variable, x_variable)
         # save sample size as file
         with open(
-            f"../../data/output/{file_names}/{output_folder_name}/plots/{dependent_variable}_descriptivestats_{categorisation_name}.txt",
+            f"../../data/output/{file_names}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}.txt",
             "w",
         ) as file:
             file.write(str(describe))
@@ -406,7 +406,7 @@ def make_plot(
         return kruskal(data=df, dv=y_variable, between=between)
 
     # cv
-    def statistics(df, variable1, variable2, ax, order, y_variable):
+    def statistics(df, variable1, variable2, ax, order, y_variable, ranking):
         kruskal = kruskal_test(df, y_variable, x_variable)
         # add stats to plot if significant
         # make into df
@@ -414,12 +414,27 @@ def make_plot(
         # make column numeric
         kruskal_df = kruskal_df.astype({"p-unc": "float64"})
 
+        # save kruskal table
+        with open(
+            f"../../data/output/{file_names}/{output_folder_name}plots/{dependent_variable}_kruskal_{ranking}.txt",
+            "w",
+        ) as file:
+            file.write(str(kruskal_df))
+
         if kruskal_df["p-unc"].iloc[0] < 0.05:
             add_stats(df, variable1, variable2, ax, order, y_variable)
 
-    statistics(df_cv, "constitutive", "variable", ax1, order_cv, y_variable)
     statistics(
-        df_tau, "non-specific", "tissue_specific", ax2, order_tau, y_variable2
+        df_cv, "constitutive", "variable", ax1, order_cv, y_variable, "cv"
+    )
+    statistics(
+        df_tau,
+        "non-specific",
+        "tissue_specific",
+        ax2,
+        order_tau,
+        y_variable2,
+        "tau",
     )
     # change axes labels
     ax1.set_xlabel(x_label)
