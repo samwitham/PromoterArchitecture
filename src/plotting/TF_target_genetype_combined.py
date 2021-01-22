@@ -169,7 +169,7 @@ def calculate_mean(df, dependent_variable):
 
 
 def merge_genetype(df, gene_categories):
-    """merge df with gene_categories file adding the genetype of the promoters (if in top 100 constitutive or top 100 variable promoters)"""
+    """merge df with gene_categories file adding the genetype of the TFs (if in top 100 constitutive or top 100 variable TFs)"""
     gene_cats = pd.read_table(gene_categories, sep="\t", header=None)
     cols = ["TF_AGI", "gene_type"]
     gene_cats.columns = cols

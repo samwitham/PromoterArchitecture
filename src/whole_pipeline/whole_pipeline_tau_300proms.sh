@@ -1548,3 +1548,38 @@ python ../plotting/./map_TF2Tau.py $file_names ../../data/output/$file_names/gen
 
 #400bp promoters open chromatin
 python ../plotting/./map_TF2Tau.py $file_names ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_${promoter_length}bp_TF_Tau_openchrom/ non-specific tissue_specific Schmid tab10_r
+
+
+#choose top 180 constitutive and top 180 variable TFs based on CVs (as only 571 TFs present in all genes set and needs to be divisible by 10 for the control gene set)
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the number of genes in each category to subset
+#arg3 is the list of Arabidopsis transcription factors
+#arg4 is the input location of all genes ranked by CV produced by choose_genes_cv.py
+#arg5 is the output location of the TF gene categories
+#arg6 is the output location of all ranked TFs by CV value
+python ../data_sorting/./choose_TFs_cv.py $file_names 150 ../../data/genes/Ath_TF_list.txt ../../data/output/${file_names}/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/${file_names}/genes/tfs_czechowski_constitutive_variable_random_150.txt ../../data/output/${file_names}/genes/tfs_czechowski_all_cv.txt 
+
+#choose top 100 non-specific and top 100 tissue_specific TFs based on tau
+#arg1 is the name of folder and filenames for the promoters extracted
+#arg2 is the number of genes in each category to subset
+#arg3 is the list of Arabidopsis transcription factors
+#arg4 is the Input location of all filtered microarray genes ranked by tau (output from choose_genes_tau.py)
+#arg5 is the output location of TF gene categories
+#arg6 is the input location of Czechowski coefficient of variation TF gene categories
+#arg7 is the optional input location of coefficient of variation all genes after filtering to include only genes present in 80% of conditions
+python ../data_sorting/./choose_TFs_tau.py $file_names 150 ../../data/genes/Ath_TF_list.txt ../../data/output/${file_names}/genes/${promoterpref}_schmid_allfilteredgenes.txt ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_150.txt ../../data/output/$file_names/genes/tfs_czechowski_constitutive_variable_random_150.txt ../../data/output/$file_names/genes/${promoterpref}_czechowski_allfilteredgenes.txt ../../data/output/${file_names}/genes/tfs_schmid_all_tau.txt 
+
+#plot and analyse the TF-targets - are constitutive TFs more likely to bind genes with lower CVs?# combined
+
+#plot and analyse the TF-targets combined cv and tau plot
+#arg1 is the Name of folder and filenames for the promoters extracted
+#arg2 is the Input location of transcription factor gene categories cv
+#arg3 is the Input location of transcription factor gene categories tau
+#arg4 is the Input location of all ranked genes cv categories
+#arg5 is the Input location of all ranked genes tau categories
+#arg6 is the Input location of cv mapped TF-promoter target file
+#arg7 is the Input location of tau mapped TF-promoter target file
+#arg8 is the Output folder name ending in forward slash
+#arg9 is the Optional replacement colour palette for cv categories
+#arg10 is the Optional replacement colour palette for tau categories
+python ../plotting/./TF_target_genetype_combined.py $file_names ../../data/output/${file_names}/genes/tfs_czechowski_constitutive_variable_random_150.txt ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_150.txt ../../data/output/${file_names}/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/${file_names}/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_CV/promoter_TF_CV.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_Tau/promoter_TF_TAU.txt TF_target/ deep tab10_r

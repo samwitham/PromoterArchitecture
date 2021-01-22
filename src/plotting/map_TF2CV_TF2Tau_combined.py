@@ -596,7 +596,7 @@ def make_plot(
         describe = describe_stats(df, y_variable, x_variable)
         # save sample size as file
         with open(
-            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}.txt",
+            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}_{y_variable}.txt",
             "w",
         ) as file:
             file.write(str(describe))
@@ -740,7 +740,7 @@ def make_plot(
 
         # save kruskal table
         with open(
-            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_kruskal_{ranking}.txt",
+            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_kruskal_{ranking}_{y_variable}.txt",
             "w",
         ) as file:
             file.write(str(kruskal_df))

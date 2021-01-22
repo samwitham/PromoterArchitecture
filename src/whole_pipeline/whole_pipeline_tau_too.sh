@@ -998,15 +998,7 @@ python ../plotting/./TF_diversity_plots_shortenedprom.py $file_names ../../data/
 
 #or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
 
-#This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
-#Used the following search parameters for download:
-## FindM Genome Assembly : A. thaliana (Feb 2011 TAIR10/araTha1)
-##Series : EPDnew, the Arabidopsis Curated Promoter Database
-##Sample : TSS from EPDnew rel 004
-##Repeat masking: off
-##5' border: -100     3' border: 100
-##Search mode: forward
-##Selection mode : all matches)
+
 python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/FIMO/${promoterpref}.bed Schmid ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed non-specific tissue_specific
 
 
@@ -1015,6 +1007,12 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 #$2 is the constitutive promoters file for annotations
 #$3 is the variable promoters file for annotations
 #$4 is the segments bed file
+
+#$5 is the output folder location
+#$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
+#7 is the optional --ignore-segment-tracks flag
+../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_non-specific.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_tissue_specific.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Schmid_TATA --ignore-segment-tracks
+
 #use ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed (stringent TATAs) or ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_renamed.bed (Downloaded TATAbox_location.bed from EPD to data/EPD_promoter_analysis/EPDnew_promoters
 
 #This is less stringent than before, selects TATA boxes +-100bp from most common EPD TSS
@@ -1026,10 +1024,8 @@ python ../data_sorting/./TATA_enrichment.py $file_names ${promoterpref} ../../da
 ##5' border: -100     3' border: 100
 ##Search mode: forward
 ##Selection mode : all matches)
-#$5 is the output folder location
-#$6 is the prefix to add the the output files (recommend using segment name + gene categories author as prefix)
-#7 is the optional --ignore-segment-tracks flag
-../data_sorting/./gat_enrichment_tau.sh ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_workspace.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_non-specific.bed ../../data/output/$file_names/TATA/gat_analysis/Schmid_${promoterpref}_tissue_specific.bed ../../data/EPD_promoter_analysis/EPDnew_promoters/TATAbox_location_-50to0_renamed.bed ../../data/output/$file_names/TATA/gat_analysis ${promoterpref}_Schmid_TATA --ignore-segment-tracks
+
+
 
 
 ##PLOTS TAU

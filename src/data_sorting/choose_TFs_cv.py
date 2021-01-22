@@ -71,7 +71,6 @@ def filter_genes_czechowski(TF_list, select_genes_file, Czechowski_all_tfs):
 
     # remove duplicates based on Gene_ID column
     filtered_df.drop_duplicates(subset=["Gene_ID"], inplace=True)
-
     # sort by CV value
     filtered_df.sort_values("expression_CV", inplace=True, ignore_index=True)
     # save df
