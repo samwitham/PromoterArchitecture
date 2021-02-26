@@ -723,7 +723,7 @@ def plot_kmeans_clusters(
         va="center",
     )
     fig.text(
-        0.0,
+        0.02,
         0.5,
         f"PC1 {(pca_variance[0]*100).round(1)}% of variance",
         ha="center",

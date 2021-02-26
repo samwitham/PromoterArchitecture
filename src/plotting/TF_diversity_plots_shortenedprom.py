@@ -721,7 +721,7 @@ def plot_kmeans_clusters(
         va="center",
     )
     fig.text(
-        0.0,
+        0.02,
         0.5,
         f"PC1 {(pca_variance[0]*100).round(1)}% of variance",
         ha="center",
@@ -782,7 +782,7 @@ def main(args):
         "TF_diversity_shannon_allproms",
         args.file_names,
         args.output_folder_name,
-        args.dependent_variable,
+        dependent_variable,
     )
     # all promoter distribution plot - Shannon_diversity_TF_family
     all_prom_distribution(
@@ -792,7 +792,7 @@ def main(args):
         "TFfamily_diversity_shannon_allproms",
         args.file_names,
         args.output_folder_name,
-        args.dependent_variable,
+        dependent_variable,
     )
     # all promoter distribution plot - unique_TF_count
     all_prom_distribution(
@@ -802,7 +802,7 @@ def main(args):
         "unique_TF_count_allproms",
         args.file_names,
         args.output_folder_name,
-        args.dependent_variable,
+        dependent_variable,
     )
     # all promoter distribution plot - total_TF_count
     all_prom_distribution(
@@ -812,7 +812,7 @@ def main(args):
         "total_TF_count_allproms",
         args.file_names,
         args.output_folder_name,
-        args.dependent_variable,
+        dependent_variable,
     )
     # all promoter distribution plot - TF_family_count
     all_prom_distribution(
@@ -822,7 +822,7 @@ def main(args):
         "TF_family_count_allproms",
         args.file_names,
         args.output_folder_name,
-        args.dependent_variable,
+        dependent_variable,
     )
     # Czechowski_gene_categories violin and boxplot
     # make_plot(shannon_Czechowski_gene_categories,'gene_type','Shannon_diversity_TF','Gene type','TF Shannon diversity', f'Czechowski_TF_diversity', 'violin')
@@ -836,7 +836,7 @@ def main(args):
         "box",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -851,7 +851,7 @@ def main(args):
         "violin",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -868,7 +868,7 @@ def main(args):
         "box",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -883,7 +883,7 @@ def main(args):
         "violin",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -900,7 +900,7 @@ def main(args):
         "box",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -915,7 +915,7 @@ def main(args):
         "violin",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -932,7 +932,7 @@ def main(args):
         "box",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -947,7 +947,7 @@ def main(args):
         "violin",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -964,7 +964,7 @@ def main(args):
         "box",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
@@ -979,7 +979,7 @@ def main(args):
         "violin",
         args.palette,
         args.file_names,
-        args.dependent_variable,
+        dependent_variable,
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
