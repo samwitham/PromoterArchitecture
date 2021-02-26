@@ -680,56 +680,79 @@ def plot_kmeans_clusters(
     output_folder_name,
     variable1_name,
     variable2_name,
+    palette,
 ):
     """make two subplots of the first 2 PCA components, the top subplot coloured by KMeans cluster, the bottom coloured by gene_type"""
     # set seaborn graph background
     sns.set(color_codes=True, font_scale=1)
     sns.set_style("white")
+    # set colour palette
+    colours = sns.color_palette(palette)
+    # change colun names to string from integar
+    PCA_df.columns = PCA_df.columns.astype(str)
     # Create a figure instance, and the two subplots
-    fig = plt.figure(figsize=(6, 7))
-    ax1 = fig.add_subplot(211)
-    ax2 = fig.add_subplot(212)
+    fig, (ax1, ax2) = plt.subplots(
+        211,
+        212,
+    )
+    fig.set_size_inches(6, 7)
+    # fig = plt.figure(figsize=(6, 7))
+    # ax1 = fig.add_subplot(211)
+    # ax2 = fig.add_subplot(212)
     # add custom palette size as sns doesnt like having numeric values for hue palette=sns.color_palette("Set1", 6)
 
     sns.scatterplot(
-        x=0,
-        y=1,
+        x="0",
+        y="1",
         hue="Kmeans_PCA_cluster",
         data=PCA_df,
-        s=100,
+        # kind="strip",
+        # s=100,
         palette=sns.color_palette("Set1", k),
         ax=ax1,
     )
     sns.scatterplot(
-        x=0,
-        y=1,
+        x="0",
+        y="1",
         hue="gene_type",
         data=PCA_df,
-        s=100,
+        # s=100,
         ax=ax2,
-        hue_order=[variable1_name, variable2_name, "control"],
+        # kind="strip",
+        hue_order=[str(variable1_name), str(variable2_name), "control"],
+        palette=colours,
     )
+
     # add graph titles
-    ax1.set(ylabel="", title="A")
-    ax2.set(xlabel="", ylabel="", title="B")
-    fig.tight_layout()
+    ax1.set_xlabel(f"PC2 {(pca_variance[1]*100).round(1)}% of variance")
+    ax1.set_ylabel(f"PC1 {(pca_variance[0]*100).round(1)}% of variance")
+    ax2.set_xlabel(f"PC2 {(pca_variance[1]*100).round(1)}% of variance")
+    ax2.set_ylabel(f"PC1 {(pca_variance[0]*100).round(1)}% of variance")
+    # add graph titles
+    ax1.set_title("A", x=0.02, fontsize=16)
+    ax2.set_title("B", x=0.02, fontsize=16)
+    # tight layout
+    plt.tight_layout()
+    # ax1.set(ylabel="", title="A")
+    # ax2.set(xlabel="", ylabel="", title="B")
+    # fig.tight_layout()
 
     # Add axes labels
-    fig.text(
-        0.5,
-        0.01,
-        f"PC2 {(pca_variance[1]*100).round(1)}% of variance",
-        ha="center",
-        va="center",
-    )
-    fig.text(
-        0.02,
-        0.5,
-        f"PC1 {(pca_variance[0]*100).round(1)}% of variance",
-        ha="center",
-        va="center",
-        rotation="vertical",
-    )
+    # fig.text(
+    #     0.5,
+    #     0.01,
+    #     f"PC2 {(pca_variance[1]*100).round(1)}% of variance",
+    #     ha="center",
+    #     va="center",
+    # )
+    # fig.text(
+    #     0.02,
+    #     0.5,
+    #     f"PC1 {(pca_variance[0]*100).round(1)}% of variance",
+    #     ha="center",
+    #     va="center",
+    #     rotation="vertical",
+    # )
 
     fig.savefig(
         f"../../data/output/{file_names}/TF_diversity/{output_folder_name}plots/PCA_Kmeans_TF_family_counts.pdf"
@@ -962,6 +985,7 @@ def main(args):
         args.output_folder_name,
         args.variable1_name,
         args.variable2_name,
+        args.palette,
     )
 
 
