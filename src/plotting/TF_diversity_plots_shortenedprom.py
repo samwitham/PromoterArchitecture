@@ -377,7 +377,7 @@ def make_plot(
     """function to make and save plot"""
     # allow colour codes in seaborn
     sns.set(color_codes=True)
-    sns.set_style("whitegrid")
+    sns.set_style("ticks")
     # set colour palette
     colours = sns.color_palette(palette)
 
@@ -471,7 +471,7 @@ def make_plot(
     # tight layout
     plt.tight_layout()
     # save figure
-    ax.get_figure().savefig(
+    plt.savefig(
         f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{output_prefix}_{plot_kind}.pdf",
         format="pdf",
     )
@@ -683,7 +683,7 @@ def plot_kmeans_clusters(
     """make two subplots of the first 2 PCA components, the top subplot coloured by KMeans cluster, the bottom coloured by gene_type"""
     # set seaborn graph background
     sns.set(color_codes=True, font_scale=1)
-    sns.set_style("white")
+    sns.set_style("ticks")
     # set colour palette
     colours = sns.color_palette(palette)
     # change colun names to string from integar
@@ -691,11 +691,8 @@ def plot_kmeans_clusters(
     # Create a figure instance, and the two subplots
     # fig = plt.figure(figsize=(6, 7))
     # make subplots
-    fig, (ax1, ax2) = plt.subplots(
-        211,
-        212,
-    )
-    fig.set_size_inches(6, 7)
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.set_size_inches(10, 5)
     # ax1 = fig.add_subplot(211)
     # ax2 = fig.add_subplot(212)
     # add custom palette size as sns doesnt like having numeric values for hue palette=sns.color_palette("Set1", 6)
@@ -729,7 +726,7 @@ def plot_kmeans_clusters(
         ax=ax2,
         # kind="stripplot",
         hue_order=[str(variable1_name), str(variable2_name), "control"],
-        palette=colours,
+        palette=colours[:3],
     )
     # add graph titles
     # add graph titles
@@ -741,7 +738,7 @@ def plot_kmeans_clusters(
     ax1.set_xlabel(f"PC2 {(pca_variance[1]*100).round(1)}% of variance")
     ax1.set_ylabel(f"PC1 {(pca_variance[0]*100).round(1)}% of variance")
     ax2.set_xlabel(f"PC2 {(pca_variance[1]*100).round(1)}% of variance")
-    ax2.set_ylabel(f"PC1 {(pca_variance[0]*100).round(1)}% of variance")
+    ax2.set_ylabel("")
     plt.tight_layout()
 
     #
