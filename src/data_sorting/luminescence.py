@@ -42,15 +42,16 @@ def combine_csvs(
     # if experiment metadata present, take data from fow 10
     if "User" in fluc.iloc[0, 0]:
         fluc = pd.read_csv(input_fluc, header=9)
-    elif "Well Row" in fluc.iloc[0, 0]:
+    elif "Well\nRow" in fluc.iloc[0, 0]:
         print(fluc.iloc[0, 0])
         fluc = pd.read_csv(input_fluc, header=0)
     if "User" in nluc.iloc[0, 0]:
         nluc = pd.read_csv(input_nluc, header=9)
-    elif "Well Row" in nluc.iloc[0, 0]:
+    elif "Well\nRow" in nluc.iloc[0, 0]:
         nluc = pd.read_csv(input_nluc, header=0)
 
     layout = pd.read_csv(layout_csv, header=0)
+    # print(list(layout.columns.values))
 
     # make new df with correct column names, including both fluc and nluc data
     combined = fluc[
@@ -141,7 +142,7 @@ list(map(xlsx_2_csv, xlsx_filenames))
 # layout = '../../data/luminescence/to_be_sorted/30.8.19/layout.csv'
 # output = '../../data/luminescence/to_be_sorted/30.8.19/output.csv'
 # date = '30.8.19'
-date = "27.11.20"
+date = "11.3.21"
 input_fluc = (
     f"../../data/luminescence/to_be_sorted/{date}/leaf_coexpression_fluc.csv"
 )
