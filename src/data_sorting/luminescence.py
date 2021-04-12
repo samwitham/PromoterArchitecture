@@ -142,7 +142,7 @@ list(map(xlsx_2_csv, xlsx_filenames))
 # layout = '../../data/luminescence/to_be_sorted/30.8.19/layout.csv'
 # output = '../../data/luminescence/to_be_sorted/30.8.19/output.csv'
 # date = '30.8.19'
-date = "11.3.21"
+date = "18.3.21"
 input_fluc = (
     f"../../data/luminescence/to_be_sorted/{date}/leaf_coexpression_fluc.csv"
 )
