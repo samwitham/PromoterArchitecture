@@ -550,22 +550,32 @@ def make_plot(
         colours = sns.color_palette(palette)
 
         # make copy of df
-        # make copy of df
         if mean is False:
             merged2 = df.copy()
-
+            # keep only unique transcription factors in each promoter category
             merged2_unique = merged2.drop_duplicates(
-                ["promoter_AGI"], keep="last"
+                subset=["gene_type", "TF_AGI"], keep="last"
             )
+
+            # merged2_unique = merged2.drop_duplicates(
+            # ["promoter_AGI"], keep="last"
+            # )
         elif mean is True:
             merged2_unique = df.copy()
-
+        print(f"len={len(merged2_unique)}")
         # make sample sizes equal for comparison
         # identify sample size of the minimum category
         minimum_sample_size = merged2_unique.gene_type.value_counts().min()
-
+        # find minimum category sample size of number of TFs in promoter categories
+        # minimum_sample_size = merged2_unique.groupby("gene_type")[
+        #     "TF_AGI"
+        # ].count()  # .max()
+        # print(len(merged2_unique))
         # print this
-        print(f"sample size in each category cv = {minimum_sample_size}")
+        print(
+            f"sample size in each category {categorisation_name} = {minimum_sample_size}"
+        )
+        # print(merged2_unique)
 
         # save sample size as file
         with open(
@@ -573,7 +583,7 @@ def make_plot(
             "w",
         ) as file:
             file.write(
-                "number_of_genes_in_each_category=" + str(minimum_sample_size)
+                "number_of_TFs_in_each_category=" + str(minimum_sample_size)
             )
 
         # multiply this by the number of categories
@@ -587,13 +597,37 @@ def make_plot(
         )
 
         # now filter out genes which were not selected using the minimum sample size
-        to_remove = merged2_unique[
-            ~merged2_unique.promoter_AGI.isin(equal_samplesizes.promoter_AGI)
-        ]
-        df = df[~df.promoter_AGI.isin(to_remove.promoter_AGI)]
+        # to_remove = merged2_unique[
+        #     ~merged2_unique.TF_AGI.isin(equal_samplesizes.TF_AGI)
+        # ]
+        # to_remove = (
+        #     pd.merge(
+        #         merged2_unique,
+        #         equal_samplesizes,
+        #         how="left",
+        #         # on=["promoter_AGI", "TF_AGI"],
+        #         indicator=True,
+        #     )
+        #     .query('_merge == "left_only"')
+        #     .drop(columns="_merge")
+        # )
+
+        # # df = df[~df.TF_AGI.isin(to_remove.TF_AGI)]
+
+        # df = (
+        #     pd.merge(
+        #         df,
+        #         to_remove,
+        #         how="left",
+        #         # on=["promoter_AGI", "TF_AGI"],
+        #         indicator=True,
+        #     )
+        #     .query('_merge == "left_only"')
+        #     .drop(columns="_merge")
+        # )
 
         # descriptive stats
-        describe = describe_stats(df, y_variable, x_variable)
+        describe = describe_stats(equal_samplesizes, y_variable, x_variable)
         # save sample size as file
         with open(
             f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}_{y_variable}.txt",
@@ -601,7 +635,7 @@ def make_plot(
         ) as file:
             file.write(str(describe))
 
-        return df, order, colours
+        return equal_samplesizes, order, colours
 
     df_cv, order_cv, colours_cv = equalise_samples_sizes(
         df_cv, "constitutive", "variable", palette_cv, "cv", y_variable
