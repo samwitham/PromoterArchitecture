@@ -21,17 +21,25 @@ def parse_args(args):
     parser.add_argument(
         "q_value", type=float, help="q_value threshold for filtering"
     )
+    parser.add_argument(
+        "--prevent_shorten_sequence_name",
+        help="Option to prevent shortening of sequence name up to the first colon.",
+        action="store_true",
+    )
+
     return parser.parse_args(
         args
     )  # let argparse grab args from sys.argv itself to allow for testing in module import
 
 
-def fimo_qfilter(fimo_file, q_value):
+def fimo_qfilter(fimo_file, q_value, prevent_shorten_sequence_name):
     """this uses a meme-suite version 5 fimo.tsv file, filters by a q-value, and returns a pandas df"""
     # read in fimo.tsv file
     fimo = pd.read_table(fimo_file, sep="\t")
-    # rename sequence column to just the AGI code
-    fimo.sequence_name = fimo.sequence_name.str.extract(r"(.*?)\:")
+    # rename sequence column to just the AGI code if --prevent_shorten_sequence_name argument is true (default = False)
+    if not prevent_shorten_sequence_name:
+        print("shortening sequence name")
+        fimo.sequence_name = fimo.sequence_name.str.extract(r"(.*?)\:")
     # filter q_values to specified threshold
     fimo_qfilter = fimo[fimo["q-value"] <= q_value]
     return fimo_qfilter
@@ -93,7 +101,9 @@ def main(args):
     # parse arguments
     args = parse_args(args)
     # same again using the functions
-    filtered_fimo = fimo_qfilter(args.fimo_file, args.q_value)
+    filtered_fimo = fimo_qfilter(
+        args.fimo_file, args.q_value, args.prevent_shorten_sequence_name
+    )
     fimo2bed(filtered_fimo, args.promoter_bedfile, args.motifs_bed)
 
 
