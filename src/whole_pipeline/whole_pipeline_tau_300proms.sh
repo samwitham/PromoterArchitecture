@@ -1583,3 +1583,26 @@ python ../data_sorting/./choose_TFs_tau.py $file_names 150 ../../data/genes/Ath_
 #arg9 is the Optional replacement colour palette for cv categories
 #arg10 is the Optional replacement colour palette for tau categories
 python ../plotting/./TF_target_genetype_combined.py $file_names ../../data/output/${file_names}/genes/tfs_czechowski_constitutive_variable_random_150.txt ../../data/output/${file_names}/genes/tfs_schmid_non-specific_tissue_specific_random_150.txt ../../data/output/${file_names}/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/${file_names}/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_CV/promoter_TF_CV.txt ../../data/output/${file_names}/TFBS_TF_class/${promoterpref}_TF_Tau/promoter_TF_TAU.txt TF_target/ deep tab10_r
+
+#map_TF2CVandTAU combined plots
+
+#arg1 is the Name of folder and filenames for the promoters extracted
+#arg2 is the Input location of coefficient of variation gene categories text file
+#arg3 is the Input location of tau tissue specific gene categories text file
+#arg4 is the Input location of all genes ranking cv categories"
+#arg5 is the Input location of all genes ranking tau categories
+#arg6 is the Input location of mapped motifs bed file
+#arg7 is the Optional replacement colour palette for cv categories
+#arg8 is the Optional replacement colour palette for tau categories
+
+#whole promoters
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/FIMO/${promoterpref}_motifs_mapped.bed ${promoterpref}_combined_cv_tau/ deep tab10_r
+
+#whole promoters open chromatin
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}ShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_combined_cv_tau_openchrom/ deep tab10_r
+
+#shortened promoters
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/FIMO/${promoterpref}_${promoter_length}bp_motifs_mapped.bed ${promoterpref}_${promoter_length}bp_combined_cv_tau/ deep tab10_r
+
+#shortened promoters open chromatin
+python ../plotting/./map_TF2CV_TF2Tau_combined.py $file_names ../../data/output/$file_names/genes/${promoterpref}_czechowski_constitutive_variable_random.txt ../../data/output/$file_names/genes/${promoterpref}_schmid_non-specific_tissue_specific_random.txt ../../data/output/$file_names/genes/filtered80/AtGE_dev_gcRMA__all_probes__CV.tsv ../../data/output/$file_names/genes/tissue_specific/promoters_5UTR_schmid_allfilteredgenes_TAU.txt ../../data/output/$file_names/chromatin_coverage/${promoterpref}_${promoter_length}bpShootRootIntersectOpenChrom.motifsmappedintersect.bed ${promoterpref}_${promoter_length}bp_combined_cv_tau_openchrom/ deep tab10_r

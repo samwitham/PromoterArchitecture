@@ -523,6 +523,7 @@ def make_plot(
     dependent_variable,
     file_names,
     mean=False,
+    unique_TFs=True,
 ):
 
     """function to make and save plot"""
@@ -551,21 +552,27 @@ def make_plot(
 
         # make copy of df
         if mean is False:
-            merged2 = df.copy()
-            # keep only unique transcription factors in each promoter category
-            merged2_unique = merged2.drop_duplicates(
-                subset=["gene_type", "TF_AGI"], keep="last"
-            )
+            if unique_TFs is True:
+                merged2 = df.copy()
+                # keep only unique transcription factors in each promoter category
+                merged2_df = merged2.drop_duplicates(
+                    subset=["gene_type", "TF_AGI"], keep="last"
+                )
 
             # merged2_unique = merged2.drop_duplicates(
             # ["promoter_AGI"], keep="last"
             # )
+            elif unique_TFs is False:
+                merged2 = df.copy()
+                merged2_df = merged2.drop_duplicates(
+                    ["promoter_AGI"], keep="last"
+                )
         elif mean is True:
-            merged2_unique = df.copy()
-        print(f"len={len(merged2_unique)}")
+            merged2_df = df.copy()
+        print(f"len={len(merged2_df)}")
         # make sample sizes equal for comparison
         # identify sample size of the minimum category
-        minimum_sample_size = merged2_unique.gene_type.value_counts().min()
+        minimum_sample_size = merged2_df.gene_type.value_counts().min()
         # find minimum category sample size of number of TFs in promoter categories
         # minimum_sample_size = merged2_unique.groupby("gene_type")[
         #     "TF_AGI"
@@ -578,22 +585,36 @@ def make_plot(
         # print(merged2_unique)
 
         # save sample size as file
-        with open(
-            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/number_of_genes_in_each_category_{categorisation_name}_{y_variable}.txt",
-            "w",
-        ) as file:
-            file.write(
-                "number_of_TFs_in_each_category=" + str(minimum_sample_size)
-            )
+        if unique_TFs is True:
+            with open(
+                f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/number_of_genes_in_each_category_{categorisation_name}_{y_variable}_unique_TFs.txt",
+                "w",
+            ) as file:
+                file.write(
+                    "number_of_unique_TFs_in_each_category="
+                    + str(minimum_sample_size)
+                )
+        elif unique_TFs is False:
+            with open(
+                f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/number_of_genes_in_each_category_{categorisation_name}_{y_variable}.txt",
+                "w",
+            ) as file:
+                file.write(
+                    "number_of_TFs_in_each_category="
+                    + str(minimum_sample_size)
+                )
 
         # multiply this by the number of categories
-        total_sample_size = minimum_sample_size * len(
-            merged2_unique.gene_type.unique()
+        total_sample_size_unique = minimum_sample_size * len(
+            merged2_df.gene_type.unique()
         )
 
         # select equal sample sizes of each category with a random state of 1 so it's reproducible
         equal_samplesizes = rep_sample(
-            merged2_unique, "gene_type", total_sample_size, random_state=1
+            merged2_df,
+            "gene_type",
+            total_sample_size_unique,
+            random_state=1,
         )
 
         # now filter out genes which were not selected using the minimum sample size
@@ -629,11 +650,18 @@ def make_plot(
         # descriptive stats
         describe = describe_stats(equal_samplesizes, y_variable, x_variable)
         # save sample size as file
-        with open(
-            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}_{y_variable}.txt",
-            "w",
-        ) as file:
-            file.write(str(describe))
+        if unique_TFs is True:
+            with open(
+                f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}_{y_variable}_unique_TFs.txt",
+                "w",
+            ) as file:
+                file.write(str(describe))
+        elif unique_TFs is False:
+            with open(
+                f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_descriptivestats_{categorisation_name}_{y_variable}.txt",
+                "w",
+            ) as file:
+                file.write(str(describe))
 
         return equal_samplesizes, order, colours
 
@@ -764,27 +792,62 @@ def make_plot(
         return kruskal(data=df, dv=y_variable, between=between)
 
     # cv
-    def statistics(df, variable1, variable2, ax, order, y_variable, ranking):
+    def statistics(
+        df,
+        variable1,
+        variable2,
+        ax,
+        order,
+        y_variable,
+        ranking,
+        unique_TF=True,
+    ):
         kruskal = kruskal_test(df, y_variable, x_variable)
         # add stats to plot if significant
         # make into df
         kruskal_df = pd.DataFrame(kruskal)
         # make column numeric
         kruskal_df = kruskal_df.astype({"p-unc": "float64"})
-
-        # save kruskal table
-        with open(
-            f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_kruskal_{ranking}_{y_variable}.txt",
-            "w",
-        ) as file:
-            file.write(str(kruskal_df))
+        if unique_TF is False:
+            # save kruskal table
+            with open(
+                f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_kruskal_{ranking}_{y_variable}.txt",
+                "w",
+            ) as file:
+                file.write(str(kruskal_df))
+        elif unique_TF is True:
+            with open(
+                f"../../data/output/{file_names}/{dependent_variable}/{output_folder_name}plots/{dependent_variable}_kruskal_{ranking}_{y_variable}_uniqueTF.txt",
+                "w",
+            ) as file:
+                file.write(str(kruskal_df))
 
         if kruskal_df["p-unc"].iloc[0] < 0.05:
             add_stats(df, variable1, variable2, ax, order, y_variable)
 
-    statistics(
-        df_cv, "constitutive", "variable", ax1, order_cv, y_variable, "cv"
-    )
+    if unique_TFs is False:
+        statistics(
+            df_cv,
+            "constitutive",
+            "variable",
+            ax1,
+            order_cv,
+            y_variable,
+            "cv",
+            unique_TF=False,
+        )
+    elif unique_TFs is True:
+        statistics(
+            df_cv,
+            "constitutive",
+            "variable",
+            ax1,
+            order_cv,
+            y_variable,
+            "cv",
+            unique_TF=True,
+        )
+
     statistics(
         df_tau,
         "non-specific",
@@ -935,8 +998,27 @@ def main(args):
     #     args.output_folder_name,
     # )
 
-    # plot the CV or tau for each promoter gene_type - whole promoter individual TF CVs/taus
+    # plot the CV or tau for each promoter gene_type -  individual unique TF CVs/taus in each promoter
 
+    make_plot(
+        cv_genetypes,
+        tau_genetypes,
+        "gene_type",
+        "expression_CV",
+        "TAU",
+        "Gene type",
+        "Cognate unique TF expression CV",
+        "Cognate unique TF Tau tissue specificity",
+        "unique_TF_expression_categories",
+        "box",
+        args.palette_cv,
+        args.palette_tau,
+        args.output_folder_name,
+        dependent_variable,
+        args.file_names,
+    )
+
+    # plot the CV or tau for each promoter gene_type - individual TF CVs/Taus in each promoter
     make_plot(
         cv_genetypes,
         tau_genetypes,
@@ -953,9 +1035,10 @@ def main(args):
         args.output_folder_name,
         dependent_variable,
         args.file_names,
+        unique_TFs=False,
     )
 
-    # plot the mean CV for each promoter gene_type - whole promoter mean TF CVs
+    # plot the mean CV for each promoter gene_type -  mean TF CVs
     make_plot(
         cv_means_sd_genetype,
         tau_means_sd_genetype,
