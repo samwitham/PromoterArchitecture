@@ -401,6 +401,14 @@ def make_plot(
     # add graph titles
     ax1.set_title("A", x=0.02, fontsize=16)
     ax2.set_title("B", x=0.02, fontsize=16)
+    # set y axis range
+    # first get y limits for both plots
+    ax1ymin, ax1ymax = ax1.get_ylim()
+    ax2ymin, ax2ymax = ax2.get_ylim()
+    minimum = min(ax1ymin, ax2ymin)
+    maximum = max(ax1ymax, ax2ymax)
+    ax1.set_ylim(minimum, maximum)
+    ax2.set_ylim(minimum, maximum)
     # tight layout
     plt.tight_layout()
     # save figure
