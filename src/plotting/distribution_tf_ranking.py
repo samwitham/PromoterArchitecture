@@ -93,6 +93,7 @@ def all_prom_distribution(
         # create figure with no transparency
         dist_plot_fig = sns.distplot(dist_plot)
         plt.xlabel(x_label)
+        plt.ylabel("Kernel density")
     # else if 2 dataframes provided plot them on the same axes
     else:
         dist_plot1 = df[x_variable]
@@ -103,6 +104,7 @@ def all_prom_distribution(
         sns.distplot(dist_plot2, hist=False, rug=True, label=df2_label)
         # create legend
         plt.legend()
+        plt.ylabel("Kernel density")
     if labels is True:
         # get axes
         ax = plt.axes()
