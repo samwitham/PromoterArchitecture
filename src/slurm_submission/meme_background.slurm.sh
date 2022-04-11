@@ -5,7 +5,7 @@
 #SBATCH --mem=16G
 #SBATCH -J x_promz
 #SBATCH --mail-type=begin,end,fail
-#SBATCH --mail-user=samuel.witham@earlham.ac.uk
+#SBATCH --mail-user=sam.witham@earlham.ac.uk
 #SBATCH -o x_promz
 #SBATCH -e  /ei/workarea/group-eg/project_PromoterArchitecturePipeline/log/background.err
 
