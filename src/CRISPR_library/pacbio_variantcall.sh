@@ -112,3 +112,4 @@ CRISPRessoAggregate --name "NLP7" --prefix ./NLP7
 # CRISPRessoAggregate --name "DREB26" --prefix ./DREB26_sgRNAs
 # CRISPRessoAggregate --name "NLP7" --prefix ./NLP7_sgRNAs
 
+#if analyses show a lot of ambiguous alignments, add --assign_ambiguous_alignements_to_first_allele flag
