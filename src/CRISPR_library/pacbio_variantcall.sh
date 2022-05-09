@@ -98,6 +98,15 @@ bowtie2 -x ../../../../References/TAIR10_chr_all -f ${dir}${base}.fasta -S ${dir
 #bowtie2 -x ../../../../References/genes_longest_region --fr ${dir}test/${base}.fasta 
 done
 
+#run bowtie on reference promoter sequences
+bowtie2 -x ../../../../References/TAIR10_chr_all -f ../../../../References/genes_longest_region.fasta -S ../../../../References/genes_longest_region.sam
+#convert reference sam file to bed file for following analyses
+bamToBed -i ../../../../References/genes_longest_region.sam > ../../../../References/genes_longest_region.bed
+
+# bowtie2 -x ../../../../References/TAIR10_chr_all -f ../../../../References/ARF9_promoter.fa -S ../../../../References/ARF9_promoter.sam
+# bowtie2 -x ../../../../References/TAIR10_chr_all -f ../../../../References/ARF18_promoter.fa -S ../../../../References/ARF18_promoter.sam
+# bowtie2 -x ../../../../References/TAIR10_chr_all -f ../../../../References/DREB26_promoter.fa -S ../../../../References/DREB26_promoter.sam
+# bowtie2 -x ../../../../References/TAIR10_chr_all -f ../../../../References/NLP7_promoter.fa -S ../../../../References/NLP7_promoter.sam
 
 
 #move working directory
