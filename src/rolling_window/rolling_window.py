@@ -60,7 +60,7 @@ def flag_overlapping_proms(promoter_bed, output_bed):
     # c = columns to apply function to
     # o = count number of merged promoters, name the first and last promoter that were merged
     merged = proms_bed.merge(c=4, o=["count_distinct", "first", "last"])
-    # write to bufer
+    # write to buffer
     merged_buffer = io.StringIO()
     merged_buffer.write(str(merged))
     merged_buffer.seek(0)
