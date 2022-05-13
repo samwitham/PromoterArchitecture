@@ -43,7 +43,7 @@ def parse_args(args):
         args
     )  # let argparse grab args from sys.argv itself to allow for testing in module import
 
-def read_in_files(mutations_file,mapped_motifs,guide_pairs):
+def read_in_files(mutations_file,mapped_motifs_bed,guide_pairs):
     """read in the files"""
     #read in mapped motifs bed file
     mapped_motifs = pd.read_table(mapped_motifs_bed, sep="\t", header=None)
