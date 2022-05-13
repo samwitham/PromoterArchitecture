@@ -1,5 +1,6 @@
 #!/bin/sh
 #requires activating "conda activate pacbio"
+eval "$(conda shell.bash hook)"
 conda activate pacbio
 # bwa-mem2 index ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/genes.fa
 # #Align one read to reference promoter
@@ -122,3 +123,33 @@ CRISPRessoAggregate --name "NLP7" --prefix ./NLP7
 # CRISPRessoAggregate --name "NLP7" --prefix ./NLP7_sgRNAs
 
 #if analyses show a lot of ambiguous alignments, add --assign_ambiguous_alignements_to_first_allele flag
+
+##POST CRISPRESSO2 ANALYSIS##
+
+#activate conda env
+conda activate pacbio_post_analysis
+#run post CRISPRESSO2 analysis
+#ARF9
+python ../CRISPR_library/./pacbio_analyse_variantcall.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9_sgRNAs/7bp_window_noplots ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/ARF9_promoter.fa ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/genes_longest_region.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/promoters.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/plant_IDs.tsv ARF9
+
+#ARF18
+python ../CRISPR_library/./pacbio_analyse_variantcall.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF18_sgRNAs/7bp_window_noplots ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/ARF18_promoter.fa ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/genes_longest_region.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/promoters.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/plant_IDs.tsv ARF18
+
+#DREB26
+python ../CRISPR_library/./pacbio_analyse_variantcall.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/DREB26_sgRNAs/7bp_window_noplots ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/DREB26_promoter.fa ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/genes_longest_region.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/promoters.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/plant_IDs.tsv DREB26
+
+#NLP7
+python ../CRISPR_library/./pacbio_analyse_variantcall.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/NLP7_sgRNAs/7bp_window_noplots ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/NLP7_promoter.fa ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/genes_longest_region.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/promoters.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/plant_IDs.tsv NLP7
+
+#now check for overlapping TFBSs from  FIMO scan of the whole Arabidopsis genome
+#ARF9
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ARF9 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+#ARF18
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF18_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ARF18 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+#DREB26
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/DREB26_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv DREB26 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+#NLP7
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/NLP7_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv NLP7 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
