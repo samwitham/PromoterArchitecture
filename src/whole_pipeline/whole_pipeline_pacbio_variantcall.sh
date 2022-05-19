@@ -144,40 +144,129 @@ python ../CRISPR_library/./pacbio_analyse_variantcall.py ../../data/CRISPR_libra
 #now check for overlapping TFBSs from  FIMO scan of the whole Arabidopsis genome
 #change conda env
 conda activate pybedtools
+#gene_name
+gene_name=ARF9
 #split file into many files
 #first remove the first line then pipe that to split, splitting it into many files
-tail -n +2 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/ARF9_merged.tsv | split -l 100 --additional-suffix=.split - ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/
-#ARF9
-for i in ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/*.split
+
+tail -n +2 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_merged.tsv | split -l 100 --additional-suffix=.split - ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+
+for i in ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
 do
-dir="../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/"
+dir=../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
 base=$(basename $i ".split")
-#ARF9
-python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part1.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/${base}.split ARF9 ${base} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part1.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${base}.split ${gene_name} ${base} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
 done
 
 #try putting the above into python - use chunkify and also save temporary files in the TFBSoverlapping function - see if also saves memory. Then can do all in one python script
 
+#now concatenate all files together
+cat ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part > ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping.tsv
 
-    parser.add_argument(
-        "file_number",
-        type=str,
-        help="FIle number of file part",
-    )
-    
-    parser.add_argument(
-        "output_folder",
-        type=str,
-        help="Output folder location ending with a forward slash",
+#run part 2 script to concatenate the .part files together and look for guide pairs and genotype the plant lines
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
 
-#ARF9
-python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/ARF9_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ARF9 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+#now remove all split and part files
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
 
-#ARF18
-python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF18/ARF18_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ARF18 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+#gene_name
+gene_name=ARF18
+#split file into many files
+#first remove the first line then pipe that to split, splitting it into many files
 
-#DREB26
-python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/DREB26/DREB26_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv DREB26 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+tail -n +2 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_merged.tsv | split -l 100 --additional-suffix=.split - ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
 
-#NLP7
-python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/NLP7/NLP7_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv NLP7 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+for i in ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+do
+dir=../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+base=$(basename $i ".split")
+
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part1.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${base}.split ${gene_name} ${base} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+done
+
+#try putting the above into python - use chunkify and also save temporary files in the TFBSoverlapping function - see if also saves memory. Then can do all in one python script
+
+#now concatenate all files together
+cat ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part > ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping.tsv
+
+#run part 2 script to concatenate the .part files together and look for guide pairs and genotype the plant lines
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+#now remove all split and part files
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+
+#gene_name
+gene_name=DREB26
+#split file into many files
+#first remove the first line then pipe that to split, splitting it into many files
+
+tail -n +2 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_merged.tsv | split -l 100 --additional-suffix=.split - ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+
+for i in ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+do
+dir=../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+base=$(basename $i ".split")
+
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part1.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${base}.split ${gene_name} ${base} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+done
+
+#try putting the above into python - use chunkify and also save temporary files in the TFBSoverlapping function - see if also saves memory. Then can do all in one python script
+
+#now concatenate all files together
+cat ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part > ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping.tsv
+
+#run part 2 script to concatenate the .part files together and look for guide pairs and genotype the plant lines
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+#now remove all split and part files
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+
+#gene_name
+gene_name=NLP7
+#split file into many files
+#first remove the first line then pipe that to split, splitting it into many files
+
+tail -n +2 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_merged.tsv | split -l 100 --additional-suffix=.split - ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+
+for i in ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+do
+dir=../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+base=$(basename $i ".split")
+
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part1.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${base}.split ${gene_name} ${base} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+done
+
+#try putting the above into python - use chunkify and also save temporary files in the TFBSoverlapping function - see if also saves memory. Then can do all in one python script
+
+#now concatenate all files together
+cat ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part > ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping.tsv
+
+#run part 2 script to concatenate the .part files together and look for guide pairs and genotype the plant lines
+python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/ ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+#now remove all split and part files
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
+rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+
+
+
+
+
+
+
+
+# #ARF9
+# python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF9/ARF9_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ARF9 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+# #ARF18
+# python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/ARF18/ARF18_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv ARF18 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+# #DREB26
+# python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/DREB26/DREB26_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv DREB26 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/
+
+# #NLP7
+# python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs.py ../../data/output/non-overlapping_includingbidirectional_all_genes_newannotation_3KB/FIMO/promoters_5UTR_motifs_mapped_q0_05.bed ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/NLP7/NLP7_merged.tsv ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/References/all_guide_pairs.csv NLP7 ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/

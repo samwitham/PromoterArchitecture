@@ -415,7 +415,7 @@ def chunkify(mutations_df,mapped_motifs_df,output_folder,gene,file_number):
     #concatenate chunks into mutations_df
     mutations_df = pd.concat(chunks)            
     #write out mutations_df
-    mutations_df.to_csv(f'{output_folder}{gene}/{gene}_TFBSoverlapping.part{file_number}.part', sep="\t", index=False, header=1)
+    mutations_df.to_csv(f'{output_folder}{gene}/{gene}_TFBSoverlapping.part{file_number}.part', sep="\t", index=False, header=None)
 
 def main(args):
     # parse arguments
