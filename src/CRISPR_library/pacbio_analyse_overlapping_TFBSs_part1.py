@@ -424,7 +424,7 @@ def main(args):
     #read in files
     mutations_df,mapped_motifs_df =  read_in_files(args.mutations_tsv, args.mapped_motifs_bed)
 
-    #find overlapping TFBSs by splitting the mutations_ARF9_df into chunks and iterating over each chunk, reducing memoery usage
+    #find overlapping TFBSs by splitting the mutations_ARF9_df into chunks and iterating over each chunk, reducing memory usage
     mutations_df_overlapping_TFBS = chunkify(mutations_df,mapped_motifs_df,args.output_folder,args.gene_name,args.file_number)
 
     #genotype the plant lines, producing an output tsv
