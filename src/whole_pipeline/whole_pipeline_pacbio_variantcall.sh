@@ -171,6 +171,9 @@ python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
 
+#run pacbio_analyse_flattened_mutations.py script to remove duplicate mutations
+python ../CRISPR_library/./pacbio_analyse_flattened_mutations.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping_genotyped_only_mutated.tsv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+
 #gene_name
 gene_name=ARF18
 #split file into many files
@@ -197,6 +200,10 @@ python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/
 #now remove all split and part files
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+
+#run pacbio_analyse_flattened_mutations.py script to remove duplicate mutations
+python ../CRISPR_library/./pacbio_analyse_flattened_mutations.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping_genotyped_only_mutated.tsv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+
 
 #gene_name
 gene_name=DREB26
@@ -225,6 +232,9 @@ python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
 
+#run pacbio_analyse_flattened_mutations.py script to remove duplicate mutations
+python ../CRISPR_library/./pacbio_analyse_flattened_mutations.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping_genotyped_only_mutated.tsv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
+
 #gene_name
 gene_name=NLP7
 #split file into many files
@@ -251,6 +261,9 @@ python ../CRISPR_library/./pacbio_analyse_overlapping_TFBSs_part2.py ../../data/
 #now remove all split and part files
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.part
 rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/*.split
+
+#run pacbio_analyse_flattened_mutations.py script to remove duplicate mutations
+python ../CRISPR_library/./pacbio_analyse_flattened_mutations.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping_genotyped_only_mutated.tsv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
 
 
 
