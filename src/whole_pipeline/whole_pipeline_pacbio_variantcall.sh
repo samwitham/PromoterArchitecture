@@ -204,6 +204,10 @@ rm ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/
 #run pacbio_analyse_flattened_mutations.py script to remove duplicate mutations
 python ../CRISPR_library/./pacbio_analyse_flattened_mutations.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping_genotyped_only_mutated.tsv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/
 
+#run again on a manually created .tsv where ARF18 guide 14 was filtered out due to the region being very repetitive leading to false chimeric assingment
+python ../CRISPR_library/./pacbio_analyse_flattened_mutations.py ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}/${gene_name}_TFBSoverlapping_genotyped_only_mutated_filtered.tsv ${gene_name} ../../data/CRISPR_library/pacbio/demultiplexed/Data_Package_Batch_04_04_2022/Sam_Witham_EI_SW_ENQ-5142_A_01_Additional_Barcode_Analysis/Variant_call/${gene_name}_filtered/
+
+
 
 #gene_name
 gene_name=DREB26

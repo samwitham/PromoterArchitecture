@@ -4,6 +4,9 @@ import numpy as np
 import itertools
 #parse arguments
 import argparse
+#convert from string to dict
+import ast
+import math
 def parse_args(args):
     parser = argparse.ArgumentParser(description="pacbio_analyse_flattened_mutations")
     parser.add_argument(
@@ -132,7 +135,45 @@ def find_mutation_lengths(list_of_mutation_positions):
 
         return mutation_length_list
 
+def make_overlapping_TFBS_dict(input_AGIs,mutation_genomic_positions,output_dict,mutation_type):
+    """function to generate a dictionary of genomic positions overlapping TFBS AGIs"""
+    #if no TFBSs overlapping insertions, pass
+    if type(input_AGIs) == float and np.isnan(input_AGIs):
+        pass
+    #else if it is not nan carry on
+    else:
+        #convert from string to dict
+        mutation_overlapping_TFBS_AGI = ast.literal_eval(input_AGIs)
+        #make dictionary with genomic positions as keys, TFBS AGI a values
+        TFBS_AGI_dict = {}
+        #iterate through genomic positions
+        for pos in mutation_genomic_positions:
+            #get index
+            pos_index = mutation_genomic_positions.index(pos)
+            #if insertion is in insertion_overlapping_TFBS_AGI dict, then add it to the TFBS_AGI_dict
+            if f'{mutation_type}{pos_index+1}' in mutation_overlapping_TFBS_AGI:
+                #create dict
+                TFBS_AGI_single_dict = {}
+                TFBS_AGI = mutation_overlapping_TFBS_AGI[f'{mutation_type}{pos_index+1}']
+                TFBS_AGI_dict[pos] = TFBS_AGI
+        #append to output dict
+        #print(TFBS_AGI_dict)
+        output_dict.update(TFBS_AGI_dict.copy())
 
+def add_overlapping_TFBS_dict_to_default_dict(overlapping_TFBS_dict,default_dict_key,default_dict):
+    if overlapping_TFBS_dict == {}:
+        #print(overlapping_TFBS_dict)
+        overlapping_TFBS_dict = np.nan
+        default_dict[default_dict_key] = overlapping_TFBS_dict        
+        
+    else:
+        #sort overlapping_TFBS_dict by key (genomic position)
+        overlapping_TFBS_dict = dict(sorted(overlapping_TFBS_dict.items()))
+        default_dict[default_dict_key] = overlapping_TFBS_dict
+        #print(overlapping_TFBS_dict)
+    return default_dict
+                
+                
 def flatten_mutations(mutations_df,output_folder,gene_name):
     """function to put all of the mutations in a plant line in one row per allele"""
     #create a new df with only one row per plant ID
@@ -160,10 +201,20 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
         second_reaction_primers = filtered_dict[0]['second_reaction_primers']
         insertion_genomic_positions_combined = []
         insertion_positions_relative_to_TSS_combined = []
+        insertion_overlapping_TFBS_AGI_combined = {}
+        insertion_overlapping_TFBS_family_combined = {}
+
+
         deletion_genomic_positions_combined = []
         deletion_positions_relative_to_TSS_combined = []
+        deletion_overlapping_TFBS_AGI_combined = {}
+        deletion_overlapping_TFBS_family_combined = {}
+
         substitution_genomic_positions_combined = []
         substitution_positions_relative_to_TSS_combined = []
+        substitution_overlapping_TFBS_AGI_combined = {}
+        substitution_overlapping_TFBS_family_combined = {}
+
         guides = []
         mutation_types = []
         genotypes = []
@@ -185,6 +236,7 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
             if 'insertion' in mutation_type:
                 #convert genomic positions from string to list
                 insertion_genomic_positions = row['insertion_genomic_positions'].strip('][').split(', ')
+
                 #append to insertion_genomic_positions_combined
                 insertion_genomic_positions_combined.append(list(insertion_genomic_positions))
                 
@@ -197,7 +249,11 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
                 for pos in insertion_positions_relative_to_TSS:
                     #add insertion genomic positions
                     insertion_positions_relative_to_TSS_combined += [pos]
-     
+                #generate dictionary of genomic positions with overlapping AGIs                                
+                make_overlapping_TFBS_dict(row['insertion_overlapping_TFBS_AGI'],insertion_genomic_positions,insertion_overlapping_TFBS_AGI_combined,'insertion')
+                #generate dictionary of genomic positions with overlapping TFBS families
+                make_overlapping_TFBS_dict(row['insertion_overlapping_TFBS_family'],insertion_genomic_positions,insertion_overlapping_TFBS_family_combined,'insertion')
+
             if 'deletion' in mutation_type:
                 #convert genomic positions from string to list
                 deletion_genomic_positions = row['deletion_genomic_positions'].strip('][').split(', ')
@@ -209,6 +265,10 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
                 for pos in deletion_positions_relative_to_TSS:
                     #add insertion genomic positions
                     deletion_positions_relative_to_TSS_combined += [pos]
+                #generate dictionary of genomic positions with overlapping AGIs                                
+                make_overlapping_TFBS_dict(row['deletion_overlapping_TFBS_AGI'],deletion_genomic_positions,deletion_overlapping_TFBS_AGI_combined,'deletion')
+                #generate dictionary of genomic positions with overlapping TFBS families
+                make_overlapping_TFBS_dict(row['deletion_overlapping_TFBS_family'],deletion_genomic_positions,deletion_overlapping_TFBS_family_combined,'deletion')
    
             if 'substitution' in mutation_type:
                 #convert genomic positions from string to list
@@ -221,7 +281,12 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
                 for pos in substitution_positions_relative_to_TSS:
                     #add insertion genomic positions
                     substitution_positions_relative_to_TSS_combined += [pos]
+                #generate dictionary of genomic positions with overlapping AGIs                                
+                make_overlapping_TFBS_dict(row['substitution_overlapping_TFBS_AGI'],substitution_genomic_positions,substitution_overlapping_TFBS_AGI_combined,'substitution')
+                #generate dictionary of genomic positions with overlapping TFBS families
+                make_overlapping_TFBS_dict(row['substitution_overlapping_TFBS_family'],substitution_genomic_positions,substitution_overlapping_TFBS_family_combined,'substitution')
         
+
         #if empty list, change to nan
         if insertion_genomic_positions_combined == []:
             insertion_genomic_positions_combined = np.nan
@@ -250,7 +315,10 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
         else:
             #make integers
             dd['insertion_positions_relative_to_TSS_combined']= [int(l) for l in list(np.unique(insertion_positions_relative_to_TSS_combined))]
-
+        #add_overlapping_TFBS_dict_to_default_dict
+        dd = add_overlapping_TFBS_dict_to_default_dict(insertion_overlapping_TFBS_AGI_combined,'insertion_overlapping_TFBS_AGI_combined',dd)
+        dd = add_overlapping_TFBS_dict_to_default_dict(insertion_overlapping_TFBS_family_combined,'insertion_overlapping_TFBS_family_combined',dd)
+                    
         if deletion_genomic_positions_combined == []:
             deletion_genomic_positions_combined = np.nan
             deletion_sizes = np.nan
@@ -271,7 +339,10 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
             dd['deletion_positions_relative_to_TSS_combined']= deletion_positions_relative_to_TSS_combined
         else:
             #make integers
-            dd['deletion_positions_relative_to_TSS_combined']= [int(l) for l in list(np.unique(deletion_positions_relative_to_TSS_combined))] 
+            dd['deletion_positions_relative_to_TSS_combined']= [int(l) for l in list(np.unique(deletion_positions_relative_to_TSS_combined))]
+        #add_overlapping_TFBS_dict_to_default_dict
+        dd = add_overlapping_TFBS_dict_to_default_dict(deletion_overlapping_TFBS_AGI_combined,'deletion_overlapping_TFBS_AGI_combined',dd)
+        dd = add_overlapping_TFBS_dict_to_default_dict(deletion_overlapping_TFBS_family_combined,'deletion_overlapping_TFBS_family_combined',dd)
 
         if substitution_genomic_positions_combined == []:
             substitution_genomic_positions_combined = np.nan
@@ -294,7 +365,9 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
         else:
             #make integers
             dd['substitution_positions_relative_to_TSS_combined']= [int(l) for l in list(np.unique(substitution_positions_relative_to_TSS_combined))] 
-
+        #add_overlapping_TFBS_dict_to_default_dict
+        dd = add_overlapping_TFBS_dict_to_default_dict(substitution_overlapping_TFBS_AGI_combined,'substitution_overlapping_TFBS_AGI_combined',dd)
+        dd = add_overlapping_TFBS_dict_to_default_dict(substitution_overlapping_TFBS_family_combined,'substitution_overlapping_TFBS_family_combined',dd)
         #make mutation types string
         mutation_types_unique = list(np.unique(mutation_types))
         #if contains '+', separate out
@@ -373,7 +446,7 @@ def flatten_mutations(mutations_df,output_folder,gene_name):
     df_single_rows.sort_values(['ID','ID_number'],ascending=True, inplace = True)
 
     #change column order
-    df_single_rows = df_single_rows[['plant_ID','chr','platename','library','first_reaction_primers','second_reaction_primers','genotype','mutation_type','guides','mutation_genotypes','insertion_genomic_positions_combined','insertion_positions_relative_to_TSS_combined','insertion_sizes','deletion_genomic_positions_combined','deletion_positions_relative_to_TSS_combined','deletion_sizes','substitution_genomic_positions_combined','substitution_positions_relative_to_TSS_combined','substitution_sizes']]
+    df_single_rows = df_single_rows[['plant_ID','chr','platename','library','first_reaction_primers','second_reaction_primers','genotype','mutation_type','guides','mutation_genotypes','insertion_genomic_positions_combined','insertion_positions_relative_to_TSS_combined','insertion_sizes','insertion_overlapping_TFBS_AGI_combined','insertion_overlapping_TFBS_family_combined','deletion_genomic_positions_combined','deletion_positions_relative_to_TSS_combined','deletion_sizes','deletion_overlapping_TFBS_AGI_combined','deletion_overlapping_TFBS_family_combined','substitution_genomic_positions_combined','substitution_positions_relative_to_TSS_combined','substitution_sizes','substitution_overlapping_TFBS_AGI_combined','substitution_overlapping_TFBS_family_combined']]
     
 
     #save this df
