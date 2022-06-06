@@ -98,6 +98,25 @@ bowtie2 -x ../../../../References/TAIR10_chr_all -f ${dir}${base}.fasta -S ${dir
 # samtools index ${dir}bam/${base}_mapped.bam
 #bowtie2 -x ../../../../References/genes_longest_region --fr ${dir}test/${base}.fasta 
 done
+conda activate PromoterArchitecturePipeline
+#then create sorted vbam file and index it
+for i in ../*.fasta
+do
+dir="../"
+base=$(basename $i ".fasta")
+#bowtie2 -x ../../../../References/ARF9 -f ${dir}test/${base}.fasta | samtools view -bSF4k - > ${dir}bam/${base}_mapped.bam
+# bowtie2 -x ../../../../References/TAIR10_chr_all -f ${dir}test/${base}.fasta | samtools view -bSF4k - > ${dir}bam/${base}_mapped.bam
+# #bowtie2 -x ../../../../References/genes_longest_region -f ${dir}test/${base}.fasta -S ${dir}bam/${base}.sam
+#bowtie2 -x ../../../../References/TAIR10_chr_all -f ${dir}${base}.fasta -S ${dir}bam/${base}.sam
+
+samtools view -bS ${dir}bam/${base}.sam > ${dir}bam/${base}.bam
+#sort it by chromosome and start
+samtools sort ${dir}bam/${base}.bam -o ${dir}bam/${base}.bam
+#create index file
+samtools index ${dir}bam/${base}.bam
+#bowtie2 -x ../../../../References/genes_longest_region --fr ${dir}test/${base}.fasta 
+done
+conda activate pacbio
 
 #run bowtie on reference promoter sequences
 bowtie2 -x ../../../../References/TAIR10_chr_all -f ../../../../References/genes_longest_region.fasta -S ../../../../References/genes_longest_region.sam
