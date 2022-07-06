@@ -1,0 +1,11 @@
+#direct data from TARSET and TRAMP
+#I assume that all genes are turned off if no repressors are present if they are negatively regulated, and that genes are turned on if both repressors and activators are present
+targets, factors
+ANAC032, (! ARF18)
+NIR1, (NLP7 | NLP6) & (! ANAC032 & ! ARF18 & ! ANR1 & ! DREB26)
+NLP6, (! DREB26 & ! ANAC032) & (NLP7 | NLP6) #TRAMP data
+NLP7, (! ANAC032 & ! DREB26) & (NLP6 | NLP7)
+ARF18, (! ARF18) & (NLP6 | NLP7)
+ANR1, (NLP7 | NLP6) & (! ARF18)
+DREB26, (! ARF18 & ! ANAC032 & ! DREB26) & (NLP6 | NLP7)
+
