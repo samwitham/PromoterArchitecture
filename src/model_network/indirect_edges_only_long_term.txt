@@ -1,6 +1,21 @@
 #indirect and direct data from TARSET and TRAMP and protoplast coexpression
 #I assume that all genes are turned off if no repressors are present if they are negatively regulated, and that genes are turned on if both repressors and activators are present
 targets, factors
+ANAC032, ! ANAC032 | (! ARF18 & ! ANR1 & ! DREB26)
+DREB26, ANAC032
+NIR1, ! ARF18 & ! DREB26 & (ANAC032 | ANR1 | TGA1)
+ARF18, ! ARF18 | TGA1
+NLP6, ! ARF18 & ! DREB26 & ! ANAC032 & ! TGA1 & ANR1 #NLP6 is activated by DREB26 and ANAC032 and TGA1 in coexpression assays
+NLP7, ! ARF18 & ! DREB26 & ! ANAC032 & ANR1 # NLP7 self activates in coexpression assays, but represses in TARSET assays
+ANR1, ! DREB26
+TGA1, ANAC032 & ! ARF18 & ! NLP6 
+
+
+
+
+
+
+
 ANAC032, (! ARF18 & ! ANR1 & ! DREB26)
 NIR1, (NLP7 | NLP6) & (! ANAC032 & ! ARF18 & ! ANR1 & ! DREB26)
 NLP6, (! DREB26 & ! ARF18) & (NLP7 | NLP6 | ANR1) #TRAMP data
