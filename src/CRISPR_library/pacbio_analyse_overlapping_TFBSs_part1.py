@@ -32,7 +32,7 @@ def parse_args(args):
     parser.add_argument(
         "file_number",
         type=str,
-        help="FIle number of file part",
+        help="File number of file part",
     )
     
     parser.add_argument(

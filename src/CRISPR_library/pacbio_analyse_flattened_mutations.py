@@ -12,7 +12,7 @@ def parse_args(args):
     parser.add_argument(
         "mutations_tsv",
         type=str,
-        help="Input location of tsv file containing mutations (no duplicates) after running pacbio_anbalyse_overlapping_TFBSs_part2.py",
+        help="Input location of tsv file containing mutations (no duplicates) after running pacbio_analyse_overlapping_TFBSs_part2.py",
     )
     parser.add_argument(
         "gene_name",

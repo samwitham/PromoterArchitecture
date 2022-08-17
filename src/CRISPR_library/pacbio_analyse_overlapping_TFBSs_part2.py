@@ -70,7 +70,7 @@ def read_in_files(input_folder,guide_pairs,gene):
 
 
 
-# #written in dask format rather than pandas
+#genotype the plant lines, producing an output tsv
 def genotype_plant_lines(mutations_df,output_folder,gene):
     """function to decide whether each plant line is -homozygous 
     -biallelic - each mutated at same location/site twice
@@ -133,7 +133,7 @@ def genotype_plant_lines(mutations_df,output_folder,gene):
     return mutations_df
     
 def categorise_guide_pairs(mutations_df_genotyped, guide_pairs_df, output_folder,gene):
-    """function to check which guide pairs where delivered to each plant line and to check whether mutations at more than one guide site are within the other guide pair"""
+    """function to check which guide pairs were delivered to each plant line and to check whether mutations at more than one guide site are within the other guide pair"""
     #first get unique guides based on 2 columns in guide_pairs_df    
     unique_guides = pd.concat([guide_pairs_df['guide1'],guide_pairs_df['guide2']]).unique()
     #for guides in unique guides list, add dictionary value of all other potential guides that it is paired with
