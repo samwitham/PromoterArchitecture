@@ -14,3 +14,9 @@ exclude = '''
   | dist
 )/
 '''
+[tool.autoflake]
+check = true
+remove-all-unused-imports = true
+remove-unused-variables = true
+recursive = true
+ignore-init-module-imports = true
