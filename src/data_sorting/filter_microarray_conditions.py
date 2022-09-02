@@ -71,7 +71,7 @@ def calculate_tau(expression_data, output_tau, file_names):
     # inverse log transform the expression data
     df_filtered2_inverselog = df_filtered2.copy()
     df_filtered2_inverselog.iloc[:, 1:] = df_filtered2.iloc[:, 1:].apply(
-        lambda x: 2 ** x
+        lambda x: 2**x
     )
     df_filtered2 = df_filtered2_inverselog.copy()
 

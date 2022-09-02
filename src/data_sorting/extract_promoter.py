@@ -615,7 +615,7 @@ def remove_characters_linestart(
 
 
 def count_promoters(in_file, out_file):
-    """this function creates a text file detailing the number of promoters in an input GFF file """
+    """this function creates a text file detailing the number of promoters in an input GFF file"""
     examiner = GFFExaminer()
     # open input GFF file
     in_handle = open(in_file, "r")

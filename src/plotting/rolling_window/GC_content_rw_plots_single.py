@@ -752,7 +752,7 @@ def plot_length(
 ):
     """function to plot length distribution of promoter"""
     # make lengths positive by squaring and then square rooting
-    df.length = (df.length ** 2) ** (1 / 2)
+    df.length = (df.length**2) ** (1 / 2)
 
     if genetype is False:
         dist_plot = df["length"]

@@ -9,7 +9,7 @@ import pandas as pd
 
 
 def xlsx_2_csv(xlsx):
-    """ Function to read and convert xlsx file to csv file. Also return the data (name of the folder the xlsx is in)"""
+    """Function to read and convert xlsx file to csv file. Also return the data (name of the folder the xlsx is in)"""
 
     # Read in the xlsx file, second sheet
     file = pd.read_excel(xlsx, "End point", index_col=None)
