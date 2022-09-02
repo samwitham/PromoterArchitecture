@@ -4,7 +4,6 @@
 
 import glob
 import os
-# import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,6 +22,12 @@ import statsmodels.formula.api as smf
 from bioinfokit.analys import stat
 from matplotlib import rcParams
 
+# sats annotations
+from statannotations.Annotator import Annotator
+
+# import sys
+
+
 # estimated marginal mean contrasts
 # from rpy2.robjects import Formula, pandas2ri
 # import rpy2.robjects as ro
@@ -32,8 +37,6 @@ from matplotlib import rcParams
 # from rpy2.robjects.conversion import localconverter
 # from patsy import dmatrix
 
-# sats annotations
-from statannotations.Annotator import Annotator
 # from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 # %%

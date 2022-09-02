@@ -173,7 +173,7 @@ def merge_bedfiles(bedfile, mapped_motifs_bed, output_temp):
     intersect = df.intersect(motifs, wao=True)
     # Write to output_file
     # Each line in the file contains bed entry a and bed entry b that it overlaps plus the number of bp in the overlap so 19 columns
-    with open(output_temp, "w") as output:
+    with open(output_temp, "w", encoding="utf-8") as output:
         output.write(str(intersect))
     # go back to beginning of buffer
     # output_buffer.seek(0)
@@ -204,7 +204,7 @@ def find_overlapping_TFBSs(
 
             cols = ["chr", "start", "stop", "mutation_type", "mutation_count"]
             temp_df = pd.DataFrame(columns=cols)
-            chr = mutations_df_row_dict["chr"]
+            chrom = mutations_df_row_dict["chr"]
             # if not NaN
             if (
                 pd.notna(mutations_df_row_dict["insertion_genomic_positions"])
@@ -226,7 +226,7 @@ def find_overlapping_TFBSs(
                     stop = start + 1
                     mutation_type = "insertion"
                     # add to temp_df
-                    temp_list = [chr, start, stop, mutation_type, count]
+                    temp_list = [chrom, start, stop, mutation_type, count]
                     temp_df.loc[len(temp_df)] = temp_list
             if (
                 pd.notna(mutations_df_row_dict["deletion_genomic_positions"])
@@ -247,7 +247,7 @@ def find_overlapping_TFBSs(
                     stop = start + 1
                     mutation_type = "deletion"
                     # add to temp_df
-                    temp_list = [chr, start, stop, mutation_type, count]
+                    temp_list = [chrom, start, stop, mutation_type, count]
                     temp_df.loc[len(temp_df)] = temp_list
             if (
                 pd.notna(
@@ -270,10 +270,10 @@ def find_overlapping_TFBSs(
                     stop = start + 1
                     mutation_type = "substitution"
                     # add to temp_df
-                    temp_list = [chr, start, stop, mutation_type, count]
+                    temp_list = [chrom, start, stop, mutation_type, count]
                     temp_df.loc[len(temp_df)] = temp_list
             # now do bedtools intersect to find which TFBSs overlap with which mutations
-            # sort by chr then start
+            # sort by chrom then start
             temp_df = temp_df.sort_values(["chr", "start"]).reset_index(
                 drop=True
             )
