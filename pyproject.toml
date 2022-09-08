@@ -20,3 +20,7 @@ remove-all-unused-imports = true
 remove-unused-variables = true
 recursive = true
 ignore-init-module-imports = true
+
+[tool.isort]
+# make it compatible with black
+profile = "black" 
