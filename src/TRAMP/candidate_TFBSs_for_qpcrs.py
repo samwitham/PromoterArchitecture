@@ -849,11 +849,15 @@ def RGB2CMYK(image_file_location, image_file_extension):
 def make_plot(
     dictionary_of_records_seqrecords,
     dictionary_of_records_promoternames,
-    dirName,
+    input_location,
+    output_location,
+    # fasta_location,
+    # dirName,
     bp_downstream_of_TSS,
     crop_ax,
     zoom_start,
     zoom_end,
+    prom_name_for_crop,
     openchromatin=True,
     dnaseI=False,
     crop_record=False,
@@ -1135,8 +1139,16 @@ def make_plot(
                 last_chromatin = int(k[-1]) * 2
                 # get promoter name
                 prom_name = dictionary_of_records_promoternames[k]
+
                 # split on dashes
                 short_prom_name = prom_name.split("-")[0].upper()
+
+                # check if short_prom_name matches the prom_name_for_crop
+                if crop_record is True:
+
+                    if short_prom_name == prom_name_for_crop:
+                        prom_name_for_crop_ax = axsRight[last - 2]
+
                 # print(short_prom_name)
 
                 # print(v.id)
@@ -1150,7 +1162,7 @@ def make_plot(
                 # then get start and stop region
                 # open genbank file, read third line containing keywords
                 # gb_file=f"../../data/TRAMP/{prom_name}_shortened.gb"
-                gb_file = f"{dirName}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+                gb_file = f"{input_location}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
                 with open(gb_file, "r") as f:
                     all_lines = f.readlines()
                     for line in all_lines:
@@ -1380,7 +1392,7 @@ def make_plot(
                 # chrom_region = AGI[2]
                 # then get start and stop region
                 # open genbank file, read third line containing keywords
-                gb_file = f"{dirName}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+                gb_file = f"{input_location}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
                 with open(gb_file, "r") as f:
                     all_lines = f.readlines()
                     for line in all_lines:
@@ -1721,7 +1733,7 @@ def make_plot(
             # chrom_region = AGI[2]
             # then get start and stop region
             # open genbank file, read third line containing keywords
-            gb_file = f"{dirName}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+            gb_file = f"{input_location}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
             with open(gb_file, "r") as f:
                 all_lines = f.readlines()
                 for line in all_lines:
@@ -1880,7 +1892,7 @@ def make_plot(
         )
 
     # print(int(labels[1])+2)
-    print(colour_dict)
+    # print(colour_dict)
     # print(colour_iterator)
 
     # combine graphic records
@@ -1956,12 +1968,14 @@ def make_plot(
         zoom_start_new = bp_downstream_of_TSS - zoom_start
 
         zoom_end_new = bp_downstream_of_TSS - zoom_end
-        print(zoom_start_new)
-        print(zoom_end_new)
+        # print(zoom_start_new)
+        # print(zoom_end_new)
 
         # highlight zoomed region on main promoter figure
-        axsRight[length_dict * 2 - 1].fill_between(
-            (zoom_start_new, zoom_end_new), +500, -500, alpha=0.15
+        # get prom_name axsRight
+
+        prom_name_for_crop_ax.fill_between(
+            (zoom_start_new, zoom_end_new), +800, -800, alpha=0.15
         )
         # print(graphic_record)
 
@@ -1973,17 +1987,17 @@ def make_plot(
             new_features = []
             for f in graph_rec.features:
                 # print(f)
-                print(f.color)
+                # print(f.color)
                 cropped_feature = f.crop(window)
-                print(cropped_feature)
+                # print(cropped_feature)
                 if (
                     cropped_feature is not None
                 ):  # = has overlap with the window
                     new_features.append(cropped_feature)
                 if cropped_feature is None:  # = is outside the window
                     # if feature falls inside the window, append it
-                    print(f"f.start={f.start}")
-                    print(f"f.end={f.end}")
+                    # print(f"f.start={f.start}")
+                    # print(f"f.end={f.end}")
                     if f.start >= end and f.end <= start:
                         new_features.append(f)
 
@@ -2012,7 +2026,7 @@ def make_plot(
                 key=lambda x: list_of_colours.index(x.color), reverse=True
             )
             # print colours in new features
-            print([f.color for f in new_features])
+            # print([f.color for f in new_features])
 
             return GraphicRecord(
                 sequence=graph_rec.sequence[
@@ -2086,40 +2100,40 @@ def make_plot(
     # fig.tight_layout()
     if dnaseI is False:
         fig.savefig(
-            f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
+            f"{output_location}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
+            f"{output_location}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
+            f"{output_location}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
             bbox_inches="tight",
             dpi=(600),
         )
     elif dnaseI is True:
         fig.savefig(
-            f"{dirName}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
+            f"{output_location}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dirName}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
+            f"{output_location}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dirName}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
+            f"{output_location}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
             bbox_inches="tight",
             dpi=(600),
         )
 
     # convert image from RGB to CMYK
     RGB2CMYK(
-        f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS",
+        f"{output_location}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS",
         ".tiff",
     )
 
