@@ -1988,6 +1988,11 @@ def make_plot(
             for f in graph_rec.features:
                 # print(f)
                 # print(f.color)
+                # add feature label if the feature colour is in the colour_dict
+                if f.color in colour_dict.values():
+                    f.label = list(colour_dict.keys())[
+                        list(colour_dict.values()).index(f.color)
+                    ]
                 cropped_feature = f.crop(window)
                 # print(cropped_feature)
                 if (
@@ -2037,6 +2042,7 @@ def make_plot(
                 sequence_length=end - start,
                 features=new_features,
                 feature_level_height=graph_rec.feature_level_height,
+                # feature_level_height = 2.5,
                 first_index=start,
                 plots_indexing=graph_rec.plots_indexing,
                 labels_spacing=graph_rec.labels_spacing,
