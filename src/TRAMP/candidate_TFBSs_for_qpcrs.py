@@ -16,6 +16,7 @@ try:
     import class_customtranslator
 except ModuleNotFoundError:
     from src.TRAMP import class_customtranslator
+
 # import class_customtranslator
 import matplotlib.patches as mpatches
 
@@ -46,6 +47,7 @@ from Bio.SeqFeature import (
     WithinPosition,
 )
 from Bio.SeqRecord import SeqRecord
+from dna_features_viewer import GraphicRecord
 
 # latex style rendering so can make parts of text bold
 from matplotlib import rcParams
@@ -626,7 +628,7 @@ def slice_sequence_with_features(
 #     print('a')
 
 # %%
-def preprocess_record(seqrecord, promoter_name, bp_downstream_of_TSS):
+def preprocess_record(seqrecord, dirName, promoter_name, bp_downstream_of_TSS):
     """Preprocess the biopython record before feeding it into the translator."""
     # get length of the whole sequence
     # seq_length = len(seqrecord.seq)
@@ -634,7 +636,7 @@ def preprocess_record(seqrecord, promoter_name, bp_downstream_of_TSS):
     # #change seqrecord locations
     # #if start location is greater than TSS position then the new location is the length of the whole sequence minus the original position
     # def convert_location(location, TSS_position, seq_length):
-    #     """convert locations to be relative to TSS position (or another locaton if you choose)"""
+    #     """convert locations to be relative to TSS position (or another location if you choose)"""
     #     if location > TSS_position:
     #         new_location = seq_length - location
     #     elif location < TSS_position:
@@ -738,7 +740,7 @@ def preprocess_record(seqrecord, promoter_name, bp_downstream_of_TSS):
     # sort genbank file so features are in the order of the start locations
 
     # save shortened seq_record named after its ID if file doesn't exist
-    file_location = f"../../data/TRAMP/{promoter_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+    file_location = f"{dirName}/{promoter_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
 
     if os.path.exists(file_location) is False:
         SeqIO.write(shortened_seqrecord, file_location, "genbank")
@@ -817,14 +819,14 @@ def preprocess_record(seqrecord, promoter_name, bp_downstream_of_TSS):
 
 
 # %%
-def gb_file_to_seqrecord(promoter_name, bp_downstream_of_TSS):
+def gb_file_to_seqrecord(promoter_name, dirName, bp_downstream_of_TSS):
     """load genbankfile into a seqrecord"""
     # file location
-    gb_file = f"../../data/TRAMP/{promoter_name}.gb"
+    gb_file = f"{dirName}/{promoter_name}.gb"
     record = SeqIO.read(gb_file, "genbank")
     # preprocess record
     modified_seqrecord = preprocess_record(
-        record, promoter_name, bp_downstream_of_TSS
+        record, dirName, promoter_name, bp_downstream_of_TSS
     )
     return modified_seqrecord
 
@@ -847,10 +849,14 @@ def RGB2CMYK(image_file_location, image_file_extension):
 def make_plot(
     dictionary_of_records_seqrecords,
     dictionary_of_records_promoternames,
-    dir_name,
+    dirName,
     bp_downstream_of_TSS,
+    crop_ax,
+    zoom_start,
+    zoom_end,
     openchromatin=True,
     dnaseI=False,
+    crop_record=False,
 ):
     def make_graphic_record(
         seqrecord, promoter_name, ax, short_annotation=True, title=True
@@ -903,7 +909,8 @@ def make_plot(
         # add title of promoter
         if title is True:
             ax.title.set_text(promoter_name)
-        # return graphic_record
+
+        return graphic_record
 
     # set plot parameters
     rcParams["xtick.major.width"] = 1
@@ -1143,7 +1150,7 @@ def make_plot(
                 # then get start and stop region
                 # open genbank file, read third line containing keywords
                 # gb_file=f"../../data/TRAMP/{prom_name}_shortened.gb"
-                gb_file = f"../../data/TRAMP/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+                gb_file = f"{dirName}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
                 with open(gb_file, "r") as f:
                     all_lines = f.readlines()
                     for line in all_lines:
@@ -1160,7 +1167,7 @@ def make_plot(
                 # genbank_end= 1
 
                 # make graphic record
-                make_graphic_record(
+                graphic_record = make_graphic_record(
                     v, short_prom_name, axsRight[last - 2], title=False
                 )
                 # if short_prom_name == "ANAC032":
@@ -1194,7 +1201,7 @@ def make_plot(
                     y=0.125,
                     s=short_prom_name,
                     weight="extra bold",
-                    fontsize=10,
+                    size=font_size,
                     transform=axsRight[last - 2].transAxes,
                     ha="right",
                 )  # transform=axsRight[last_chromatin-2].transAxes
@@ -1354,7 +1361,7 @@ def make_plot(
                 # split on dashes
                 short_prom_name = prom_name.split("-")[0].upper()
                 # print(short_prom_name)
-                make_graphic_record(
+                graphic_record = make_graphic_record(
                     v, short_prom_name, axsRight[last - 2], title=False
                 )
                 # if short_prom_name == "ANAC032":
@@ -1373,7 +1380,7 @@ def make_plot(
                 # chrom_region = AGI[2]
                 # then get start and stop region
                 # open genbank file, read third line containing keywords
-                gb_file = f"../../data/TRAMP/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+                gb_file = f"{dirName}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
                 with open(gb_file, "r") as f:
                     all_lines = f.readlines()
                     for line in all_lines:
@@ -1407,7 +1414,7 @@ def make_plot(
                     y=0.125,
                     s=short_prom_name,
                     weight="extra bold",
-                    fontsize=font_size,
+                    size=font_size,
                     transform=axsRight[last - 2].transAxes,
                     ha="right",
                 )  # transform=axsRight[last_chromatin-2].transAxes
@@ -1568,9 +1575,7 @@ def make_plot(
             loc="upper right",
             ncol=3,
             handler_map={
-                str: LegendTitle(
-                    {"fontsize": font_size, "weight": "extra bold"}
-                )
+                str: LegendTitle({"size": font_size, "weight": "extra bold"})
             },
         )  # handler_map={title: LegendTitle({'fontsize': 14})}
 
@@ -1657,15 +1662,24 @@ def make_plot(
     else:
         # make plot
         height = length_dict // 2
-        fig = plt.figure(constrained_layout=False, figsize=(8, height))
-        # make subfigures
-        subfigs = fig.subfigures(1, 2, wspace=0.0, width_ratios=[1, 5])
-        # left legend
-        axsLeft = subfigs[0].subplots(1, 1)
+        linewidth = 1.03
+
+        # right figures
+        if length_dict == 1:
+            # make subplots, one row, two columns
+            fig, (axsLeft, axsRight) = plt.subplots(1, 2, figsize=(8, height))
+
+        else:
+            fig = plt.figure(constrained_layout=False, figsize=(8, height))
+            # make subfigures
+            subfigs = fig.subfigures(1, 2, wspace=0.0, width_ratios=[1, 5])
+            axsRight = subfigs[1].subplots(length_dict, 1, sharex=True)
+            # left legend
+            axsLeft = subfigs[0].subplots(1, 1)
         # remove axis
         axsLeft.axis("off")
-        # right figures
-        axsRight = subfigs[1].subplots(length_dict, 1, sharex=True)
+
+        # axsRight = subfigs[1].subplots(length_dict, 1, sharex=True)
         # move legend to the right
         # box = axsLeft.get_position()
         # box.x0 = box.x0 + 1.8
@@ -1680,12 +1694,98 @@ def make_plot(
             last = int(k[-1])
             # get promoter name
             prom_name = dictionary_of_records_promoternames[k]
+            print(prom_name)
             # split on dashes
             short_prom_name = prom_name.split("-")[0].upper()
             if length_dict == 1:
-                make_graphic_record(v, short_prom_name, axsRight)
+                graphic_record = make_graphic_record(
+                    v, short_prom_name, axsRight
+                )
             else:
-                make_graphic_record(v, short_prom_name, axsRight[last - 1])
+                graphic_record = make_graphic_record(
+                    v, short_prom_name, axsRight[last - 1]
+                )
+
+            #     #print(ANAC032)
+            #     make_graphic_record(v,short_prom_name,axsRight[last-2],short_annotation=False, title=False)
+            # else:
+            #     make_graphic_record(v,short_prom_name,axsRight[last-2],title=False)
+
+            # print(v.id)
+            # add atacseq track
+            # first get chromosome number from sequence ID
+            chrom_region = re.findall(r"chromosome:TAIR10:(\d)", v.id)[0]
+            # chrom_region = v.id[v.id.find('TAIR10:')+1:v.id.find(':')]
+            # print(v)
+            # print(chrom_region)
+            # chrom_region = AGI[2]
+            # then get start and stop region
+            # open genbank file, read third line containing keywords
+            gb_file = f"{dirName}/{prom_name}_shortened_{bp_downstream_of_TSS}bp_downstream_of_TSS.gb"
+            with open(gb_file, "r") as f:
+                all_lines = f.readlines()
+                for line in all_lines:
+                    if re.match(r"KEYWORDS", line):
+                        keywords = line
+            # start region -1 as bigwig files are 0-based (start at 0 rather than 1)
+            start_region = (
+                int(re.findall(r"start_index:(\d+)", keywords)[0]) - 1
+            )
+            end_region = int(re.findall(r"end_index:(\d+)", keywords)[0])
+            # # print(start_region)
+            # pygenometracks(
+            #     chrom_region,
+            #     start_region,
+            #     end_region,
+            #     axsRight[last_chromatin - 2],
+            # )
+            # set xlim
+            offset_length = xaxis_length - (end_region - start_region)
+            axsRight[length_dict - 1].set_xlim(
+                start_region - offset_length, end_region
+            )
+            # get x and y lim
+            # axsRight[last_chromatin-2].set_title(short_prom_name,y=0.5, ) #put title to left of axis
+            # setlocation of the title
+            # first transform offset_length to between 0 and 1 for axes location, and offset a little to the left
+            trans = (offset_length - 25) / xaxis_length
+
+            axsRight[last - 1].text(
+                x=trans,
+                y=0.125,
+                s=short_prom_name,
+                weight="extra bold",
+                size=font_size,
+                transform=axsRight[last - 1].transAxes,
+                ha="right",
+            )  # transform=axsRight[last_chromatin-2].transAxes
+
+            # add a rectangular border around the gene region
+            # length of the gene region
+            region_length = end_region - start_region
+
+            # linethickness converter so that start and width are offset by the linethickness for the rectangle
+            linewidth = 1.03
+            linewidth_offset = linewidth * 2.5
+            # start location of rectangle
+            start = (offset_length + linewidth_offset) / xaxis_length
+            # stop = (1/4550)*xlength+xstart
+            # height of rectangle
+            height = 1.3
+            # width of rectangle
+            width = (region_length - 2 * linewidth_offset) / xaxis_length
+            # plot the rectangle on each subplot relative to that subplot location
+            rect = plt.Rectangle(
+                # (lower left corner coordinates), width, height
+                (start, 0.01),
+                width,
+                height / 2,
+                fill=False,
+                color="black",
+                linewidth=linewidth,
+                transform=axsRight[last - 1].transAxes,
+            )
+            fig.add_artist(rect)
 
         # add legend
         # first import colour iterator
@@ -1705,6 +1805,7 @@ def make_plot(
         # create empty handles list
         # print(colour_dict)
         # sort TFBS names into alphabetical order in colour_dict
+        colour_dict = class_customtranslator.colour_dict
         colour_dict_sorted = {
             k: v
             for k, v in sorted(colour_dict.items(), key=lambda item: item[0])
@@ -1726,8 +1827,8 @@ def make_plot(
             handles=handles,
             loc="upper right",
             title="Transcription factor binding site",
-            weight="extra bold",
-            title_fontsize="font_size",
+            # weight="extra bold",
+            title_fontsize="small",
             ncol=2,
         )
 
@@ -1775,7 +1876,7 @@ def make_plot(
             new_labels.append(label)
         axsRight[length_dict - 1].set_xticklabels(new_labels)
         fig.subplots_adjust(
-            left=0.5, bottom=-0.1, right=0, top=1.2, wspace=0, hspace=0
+            left=0, bottom=-0.1, right=1, top=0.7, wspace=0, hspace=0.5
         )
 
     # print(int(labels[1])+2)
@@ -1805,7 +1906,14 @@ def make_plot(
 
     # add a line at TSS
     # get xtick locations
-    xtickslocs = axsRight[length_dict * 2 - 1].get_position()
+
+    if openchromatin is True:
+
+        xtickslocs = axsRight[length_dict * 2 - 1].get_position()
+    elif length_dict == 1:
+        xtickslocs = axsRight.get_position()
+    else:
+        xtickslocs = axsRight[length_dict - 1].get_position()
     xstart = xtickslocs.x0
     xstop = xtickslocs.x1
 
@@ -1829,6 +1937,148 @@ def make_plot(
     # add black border round each gene
     # rect = plt.Rectangle((xstart,0.5),0.5,0.1,fill=False, color='black', linewidth=2)
     # fig.add_artist(rect)
+    # append another subplot to the top if crop_record is true
+    if crop_record is True:
+        ax = crop_ax
+        # add another subplot to the top
+        # create a new subplot
+        # ax = fig.add_subplot(111, frameon=False)
+        # hide tick and tick label of the big axes
+        ax.tick_params(
+            labelcolor="none", top=False, bottom=False, left=False, right=False
+        )
+        ax.grid(False)
+        # add cropped record
+        # zoom_start, zoom_end = 360, 400  # coordinates of the "detail"
+        # xaxis_length = zoom_end-zoom_start
+        # convert coordinates based on tss location so x axis is in the correct location on the x axis
+        # tss_loc = bp_downstream_of_TSS
+        zoom_start_new = bp_downstream_of_TSS - zoom_start
+
+        zoom_end_new = bp_downstream_of_TSS - zoom_end
+        print(zoom_start_new)
+        print(zoom_end_new)
+
+        # highlight zoomed region on main promoter figure
+        axsRight[length_dict * 2 - 1].fill_between(
+            (zoom_start_new, zoom_end_new), +500, -500, alpha=0.15
+        )
+        # print(graphic_record)
+
+        def crop_new(graph_rec, window):
+            start, end = window
+            first_index = graph_rec.first_index
+            if (start < first_index) or (end > graph_rec.last_index):
+                raise ValueError("out-of-bound cropping")
+            new_features = []
+            for f in graph_rec.features:
+                # print(f)
+                print(f.color)
+                cropped_feature = f.crop(window)
+                print(cropped_feature)
+                if (
+                    cropped_feature is not None
+                ):  # = has overlap with the window
+                    new_features.append(cropped_feature)
+                if cropped_feature is None:  # = is outside the window
+                    # if feature falls inside the window, append it
+                    print(f"f.start={f.start}")
+                    print(f"f.end={f.end}")
+                    if f.start >= end and f.end <= start:
+                        new_features.append(f)
+
+            # order new features by color -
+            # define list of colours to put at end of list. These correspond to gene, intron etc and exclude TFBSs
+            # (so that TFBSs are plotted on top of these features)
+            list_of_last_colours = [
+                "#F5F5F5",
+                "#DDCC77",
+                "#635147",
+                "lightgrey",
+                "c4aead",
+                "#FFFFFF00",
+            ]
+            # get list of colours in new features
+            list_of_colours = [f.color for f in new_features]
+            # sort list_of_colours by the order of list_of_last_colours. Any colours not in list_of_last_colours will be at the start of the list
+            list_of_colours.sort(
+                key=lambda x: list_of_last_colours.index(x)
+                if x in list_of_last_colours
+                else -1
+            )
+            # list_of_colours.sort(key=lambda x: list_of_last_colours.index(x) if x in list_of_last_colours else len(list_of_last_colours))
+            # order new features by colour
+            new_features.sort(
+                key=lambda x: list_of_colours.index(x.color), reverse=True
+            )
+            # print colours in new features
+            print([f.color for f in new_features])
+
+            return GraphicRecord(
+                sequence=graph_rec.sequence[
+                    start - first_index : end - first_index
+                ]
+                if graph_rec.sequence is not None
+                else None,
+                sequence_length=end - start,
+                features=new_features,
+                feature_level_height=graph_rec.feature_level_height,
+                first_index=start,
+                plots_indexing=graph_rec.plots_indexing,
+                labels_spacing=graph_rec.labels_spacing,
+                ticks_resolution=graph_rec.ticks_resolution,
+            )
+
+        cropped_record = crop_new(
+            graphic_record, (zoom_start_new, zoom_end_new)
+        )
+        cropped_record.plot(ax=ax)
+        # cropped_record.plot_sequence(ax=ax)
+        # cropped_record.plot_translation(ax=ax, location=(408, 423))
+        # change x_lim to flip x axis
+        # invert x axis
+        ax.invert_xaxis()
+        # get xlim
+        # xaxis_length = ax.get_xlim()
+
+        # ax.set_xlim(xaxis_length, 0)
+
+        # change font colour of x axis text
+        ax.tick_params(axis="x", colors="black")
+        # change width of line
+        # for axis in ['bottom','right']:
+        #     ax.spines[axis].set_linewidth(5)
+
+        # x_ticks = np.arange(0, xaxis_length, 5)  # start stop and step
+        # ax.set_xticks(x_ticks)
+        # fig.canvas.draw()
+        # if axsRight[last-2] == axsRight[length_dict*2-1]:
+        #     pass
+        # else:
+        #     #remove xticks
+        #     #axsRight[last-2].xaxis.set_ticks_position('none')
+        #     #remove axes
+        #     ax.axis('off')
+
+        # add label
+        ax.set_xlabel("Base pairs (bp)", labelpad=20)
+        # add title
+        # ax.set_title("Col-0 wt sequence", pad=20)
+        # add y label
+        ax.set_ylabel("Col-0 wt sequence", labelpad=20)
+        # add y ticks
+        ax.set_yticks([1])
+        # add y tick labels
+        # ax.set_yticklabels(["Sequence"], va="center")
+        # add x ticks
+        ax.set_xticks([zoom_start_new, zoom_end_new])
+        # add x tick labels
+        ax.set_xticklabels([zoom_end, zoom_start], ha="center")
+        # add black border round each gene
+        # rect = plt.Rectangle(
+        #     (xstart, 0.5), xlength, 0.1, fill=False, color="black", linewidth=linewidth
+        # )
+        # fig.add_artist(rect)
 
     # set DPI to 600
     fig.set_dpi(600)
@@ -1836,40 +2086,40 @@ def make_plot(
     # fig.tight_layout()
     if dnaseI is False:
         fig.savefig(
-            f"{dir_name}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
+            f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dir_name}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
+            f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dir_name}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
+            f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
             bbox_inches="tight",
             dpi=(600),
         )
     elif dnaseI is True:
         fig.savefig(
-            f"{dir_name}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
+            f"{dirName}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.pdf",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dir_name}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
+            f"{dirName}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.svg",
             bbox_inches="tight",
             dpi=(600),
         )
         fig.savefig(
-            f"{dir_name}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
+            f"{dirName}/combined_dnaseI{bp_downstream_of_TSS}bp_downstream_of_TSS.tiff",
             bbox_inches="tight",
             dpi=(600),
         )
 
     # convert image from RGB to CMYK
     RGB2CMYK(
-        f"{dir_name}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS",
+        f"{dirName}/combined{bp_downstream_of_TSS}bp_downstream_of_TSS",
         ".tiff",
     )
 
@@ -1944,7 +2194,7 @@ def main(args):
 
     for k, v in promoter_names.items():
         # add to new dictionary of seqrecords
-        seqrecords[k] = gb_file_to_seqrecord(v, bp_downstream_of_TSS)
+        seqrecords[k] = gb_file_to_seqrecord(v, dirName, bp_downstream_of_TSS)
 
     # make plot using dictionary
     # make_plot(seqrecords,promoter_names)

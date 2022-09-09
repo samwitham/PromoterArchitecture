@@ -271,20 +271,22 @@ class MyCustomTranslator(BiopythonTranslator):
     #     return 0.1
 
     def compute_feature_fontdict(self, feature):
-        """change label font to arial, size to 9"""
+        """change label font to arial, fontsize to 9"""
         if feature.type == "TRAMP_probe_tested":
             # if certain label, align to the right
             if feature.qualifiers.get("label")[0] == "ANAC032#3":
-                return dict(family="sans-serif", size=font_size, ha="right")
+                return dict(
+                    family="sans-serif", fontsize=font_size, ha="right"
+                )
             # elif feature.qualifiers.get("label")[0] == "ANAC032#8":
-            #     return dict(family='sans-serif',size=10, ha='left')
+            #     return dict(family='sans-serif',fontsize=10, ha='left')
             if feature.qualifiers.get("label")[0] == "ANAC032#8":
-                return dict(family="sans-serif", size=font_size)
+                return dict(family="sans-serif", fontsize=font_size)
             else:
-                return dict(family="sans-serif", size=font_size)
+                return dict(family="sans-serif", fontsize=font_size)
 
         else:
-            return dict(family="sans-serif", size=font_size)
+            return dict(family="sans-serif", fontsize=font_size)
         # return dict([('family','sans-serif'),('sans-serif','Arial'),('size',10)])
 
     # make feature_list so that each feature name is only added once if more than one share the same name
