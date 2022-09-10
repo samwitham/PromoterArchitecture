@@ -2058,7 +2058,7 @@ def make_plot(
         # cropped_record.plot_translation(ax=ax, location=(408, 423))
         # change x_lim to flip x axis
         # invert x axis
-        ax.invert_xaxis()
+        # ax.invert_xaxis()
         # get xlim
         # xaxis_length = ax.get_xlim()
 
@@ -2094,7 +2094,7 @@ def make_plot(
         # add x ticks
         ax.set_xticks([zoom_start_new, zoom_end_new])
         # add x tick labels
-        ax.set_xticklabels([zoom_end, zoom_start], ha="center")
+        ax.set_xticklabels([zoom_start, zoom_end], ha="center")
         # add black border round each gene
         # rect = plt.Rectangle(
         #     (xstart, 0.5), xlength, 0.1, fill=False, color="black", linewidth=linewidth
