@@ -13,11 +13,11 @@ import re
 
 # only import class if in TRAMP directory
 try:
-    import class_customtranslator
+    import class_customtranslator_qpcrs
 except ModuleNotFoundError:
-    from src.TRAMP import class_customtranslator
+    from src.TRAMP import class_customtranslator_qpcrs
 
-# import class_customtranslator
+
 import matplotlib.patches as mpatches
 
 # NOTE - if using genbank files from Benchling, first add custom fields on the metadata page with the start and end index (eg. start_index 6015558)
@@ -774,17 +774,18 @@ def preprocess_record(seqrecord, dirName, promoter_name, bp_downstream_of_TSS):
             # print(feature)
             # change sigil to box
             feature.qualifiers["sigil"] = "OCTAGON"
+            # find middle of TFBS - only do this part if you want wider TFBSs for the figure
             # increase width of TFBS so colour is more visible
-            TFBS_start = feature.location.start
-            TFBS_end = feature.location.end
-            # find middle of TFBS
-            middle = (
-                TFBS_end - TFBS_start + 1
-            ) // 2  # floor division creating an integar
+            # TFBS_start = feature.location.start
+            # TFBS_end = feature.location.end
 
-            new_start = TFBS_start - 8 + middle
-            new_end = TFBS_end - middle + 8
-            feature.location = FeatureLocation(new_start, new_end)
+            # middle = (
+            #     TFBS_end - TFBS_start + 1
+            # ) // 2  # floor division creating an integar
+
+            # new_start = TFBS_start - 8 + middle
+            # new_end = TFBS_end - middle + 8
+            # feature.location = FeatureLocation(new_start, new_end)
             # change name of some TFBSs
             if feature.qualifiers.get("label")[0] == "ANR1_AGL16":
                 feature.qualifiers.get("label")[0] = "ANR1*"
@@ -879,7 +880,7 @@ def make_plot(
             "TFBS": 14,
         }
 
-        graphic_record = class_customtranslator.MyCustomTranslator(
+        graphic_record = class_customtranslator_qpcrs.MyCustomTranslator(
             features_properties=(
                 lambda f: {
                     "linecolor": color_map.get(f.type, "black"),
@@ -1459,7 +1460,7 @@ def make_plot(
                 fig.add_artist(rect)
 
         # #get colour_dict from the imported class
-        colour_dict = class_customtranslator.colour_dict
+        colour_dict = class_customtranslator_qpcrs.colour_dict
         colour_dict_sorted = {
             k: v
             for k, v in sorted(colour_dict.items(), key=lambda item: item[0])
@@ -1817,7 +1818,7 @@ def make_plot(
         # create empty handles list
         # print(colour_dict)
         # sort TFBS names into alphabetical order in colour_dict
-        colour_dict = class_customtranslator.colour_dict
+        colour_dict = class_customtranslator_qpcrs.colour_dict
         colour_dict_sorted = {
             k: v
             for k, v in sorted(colour_dict.items(), key=lambda item: item[0])
