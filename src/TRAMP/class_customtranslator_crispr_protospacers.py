@@ -61,7 +61,7 @@ class MyCustomTranslator(BiopythonTranslator):
         if feature.type == "promoter":
             return "#F5F5F5"
         elif feature.type == "primer":
-            return "#5CC9A1"
+            return "green"
         elif feature.type == "selected_region":
             return "#5CC9A1"
         elif feature.type == "gene_upstream":
