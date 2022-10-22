@@ -289,7 +289,12 @@ def preprocess_record(seqrecord, dirName, promoter_name, bp_downstream_of_TSS):
 
     for feature in new_seqrecord.features:
         # change strand to None so that features are rectangular
-        feature.location.strand = None
+        if feature.type == "primer":
+            # feature.location.strand = True
+            pass
+        else:
+            feature.location.strand = None
+        # feature.location.strand = None
 
         if feature.type == "TFBS":
             # print(feature)
@@ -399,6 +404,7 @@ def make_plot(
             "shoot_open_chromatin": 14,
             "root_open_chromatin": 14,
             "TFBS": 14,
+            "primer": 7,
         }
 
         graphic_record = (

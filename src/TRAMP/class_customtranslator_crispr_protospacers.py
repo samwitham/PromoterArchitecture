@@ -61,9 +61,9 @@ class MyCustomTranslator(BiopythonTranslator):
         if feature.type == "promoter":
             return "#F5F5F5"
         elif feature.type == "primer":
-            return "green"
+            return "red"
         elif feature.type == "selected_region":
-            return "#5CC9A1"
+            return "#24BFAD"
         elif feature.type == "gene_upstream":
             return "#DDCC77"  # 2f4f4f"#dark slate grey
         elif feature.type == "mRNA_upstream":
@@ -158,7 +158,7 @@ class MyCustomTranslator(BiopythonTranslator):
         if feature.type == "start_codon":
             return 1
         if feature.type == "selected_region":
-            return 1
+            return 0
         elif feature.type == "mRNA_upstream":
             return 0
         elif feature.type == "exon_upstream":
