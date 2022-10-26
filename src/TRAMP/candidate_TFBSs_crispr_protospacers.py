@@ -289,12 +289,31 @@ def preprocess_record(seqrecord, dirName, promoter_name, bp_downstream_of_TSS):
 
     for feature in new_seqrecord.features:
         # change strand to None so that features are rectangular
+        # if feature.type == "primer":
+        #     # feature.location.strand = True
+        #     pass
+        # else:
+        #     feature.location.strand = None
+        feature.location.strand = None
         if feature.type == "primer":
-            # feature.location.strand = True
-            pass
-        else:
-            feature.location.strand = None
-        # feature.location.strand = None
+            feature.qualifiers["sigil"] = "OCTAGON"
+            # decrease width of primer features so that they are not too wide
+            primer_start = feature.location.start
+            primer_end = feature.location.end
+            if primer_start > primer_end:
+                p_start = primer_end
+                p_end = primer_start
+            else:
+                p_start = primer_start
+                p_end = primer_end
+
+            # middle = (
+            #     p_end - p_start + 1
+            # ) // 2  # floor division creating an integar
+
+            new_start = p_start + 8
+            new_end = p_end - 8
+            feature.location = FeatureLocation(new_start, new_end)
 
         if feature.type == "TFBS":
             # print(feature)
