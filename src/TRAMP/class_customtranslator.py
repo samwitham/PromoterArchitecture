@@ -6,7 +6,7 @@ from dna_features_viewer import BiopythonTranslator
 
 feature_list = []
 colour_dict = {}
-# set probel_labels on or off here
+# set probe_labels on or off here
 probe_box = False
 probe_labels = False
 # turn on or off open chromatin peak annotations
@@ -38,13 +38,23 @@ class MyCustomTranslator(BiopythonTranslator):
     # list_colours = list(CB_colour_palette)
     # colour_list = list_colours
     # colour_list = ['#88CCEE', '#44AA99', '#117733', '#332288', '#DDCC77', '#999933','#CC6677', '#882255', '#AA4499', '#DDDDDD']
+    # colour_list = [
+    #     "#2271B2",  # ARF9/18
+    #     "#d55e00",  # ANAC032
+    #     "#e69f00",  # DREB26
+    #     "#3DB7E9",  # ANR1
+    #     "#F748A5",  # TGA1
+    #     "#228833",  # NLP6/7
+    #     # '#f0e442',
+    #     "#900000",
+    # ]
     colour_list = [
         "#2271B2",  # ARF9/18
-        "#d55e00",  # ANAC032
-        "#e69f00",  # DREB26
         "#3DB7E9",  # ANR1
         "#F748A5",  # TGA1
+        "#d55e00",  # ANAC032
         "#228833",  # NLP6/7
+        "#e69f00",  # DREB26
         # '#f0e442',
         "#900000",
     ]
